@@ -6,10 +6,17 @@
                  [figwheel-sidecar "0.5.0"]]
   :plugins [[lein-cljsbuild "1.1.0"]]
   :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
-  :cljsbuild {:builds [{:id           "snake"
+  :cljsbuild {:builds [{:id           "dev"
                         :source-paths ["src"]
                         :figwheel     true
                         :compiler     {:main       "snake.core"
                                        :asset-path "js/snake.core.out"
                                        :output-to  "resources/public/js/snake.core.js"
-                                       :output-dir "resources/public/js/snake.core.out"}}]})
+                                       :output-dir "resources/public/js/snake.core.out"}}
+                       {:id           "prod"
+                        :source-paths ["src"]
+                        :figwheel     true
+                        :compiler     {:main       "snake.core"
+                                       :output-to  "snake.js"
+                                       :output-dir "snake.out"
+                                       :optimizations :advanced}}]})
