@@ -32,27 +32,28 @@
   (if dead?
     old-state
     (let [new-direction (if (some? input)
-                         (new-direction direction input)
-                         direction)
-         move-ahead-body (conj body (new-head (last body) new-direction))
-         ate-food (contains? (set move-ahead-body) food)
-         new-food (if ate-food (rand-food old-state) food)
-         new-body (if ate-food move-ahead-body (subvec move-ahead-body 1))
-         dead? (or (not= (count new-body) (count (set new-body)))
-                   (some neg? (flatten new-body))
-                   (some (fn [x y] (or (> x width)
-                                         (> y height))) new-body))]
-     (merge
-       old-state
-       {:direction new-direction
-        :dead?     dead?
-        :food      new-food
-        :body      new-body}))))
+                          (new-direction direction input)
+                          direction)
+          move-ahead-body (conj body (new-head (last body) new-direction))
+          ate-food (contains? (set move-ahead-body) food)
+          new-food (if ate-food (rand-food old-state) food)
+          new-body (if ate-food move-ahead-body (subvec move-ahead-body 1))
+          dead? (or (not= (count new-body) (count (set new-body)))
+                    (some neg? (flatten new-body))
+                    (some (fn [x y] (or (> x width)
+                                        (> y height))) new-body))]
+      (merge
+        old-state
+        {:direction new-direction
+         :dead?     dead?
+         :food      new-food
+         :body      new-body}))))
 
 (defn init
   [params]
   (merge params {:body      [[0 0] [0 1] [0 2] [0 3] [0 4] [0 5] [0 6]]
                  :food      (rand-food params)
+                 :dead?     false
                  :direction [0 1]}))
 
 (defn render

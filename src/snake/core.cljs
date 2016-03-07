@@ -65,11 +65,22 @@
 
 (defn tick!
   [state-atom]
+  ;; agent plays the game
   (swap! state-atom assoc :input
           (agent/best-action (:state @state-atom)))
+
+  ;; auto respawn
+  (swap! state-atom (fn [{:keys [state] :as a}]
+                      (if (:dead? state)
+                        {:state (model/init state)}
+                        a)))
+
+  ;; move model forward based on user input
   (swap! state-atom
          (fn [{:keys [state input]}]
            {:state (model/tick state input)}))
+
+  ;; render current state
   (let [{:keys [state]} @state-atom]
     (render (model/render state))))
 
