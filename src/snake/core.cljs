@@ -43,8 +43,14 @@
         (let [x (* size x)
               y (* size y)]
           (aset ctx "fillStyle" (name color))
-          #_(println "coords" x y (+ x size) (+ y size))
-          (.fillRect ctx x y (+ x size) (+ y size)))))))
+          (.fillRect ctx x y (+ x size) (+ y size)))))
+    (let [width (.-width canvas)
+          height (.-height canvas)
+          start-width (- width (mod width size))
+          start-height (- height (mod height size))]
+      (aset ctx "fillStyle" "black")
+      (.fillRect ctx start-width 0 width height)
+      (.fillRect ctx 0 start-height width height))))
 
 (defn screen []
   (let [canvas (ensure-canvas!)
@@ -81,6 +87,6 @@
       (fn [e]
         (swap! state assoc :input (keycode->left-right (.-keyCode e)))))
     (tick! state)
-    (js/setInterval #(tick! state) 500)))
+    (js/setInterval #(tick! state) 100)))
 
 (.addEventListener js/document "DOMContentLoaded" run false)
