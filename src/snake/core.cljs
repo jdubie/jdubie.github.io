@@ -1,6 +1,7 @@
 (ns snake.core
   (:require
     [snake.model :as model]
+    [snake.agent :as agent]
     [goog.dom :as gdom]))
 
 (enable-console-print!)
@@ -64,6 +65,8 @@
 
 (defn tick!
   [state-atom]
+  (swap! state-atom assoc :input
+          (agent/best-action (:state @state-atom)))
   (swap! state-atom
          (fn [{:keys [state input]}]
            {:state (model/tick state input)}))
@@ -87,6 +90,6 @@
       (fn [e]
         (swap! state assoc :input (keycode->left-right (.-keyCode e)))))
     (tick! state)
-    (js/setInterval #(tick! state) 100)))
+    (js/setInterval #(tick! state) 0)))
 
 (.addEventListener js/document "DOMContentLoaded" run false)
