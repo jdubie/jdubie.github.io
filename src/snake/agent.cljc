@@ -16,7 +16,7 @@
 
 (def actions [:up :down :left :right])
 
-(def look-ahead 20)
+(def look-ahead 35)
 
 (defn best-solution
   [candidates]
