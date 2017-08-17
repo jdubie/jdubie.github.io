@@ -104,3 +104,14 @@
     (js/setInterval #(tick! state) 0)))
 
 (.addEventListener js/document "DOMContentLoaded" run false)
+
+(comment
+  (render (model/render
+
+            {:width 41,
+             :height 23,
+             :body [[21 10] [21 11] [21 12] [20 12] [19 12] [19 11] [19 10]],
+             :food [20 10],
+             :dead? false,
+             :direction [0 1]}
+            )))
