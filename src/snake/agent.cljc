@@ -8,23 +8,31 @@
   [{:keys [body food dead?]}]
   (if dead?
     dead-score
-    (let [length (count body)
-          distance (let [x (- (first (last body)) (first food))
-                         y (- (last (last body)) (last food))]
-                     (+ (Math/abs y) (Math/abs x)))]
-      (+ (* 10 length) (/ 1 distance)))))
+    (let [distance
+          (let [x (- (first (last body)) (first food))
+                y (- (last (last body)) (last food))]
+            (+ (Math/abs y) (Math/abs x)))]
+      (+ (* 10 (count body)) (/ 1 distance)))))
 
 (def actions [:up :down :left :right])
 
-(def look-ahead 10)
+(def look-ahead 20)
+
+(defn best-solution
+  [candidates]
+  (apply max-key (comp score :state) candidates))
 
 (defn best-action
   [state]
   (loop [candidates [{:state state :actions []}]
          iteration 0]
-    (let [best (apply max-key (comp score :state) candidates)]
-      (if
-        (< look-ahead iteration) (-> best :actions (first))
+    (if (< look-ahead iteration)
+      (->> candidates
+           (filter (comp not-empty :actions))
+           (best-solution)
+           :actions
+           (first))
+      (let [best (best-solution candidates)]
         (recur
           (into candidates
                 (->> actions
