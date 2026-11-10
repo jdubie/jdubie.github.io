@@ -63,7 +63,7 @@ code{font-family:var(--mono);font-size:.88em;background:var(--accent-soft);paddi
     <a class="back" href="/">← Jack Dubie</a>
     <div class="eyebrow">Real2sim · October 13, 2026</div>
     <h1>A case-packing cell, rebuilt in MuJoCo</h1>
-    <p class="lede">I measured the cell from the robot's own cameras: the ZED X Mini stereo pair over the cell and the two ZED One wrist cameras. From that I built a MuJoCo scene with the FR2 URDF, a spinning lazy-susan turntable, 51 loose bottles at their real positions, and the case of 24. Each image below shows the real camera, the sim from the same pose, and the two blended.</p>
+    <p class="lede">I measured the cell from the robot's own cameras: the ZED X Mini stereo pair over the cell and the two ZED One wrist cameras. From that I built a MuJoCo scene with the FR2 URDF, a spinning lazy-susan turntable, 51 loose bottles at their real positions, and the case of 24. Each image below shows the real camera next to the sim rendered from the same pose.</p>
   </header>
 
   <section>
@@ -76,32 +76,16 @@ code{font-family:var(--mono);font-size:.88em;background:var(--accent-soft);paddi
   </section>
 
   <section>
-    <h2>Real and sim blended, 60 Hz</h2>
-    <figure>
-      <video src="blend60.mp4" controls muted loop playsinline preload="metadata"></video>
-      <figcaption>A new 30 s recording from the top camera's left eye at 60 Hz, blended 50/50 with the sim rendered at 60 Hz. The sim was seeded from the recording's first frame: 41 upright bottles and 8 tipped. Each sim frame is paired with the real frame nearest it by camera timestamp, never more than 16.7 ms apart. This recording also refined the spin rate to −10.96 °/s; the angle fit holds within ±2.7° over 29 s. Where outlines double late in the clip, bottles have slid differently in sim than on the real table.</figcaption>
-    </figure>
-  </section>
-
-  <section>
     <h2>Top camera, left eye</h2>
     <figure>
-      <div class="panels"><span>Real</span><span>Sim</span><span>Blend</span></div>
-      <img src="top_left.jpg" alt="Real top camera image, simulated render from the same pose, and a 50/50 blend">
+      <div class="panels" style="grid-template-columns:repeat(2,1fr)"><span>Real</span><span>Sim</span></div>
+      <img src="top_left.jpg" alt="Real top camera image next to the simulated render from the same pose">
       <figcaption>Camera pose comes from a floor plane fitted to stereo depth. Turntable bottles were placed from cap detections, plus nine tipped bottles picked by hand. The case grid was fitted to all 24 caps.</figcaption>
     </figure>
     <figure>
-      <div class="panels"><span>Real</span><span>Sim</span><span>Blend</span></div>
+      <div class="panels" style="grid-template-columns:repeat(2,1fr)"><span>Real</span><span>Sim</span></div>
       <img src="top_right.jpg" alt="Right eye of the stereo pair, real versus sim">
       <figcaption>Right eye, offset by the 49.8 mm baseline. Running the same SGBM matcher on the sim pair gives depth within 2–4 cm of the real pair at the case, rail and near floor.</figcaption>
-    </figure>
-  </section>
-
-  <section>
-    <h2>Turntable spin, 29.5 s</h2>
-    <figure>
-      <video src="spin.mp4" controls muted loop playsinline preload="metadata"></video>
-      <figcaption>Left: the real 2 Hz sequence. Right: the sim, seeded from the first frame. The table runs at the measured −10.9 °/s, clockwise from above; the sim reaches −321.5° at 29.5 s against −321.6° expected. A velocity-servoed disc carries the bottles by friction inside a fixed guard rail. All 50 stayed on, with a peak speed of 0.12 m/s. The bottom row is the sim wrist cameras.</figcaption>
     </figure>
   </section>
 
@@ -113,11 +97,11 @@ code{font-family:var(--mono);font-size:.88em;background:var(--accent-soft);paddi
         <figcaption>Pose fit on static landmarks. Green: guard rail. Red: bollards. Magenta: the 24 case caps. Cyan: caps detected in the image. RMS reprojection error is 3.2 px on the left camera and 8.9 px on the right.</figcaption>
       </figure>
       <figure>
-        <div class="panels"><span>Real</span><span>Sim</span><span>Blend</span></div>
+        <div class="panels" style="grid-template-columns:repeat(2,1fr)"><span>Real</span><span>Sim</span></div>
         <img src="wrist_left.jpg" alt="Left wrist camera, real versus sim">
       </figure>
       <figure>
-        <div class="panels"><span>Real</span><span>Sim</span><span>Blend</span></div>
+        <div class="panels" style="grid-template-columns:repeat(2,1fr)"><span>Real</span><span>Sim</span></div>
         <img src="wrist_right.jpg" alt="Right wrist camera, real versus sim">
         <figcaption>The robot base and all 12 joints were solved so the URDF camera links land exactly on the fitted poses. The fit puts the URDF's mast camera at 1.84 m against the real 1.855 m; the real camera sits about 0.36 m further forward.</figcaption>
       </figure>
