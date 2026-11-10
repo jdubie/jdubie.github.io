@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Our Robot on Pi</title>
+<meta name="description" content="Physical Intelligence featured Frontier Machines in their Pi API beta launch. Their base model is really impressive.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@600;700&family=Public+Sans:wght@400;500&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+:root{--bg:#f3f4f5;--surface:#fff;--ink:#1b1f23;--muted:#5d6670;--rule:#d9dde1;--accent:#a3271b;
+  --display:"Archivo Narrow","Arial Narrow",Arial,sans-serif;--body:"Public Sans",system-ui,sans-serif;--mono:"JetBrains Mono",ui-monospace,monospace}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#15181b;--surface:#1d2125;--ink:#e7eaed;--muted:#9aa4ae;--rule:#2f353b;--accent:#e2614f;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#15181b;--surface:#1d2125;--ink:#e7eaed;--muted:#9aa4ae;--rule:#2f353b;--accent:#e2614f;color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font:400 16px/1.65 var(--body);margin:0;padding:28px 16px 64px}
+main{max-width:720px;margin:0 auto;display:grid;gap:28px}
+.back{font:500 13px/1 var(--mono);color:var(--muted);text-decoration:none}.back:hover{color:var(--accent)}
+.eyebrow{font:500 12px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+header{display:grid;gap:14px}
+h1{font:700 clamp(30px,5vw,44px)/1.1 var(--display);margin:0;text-wrap:balance}
+p{margin:0}
+a{color:var(--accent)}
+figure{margin:0;display:grid;gap:8px}
+video{width:100%;display:block;border-radius:4px;background:#000}
+figcaption{font-size:13px;color:var(--muted)}
+blockquote{margin:0;padding:16px 20px;background:var(--surface);border-left:3px solid var(--accent);border-radius:0 4px 4px 0;display:grid;gap:10px}
+blockquote footer{font-size:13px;color:var(--muted)}
+</style>
+<main>
+  <header>
+    <a class="back" href="/">← Jack Dubie</a>
+    <div class="eyebrow">Physical Intelligence · November 10, 2026</div>
+    <h1>Physical Intelligence featured our robot</h1>
+  </header>
+
+  <p>Physical Intelligence opened a beta of the Pi API on October 13. It lets you upload your own robot data, fine-tune their foundation models on infrastructure they run, and serve the result from a hosted endpoint. Frontier Machines is one of the partners in the launch post.</p>
+
+  <figure>
+    <video src="https://website.pi-asset.com/api/frontier-machines-action.mp4" poster="https://website.pi-asset.com/api/frontier-machines-action.jpg" controls muted loop playsinline preload="metadata"></video>
+    <figcaption>Our robot at a packaging station, sped up in places. Video by Physical Intelligence, from <a href="https://www.pi.website/blog/api-beta">their launch post</a>.</figcaption>
+  </figure>
+
+  <blockquote>
+    <p>“Frontier Machines deploys robots at manufacturing companies to automate various different packaging stations. Pi researchers previously trained a policy for Frontier Machines that was sufficiently good for deployment. Within a week of getting access to the Pi API, Frontier Machines trained their own model that matched the policy customized by Pi researchers and subsequently deployed the model at a customer site.”</p>
+    <footer>Physical Intelligence, <a href="https://www.pi.website/blog/api-beta">Frontier Models for Every Robot: Announcing our API beta</a></footer>
+  </blockquote>
+
+  <p>The Pi base model is really impressive. Fine-tuned on our own demonstrations, it matched a policy that Pi's researchers had tuned by hand, and we had it running at a customer site within a week.</p>
+
+  <p>Read <a href="https://www.pi.website/blog/api-beta">the full post</a> for the other partners, from wheel loaders to engine assembly.</p>
+</main>
+</html>
