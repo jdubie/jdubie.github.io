@@ -1,5 +1,39 @@
-<html>
-<head>
-  <meta http-equiv="refresh" content="0; URL='https://gist.github.com/jdubie/2cb9501f3e1fa21c45508282f1056f42'" />
-</head>
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jack Dubie</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@600;700&family=Public+Sans:wght@400;500&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+:root{--bg:#f3f4f5;--ink:#1b1f23;--muted:#5d6670;--rule:#d9dde1;--accent:#a3271b;
+  --display:"Archivo Narrow","Arial Narrow",Arial,sans-serif;--body:"Public Sans",system-ui,sans-serif;--mono:"JetBrains Mono",ui-monospace,monospace}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#15181b;--ink:#e7eaed;--muted:#9aa4ae;--rule:#2f353b;--accent:#e2614f;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#15181b;--ink:#e7eaed;--muted:#9aa4ae;--rule:#2f353b;--accent:#e2614f;color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font:400 16px/1.6 var(--body);margin:0;padding:48px 16px 64px}
+main{max-width:680px;margin:0 auto;display:grid;gap:40px}
+h1{font:700 clamp(32px,6vw,44px)/1.05 var(--display);margin:0}
+h2{font:500 12px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+ul{list-style:none;margin:0;padding:0}
+li{border-top:1px solid var(--rule);padding:16px 0;display:grid;gap:4px}
+li a{font:600 22px/1.2 var(--display);color:var(--ink);text-decoration:none}
+li a:hover{color:var(--accent)}
+time{font:500 12px/1 var(--mono);color:var(--muted)}
+li p{margin:0;color:var(--muted)}
+footer a{color:var(--muted)}
+</style>
+<main>
+  <h1>Jack Dubie</h1>
+  <section>
+    <h2>Posts</h2>
+    <ul>
+      <li>
+        <time datetime="2026-10-13">October 13, 2026</time>
+        <a href="posts/real2sim-case-packing-cell/">A case-packing cell, rebuilt in MuJoCo</a>
+        <p>Measuring a robot cell from its own cameras and simulating it frame for frame against the real footage.</p>
+      </li>
+    </ul>
+  </section>
+  <footer><a href="https://gist.github.com/jdubie/2cb9501f3e1fa21c45508282f1056f42">Older notes</a></footer>
+</main>
 </html>

@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Real2Sim Packing Cell</title>
+<meta name="description" content="A bottle case-packing cell rebuilt in MuJoCo from the robot's own cameras, compared with the real footage frame by frame.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@500;600;700&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#f3f4f5; --surface:#ffffff; --ink:#1b1f23; --muted:#5d6670; --rule:#d9dde1;
+  --accent:#a3271b; --accent-soft:#f6e5e2; --steel:#8a949e;
+  --display:"Archivo Narrow","Arial Narrow",Arial,sans-serif;
+  --body:"Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#15181b; --surface:#1d2125; --ink:#e7eaed; --muted:#9aa4ae; --rule:#2f353b;
+    --accent:#e2614f; --accent-soft:#3a2220; --steel:#6d7781; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#15181b; --surface:#1d2125; --ink:#e7eaed; --muted:#9aa4ae; --rule:#2f353b;
+  --accent:#e2614f; --accent-soft:#3a2220; --steel:#6d7781; color-scheme:dark;
+}
+body{background:var(--bg);color:var(--ink);font:400 15px/1.6 var(--body);padding-inline:20px;padding-block:28px 64px}
+main{max-width:1000px;margin:0 auto;display:grid;gap:44px}
+h1,h2{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.1}
+h1{font-size:clamp(30px,5vw,44px);font-weight:700;letter-spacing:-.01em}
+h2{font-size:24px;font-weight:600}
+p{margin:0;max-width:68ch}
+.back{font:500 13px/1 var(--mono);color:var(--muted);text-decoration:none}.back:hover{color:var(--accent)}
+.eyebrow{font:500 12px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+header{display:grid;gap:14px}
+.lede{font-size:17px;color:var(--muted)}
+section{display:grid;gap:16px}
+figure{margin:0;display:grid;gap:8px}
+figure img,figure video{width:100%;max-width:100%;display:block;border-radius:4px;background:#000}
+.panels{display:grid;grid-template-columns:repeat(3,1fr);font:500 11px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.panels span{padding-left:2px}
+figcaption{font-size:13px;color:var(--muted);max-width:80ch}
+.grid2{display:grid;grid-template-columns:1fr;gap:28px}
+.tablewrap{overflow-x:auto;background:var(--surface);border:1px solid var(--rule);border-radius:4px}
+table{border-collapse:collapse;width:100%;min-width:640px;font-size:14px}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--rule);vertical-align:top}
+tr:last-child td{border-bottom:0}
+th{font:500 11px/1.2 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:var(--bg)}
+td.v{font-family:var(--mono);font-size:13px;font-variant-numeric:tabular-nums;white-space:nowrap}
+td.src{color:var(--muted)}
+.checks{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.check{background:var(--surface);border:1px solid var(--rule);border-radius:4px;padding:14px 16px;display:grid;gap:4px}
+.check b{font:600 22px/1.1 var(--display)}
+.check span{font-size:13px;color:var(--muted)}
+ul.gaps{margin:0;padding-left:20px;display:grid;gap:8px;max-width:75ch}
+code{font-family:var(--mono);font-size:.88em;background:var(--accent-soft);padding:1px 5px;border-radius:3px}
+.files{font-family:var(--mono);font-size:13px;background:var(--surface);border:1px solid var(--rule);border-radius:4px;padding:14px 16px;overflow-x:auto;white-space:pre;line-height:1.7}
+@media (max-width:560px){.panels{font-size:9px}}
+</style>
+
+<main>
+  <header>
+    <a class="back" href="/">← Jack Dubie</a>
+    <div class="eyebrow">Real2sim · October 13, 2026</div>
+    <h1>A case-packing cell, rebuilt in MuJoCo</h1>
+    <p class="lede">I measured the cell from the robot's own cameras: the ZED X Mini stereo pair over the cell and the two ZED One wrist cameras. From that I built a MuJoCo scene with the FR2 URDF, a spinning lazy-susan turntable, 51 loose bottles at their real positions, and the case of 24. Each image below shows the real camera, the sim from the same pose, and the two blended.</p>
+  </header>
+
+  <section>
+    <h2>Real and sim side by side, 60 Hz</h2>
+    <figure>
+      <div class="panels" style="grid-template-columns:repeat(2,1fr)"><span>Real</span><span>Sim</span></div>
+      <video src="side60.mp4" controls muted loop playsinline preload="metadata"></video>
+      <figcaption>A 29 s clip from the top camera's left eye (left) next to the sim rendered from the same camera (right), both at 60 Hz. The sim starts from the clip's first frame, and each sim frame is within 16.7 ms of its real frame.</figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <h2>Real and sim blended, 60 Hz</h2>
+    <figure>
+      <video src="blend60.mp4" controls muted loop playsinline preload="metadata"></video>
+      <figcaption>A new 30 s recording from the top camera's left eye at 60 Hz, blended 50/50 with the sim rendered at 60 Hz. The sim was seeded from the recording's first frame: 41 upright bottles and 8 tipped. Each sim frame is paired with the real frame nearest it by camera timestamp, never more than 16.7 ms apart. This recording also refined the spin rate to −10.96 °/s; the angle fit holds within ±2.7° over 29 s. Where outlines double late in the clip, bottles have slid differently in sim than on the real table.</figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <h2>Top camera, left eye</h2>
+    <figure>
+      <div class="panels"><span>Real</span><span>Sim</span><span>Blend</span></div>
+      <img src="top_left.jpg" alt="Real top camera image, simulated render from the same pose, and a 50/50 blend">
+      <figcaption>Camera pose comes from a floor plane fitted to stereo depth. Turntable bottles were placed from cap detections, plus nine tipped bottles picked by hand. The case grid was fitted to all 24 caps.</figcaption>
+    </figure>
+    <figure>
+      <div class="panels"><span>Real</span><span>Sim</span><span>Blend</span></div>
+      <img src="top_right.jpg" alt="Right eye of the stereo pair, real versus sim">
+      <figcaption>Right eye, offset by the 49.8 mm baseline. Running the same SGBM matcher on the sim pair gives depth within 2–4 cm of the real pair at the case, rail and near floor.</figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <h2>Turntable spin, 29.5 s</h2>
+    <figure>
+      <video src="spin.mp4" controls muted loop playsinline preload="metadata"></video>
+      <figcaption>Left: the real 2 Hz sequence. Right: the sim, seeded from the first frame. The table runs at the measured −10.9 °/s, clockwise from above; the sim reaches −321.5° at 29.5 s against −321.6° expected. A velocity-servoed disc carries the bottles by friction inside a fixed guard rail. All 50 stayed on, with a peak speed of 0.12 m/s. The bottom row is the sim wrist cameras.</figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <h2>Wrist cameras</h2>
+    <div class="grid2">
+      <figure>
+        <img src="wristpts.jpg" alt="Wrist images with the fitted guard rail, bollards and case caps projected on top">
+        <figcaption>Pose fit on static landmarks. Green: guard rail. Red: bollards. Magenta: the 24 case caps. Cyan: caps detected in the image. RMS reprojection error is 3.2 px on the left camera and 8.9 px on the right.</figcaption>
+      </figure>
+      <figure>
+        <div class="panels"><span>Real</span><span>Sim</span><span>Blend</span></div>
+        <img src="wrist_left.jpg" alt="Left wrist camera, real versus sim">
+      </figure>
+      <figure>
+        <div class="panels"><span>Real</span><span>Sim</span><span>Blend</span></div>
+        <img src="wrist_right.jpg" alt="Right wrist camera, real versus sim">
+        <figcaption>The robot base and all 12 joints were solved so the URDF camera links land exactly on the fitted poses. The fit puts the URDF's mast camera at 1.84 m against the real 1.855 m; the real camera sits about 0.36 m further forward.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section>
+    <h2>What was measured</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Quantity</th><th>Value</th><th>From</th></tr></thead>
+        <tbody>
+          <tr><td>Top camera</td><td class="v">1.855 m up, 29° off vertical</td><td class="src">RANSAC floor plane on stereo depth; ZED calibration (fx 723, baseline 49.8 mm)</td></tr>
+          <tr><td>Turntable</td><td class="v">r 0.65 m, top 0.98 m</td><td class="src">Guard rail picked in image, height from depth</td></tr>
+          <tr><td>Spin rate</td><td class="v">−10.96 °/s</td><td class="src">Polar cross-correlation, linear fit over 28.8 s of the 60 Hz recording (first estimate from the 2 Hz sequence: −10.9 ± 0.5)</td></tr>
+          <tr><td>Bottle</td><td class="v">68 × 145 mm</td><td class="src">Cap spacing in the case; cap height above the table</td></tr>
+          <tr><td>Case grid</td><td class="v">6×4, 78 × 73.5 mm</td><td class="src">Depth spacing, then a fit to cap whiteness</td></tr>
+          <tr><td>Wrist cameras</td><td class="v">960×600, fx ≈ 170</td><td class="src">ZED One calibration, rectified</td></tr>
+          <tr><td>Arm pose</td><td class="v">all joints near 0</td><td class="src">IK onto the fitted wrist poses (encoders not read)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="checks">
+      <div class="check"><b>3.2 / 8.9 px</b><span>wrist reprojection RMS, left / right</span></div>
+      <div class="check"><b>±2–4 cm</b><span>sim vs real stereo depth, near field</span></div>
+      <div class="check"><b>0.1° off</b><span>table angle after 29.5 s of sim</span></div>
+      <div class="check"><b>0.0°</b><span>arm drift over 10 s under the hold servos</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Known gaps</h2>
+    <ul class="gaps">
+      <li>The real grippers have long finger plates. The URDF end effector is a short pointed gripper, so the lower half of each wrist view differs.</li>
+      <li>The wrist images were taken 2–5 s after the top frame they were fitted against, so their poses use only static landmarks: the rail, the bollards and the case.</li>
+      <li>Some shapes are rough: the packer frame, the box flaps (12 cm off against depth), the carton stack and the warehouse walls. The e-stop panel next to the left gripper is missing.</li>
+      <li>The arm joint angles are inferred from the wrist images. The motors were never queried.</li>
+    </ul>
+  </section>
+</main>
