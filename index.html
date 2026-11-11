@@ -18,7 +18,7 @@ ul{list-style:none;margin:0;padding:0}
 li{border-top:1px solid var(--rule);padding:16px 0;display:grid;grid-template-columns:168px 1fr;gap:4px 18px;align-content:start}
 li>*{grid-column:2}
 li .thumb{grid-column:1;grid-row:1/span 3;display:block;aspect-ratio:16/9;overflow:hidden;border-radius:4px;background:var(--rule)}
-li .thumb img{width:100%;height:100%;object-fit:cover;display:block}
+li .thumb img,li .thumb video{width:100%;height:100%;object-fit:cover;display:block}
 @media (max-width:520px){li{grid-template-columns:104px 1fr;gap:2px 12px}li a{font-size:19px}}
 li a{font:600 22px/1.2 var(--display);color:var(--ink);text-decoration:none}
 li a:hover{color:var(--accent)}
@@ -37,7 +37,7 @@ li p{margin:0;color:var(--muted)}
         <p>Our packaging robot in the Pi API beta launch, and why their base model impressed us.</p>
       </li>
       <li>
-        <a class="thumb" href="posts/real2sim-case-packing-cell/" tabindex="-1" aria-hidden="true"><img src="posts/real2sim-case-packing-cell/thumb.jpg" alt="" loading="lazy"></a>
+        <a class="thumb" href="posts/real2sim-case-packing-cell/" tabindex="-1" aria-hidden="true"><video src="posts/real2sim-case-packing-cell/thumb.mp4" poster="posts/real2sim-case-packing-cell/thumb.jpg" muted autoplay loop playsinline preload="metadata"></video></a>
         <time datetime="2026-10-13">October 13, 2026</time>
         <a href="posts/real2sim-case-packing-cell/">A case-packing cell, rebuilt in MuJoCo</a>
         <p>Measuring a robot cell from its own cameras and simulating it frame for frame against the real footage.</p>
