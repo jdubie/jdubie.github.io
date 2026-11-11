@@ -11,15 +11,15 @@
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#15181b;--ink:#e7eaed;--muted:#9aa4ae;--rule:#2f353b;--accent:#e2614f;color-scheme:dark}}
 :root[data-theme="dark"]{--bg:#15181b;--ink:#e7eaed;--muted:#9aa4ae;--rule:#2f353b;--accent:#e2614f;color-scheme:dark}
 body{background:var(--bg);color:var(--ink);font:400 16px/1.6 var(--body);margin:0;padding:48px 16px 64px}
-main{max-width:680px;margin:0 auto;display:grid;gap:40px}
+main{max-width:960px;margin:0 auto;display:grid;gap:40px}
 h1{font:700 clamp(32px,6vw,44px)/1.05 var(--display);margin:0}
 h2{font:500 12px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
 ul{list-style:none;margin:0;padding:0}
-li{border-top:1px solid var(--rule);padding:16px 0;display:grid;grid-template-columns:168px 1fr;gap:4px 18px;align-content:start}
+li{border-top:1px solid var(--rule);padding:20px 0;display:grid;grid-template-columns:336px 1fr;grid-template-rows:auto auto 1fr;gap:4px 24px;align-content:start}
 li>*{grid-column:2}
 li .thumb{grid-column:1;grid-row:1/span 3;display:block;aspect-ratio:16/9;overflow:hidden;border-radius:4px;background:var(--rule)}
 li .thumb img,li .thumb video{width:100%;height:100%;object-fit:cover;display:block}
-@media (max-width:520px){li{grid-template-columns:104px 1fr;gap:2px 12px}li a{font-size:19px}}
+@media (max-width:720px){li{grid-template-columns:1fr;grid-template-rows:none;gap:4px}li>*,li .thumb{grid-column:1}li .thumb{grid-row:auto;margin-bottom:10px}li a{font-size:20px}}
 li a{font:600 22px/1.2 var(--display);color:var(--ink);text-decoration:none}
 li a:hover{color:var(--accent)}
 time{font:500 12px/1 var(--mono);color:var(--muted)}
@@ -28,7 +28,6 @@ li p{margin:0;color:var(--muted)}
 <main>
   <h1>Jack Dubie</h1>
   <section>
-    <h2>Posts</h2>
     <ul>
       <li>
         <a class="thumb" href="posts/pi-api-beta/" tabindex="-1" aria-hidden="true"><video src="posts/pi-api-beta/thumb.mp4" poster="posts/pi-api-beta/thumb.jpg" muted autoplay loop playsinline preload="metadata"></video></a>
