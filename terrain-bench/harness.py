@@ -1,20 +1,20 @@
-"""terrain-bench: coding agents drive a 2D car over rough terrain through a unix socket, in real time.
+"""terrain-bench: coding agents design and drive a 2D car over rough terrain through a unix socket.
 
 The car and courses are a headless port of Rafael Matsunaga's "HTML5 Genetic Algorithm 2D Car Thingy" (cawro.js,
 http://rednuht.org/genetic_cars_2/, read from https://santex.github.io/singularity/seed/idx.html), itself loosely based
 on BoxCar2D (http://boxcar2d.com/). See README.md.
 
-A run is one simulator and one agent for MINUTES of wall time. The simulator starts with the run and the default car
-drives from the first second, whether or not the agent is connected. The agent changes the car and resets to new courses
-whenever it likes. Reward = the furthest x any episode reached during the run; the curve of that over time is the
-progress plot. Model `none` is no agent: the default car alone for the same time.
+A run is one simulator and one agent for MINUTES of wall time. The simulator is stepped ("fake time"): nothing moves
+unless the agent steps it, in up to 8 parallel environments, as fast as its 3 CPU cores allow. Reward = the furthest x
+any episode reached during the run; the curve of that over time is the progress plot. Model `none` is no agent: a
+script that runs the default car through course after course, in all 8 environments, for the same time.
 
 Each agent runs in its own container (the libbet-eval sandbox images, Dockerfiles in docker/), with /work holding
 PROMPT.md, PROTOCOL.md and the simulator socket. Whenever its CLI session ends with time left it is resumed with the
 same nudge; programs it started die with the session.
 
-  python harness.py run --models none,opus,sonnet,haiku,sol,terra,gemini --minutes 30 --tag sweep1
-  python harness.py summary runs/sweep1
+  python harness.py run --models none,opus,sonnet,haiku,sol,terra,gemini --minutes 30 --tag sweep2
+  python harness.py summary runs/sweep2
 """
 
 from __future__ import annotations
@@ -47,21 +47,44 @@ NUDGE = "You have about {m} minutes left in the run. Keep working on the task in
 RESUME_MIN_S = 60
 TOKEN_MARGIN_MIN = 5
 
+TERRAIN = "v3"
+SIM_CPUS = 3
+
 PROMPT = """\
 # Drive a car as far as you can
 
-A physics simulator is running now on the unix socket ./sim.sock: a 2D car on rough terrain, in real time at 60 Hz.
-PROTOCOL.md describes it fully. In short: the car drives itself to the right; every tick you observe the chassis
-position, angle, velocity and angular velocity plus one number, the height of the ground 2 m ahead; at any moment you
-can change the car's chassis shape, wheel placement, wheel size and density, and each motor's speed and torque; and a
-`reset` command starts a new random course from the beginning.
+A physics simulator is running on the unix socket ./sim.sock: a 2D car on rough terrain. PROTOCOL.md describes it
+fully. In short: the car's wheel motors push it to the right; you observe the chassis position, angle, velocity and
+angular velocity plus one number, the height of the ground 2 m ahead; at any tick you can change the car's chassis
+shape, wheel placement, wheel size and density, and each motor's speed and torque. The car crashes if it tips past
+90°, and stalls if it stops making progress. Time is yours: nothing moves unless you step it, and you can run up to 8
+environments in parallel, each on its own random course.
 
-This run lasts {minutes} minutes from when you were started, whatever you do. Your reward is the furthest x that any of
-your cars reaches at any moment during the run. Only that maximum counts: reset as often as you like, and failed
-attempts cost nothing but time. The car keeps driving on its current settings whether or not you are connected.
+This run lasts {minutes} minutes of wall-clock time from when you were started. Your reward is the furthest x that any
+of your cars reaches at any moment during the run, in any environment. Only that maximum counts: reset as often as you
+like, and failed attempts cost nothing but time.
 
 You may be stopped and resumed. Programs you start do not survive the end of your session.
 """
+
+
+def none_driver(sock: Path, deadline: float) -> None:
+    """The baseline: the default car, never changed, stepped through course after course in every environment."""
+    import socket as so
+    s = so.socket(so.AF_UNIX)
+    s.connect(str(sock))
+    f = s.makefile("rw")
+    envs = []
+    for _ in range(8):
+        f.write(json.dumps({"cmd": "make"}) + "\n")
+        f.flush()
+        envs.append(json.loads(f.readline())["env"])
+    while time.time() < deadline:
+        for e in envs:
+            f.write(json.dumps({"cmd": "step", "env": e, "n": 6000, "obs": "none"}) + "\n")
+        f.flush()
+        for _ in envs:
+            f.readline()
 
 
 def claude_token(minutes: float) -> str:
@@ -132,14 +155,16 @@ def run_agent(tag: str, model: str, minutes: float) -> dict:
     secret, mounts = sandbox(model, run, home, minutes) if model != "none" else ({}, [])
 
     sock = work / "sim.sock"
-    sim = subprocess.Popen(["node", str(SERVER), "--socket", str(sock), "--record", str(rec)], stderr=subprocess.DEVNULL, start_new_session=True)
+    # its own scope with a CPU cap, so runs in parallel get equal compute however many environments they use
+    sim = subprocess.Popen(["systemd-run", "--user", "--scope", "-q", "-p", f"CPUQuota={SIM_CPUS * 100}%", "node", str(SERVER),
+                            "--socket", str(sock), "--record", str(rec), "--terrain", TERRAIN], stderr=subprocess.DEVNULL, start_new_session=True)
     while not sock.exists():
         time.sleep(0.05)
     t0 = time.time()
     deadline = t0 + minutes * 60
     segments = []
     if model == "none":
-        time.sleep(minutes * 60)
+        none_driver(sock, deadline)
     for seg in range(30 if model != "none" else 0):
         left = deadline - time.time()
         if seg and left < RESUME_MIN_S:
@@ -165,7 +190,7 @@ def run_agent(tag: str, model: str, minutes: float) -> dict:
         segments.append({"segment": seg, "start_s": round(start, 1), "end_s": round(time.time() - t0, 1), "exit": proc.returncode})
         if time.time() >= deadline - 1:
             break
-    time.sleep(max(0.0, deadline - time.time()))  # an agent that quit early still has its car driving to the end
+    time.sleep(max(0.0, deadline - time.time()))
     os.killpg(sim.pid, signal.SIGTERM)  # the simulator records the episode in progress, then exits
     try:
         sim.wait(timeout=10)
