@@ -47,7 +47,7 @@ NUDGE = "You have about {m} minutes left in the run. Keep working on the task in
 RESUME_MIN_S = 60
 TOKEN_MARGIN_MIN = 5
 
-TERRAIN = "v3"
+TERRAIN = "v4"
 SIM_CPUS = 3
 
 PROMPT = """\

@@ -43,7 +43,7 @@ function rotate(coords, angle) {
   return coords.map((c) => ({ x: Math.cos(angle) * c.x - Math.sin(angle) * c.y, y: Math.sin(angle) * c.x + Math.cos(angle) * c.y }));
 }
 
-// Course shapes. Tile k's slope is uniform in +-amp(k), amp(k) = max_angle * min(1, k / ramp_tiles) ^ power, one
+// Course shapes. Tile k's slope is uniform in +-amp(k), amp(k) = min_angle + (max_angle - min_angle) * min(1, k / ramp_tiles) ^ power, one
 // Math.random() per tile as cawro draws it, so the "cawro" preset reproduces the original page's courses seed for seed.
 const TERRAINS = {
   cawro: { tiles: 200, ramp_tiles: 200, power: 1, max_angle: 2.25 },
@@ -51,12 +51,16 @@ const TERRAINS = {
   // 3 km; every tile at distance x about equally steep (+-30% jitter, random sign), steepness growing as sqrt(x) to
   // 0.9 rad at the end; the car crashes if it tips past 90 degrees
   v3: { tiles: 2000, ramp_tiles: 2000, power: 0.5, max_angle: 0.9, jitter: 0.3, crash_angle: 1.57 },
+  // v3, but already 0.45 rad steep at the start and rising linearly to 1.0 rad at 3 km, so that only a well-designed,
+  // well-driven car gets far, and course luck cannot carry a weak one
+  v4: { tiles: 2000, ramp_tiles: 2000, power: 1, min_angle: 0.45, max_angle: 1.0, jitter: 0.3, crash_angle: 1.57 },
 };
 
 // jitter (optional, 0..1): instead of uniform in +-amp, the slope is amp * (1 - jitter * v) with a random sign, so every
 // tile at a given distance is about equally steep and difficulty depends on distance, not on luck.
 function tileAngle(t, k) {
-  const amp = t.max_angle * Math.pow(Math.min(1, k / t.ramp_tiles), t.power);
+  const a0 = t.min_angle || 0;   // steepness at the start of the course
+  const amp = a0 + (t.max_angle - a0) * Math.pow(Math.min(1, k / t.ramp_tiles), t.power);
   const u = Math.random();
   if (t.jitter === undefined) return (u * 2 - 1) * amp;
   return (u < 0.5 ? -1 : 1) * amp * (1 - t.jitter * ((u * 2) % 1));

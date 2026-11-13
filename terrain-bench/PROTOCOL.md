@@ -83,8 +83,8 @@ the nose up, a wheel braking pitches it down.
 
 ## Courses, episodes and reward
 
-A course is 2000 ground tiles, each 1.5 m long, laid end to end from `x = -5`. Each tile's slope is random, and the
-range grows steadily with distance: flat at the start, ±1.6 rad by the end.
+A course is 2000 ground tiles, each 1.5 m long, laid end to end from `x = -5`. Every tile at a given distance is about
+equally steep, tilted up or down at random: 0.45 rad (±30%) at the start, rising linearly to 1.0 rad (±30%) at the end.
 
 An episode ends when the car:
 
