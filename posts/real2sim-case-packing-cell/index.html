@@ -2,8 +2,9 @@
 <html lang="en">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Real2Sim Packing Cell</title>
-<meta name="description" content="A bottle case-packing cell rebuilt in MuJoCo from the robot's own cameras, compared with the real footage frame by frame.">
+<meta name="tags" content="agent evals">
+<title>Real2sim with a Coding Agent</title>
+<meta name="description" content="A coding agent rebuilt a bottle case-packing cell in MuJoCo from the robot's own cameras in about an hour and a half, iterating until its renders matched the real footage.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@500;600;700&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>
@@ -52,18 +53,22 @@ td.src{color:var(--muted)}
 .check{background:var(--surface);border:1px solid var(--rule);border-radius:4px;padding:14px 16px;display:grid;gap:4px}
 .check b{font:600 22px/1.1 var(--display)}
 .check span{font-size:13px;color:var(--muted)}
+ol.steps{margin:0;padding-left:22px;display:grid;gap:10px;max-width:75ch}
 ul.gaps{margin:0;padding-left:20px;display:grid;gap:8px;max-width:75ch}
 code{font-family:var(--mono);font-size:.88em;background:var(--accent-soft);padding:1px 5px;border-radius:3px}
 .files{font-family:var(--mono);font-size:13px;background:var(--surface);border:1px solid var(--rule);border-radius:4px;padding:14px 16px;overflow-x:auto;white-space:pre;line-height:1.7}
 @media (max-width:560px){.panels{font-size:9px}}
+.tags{display:flex;flex-wrap:wrap;gap:6px}.tags a{font:500 11px/1 var(--mono);letter-spacing:.04em;color:var(--muted);border:1px solid var(--rule);border-radius:999px;padding:4px 9px;text-decoration:none}.tags a:hover{color:var(--accent);border-color:var(--accent)}
 </style>
 
 <main>
   <header>
     <a class="back" href="/">← Jack Dubie</a>
     <div class="eyebrow">Real2sim · October 13, 2026</div>
-    <h1>A case-packing cell, rebuilt in MuJoCo</h1>
-    <p class="lede">I measured the cell from the robot's own cameras: the ZED X Mini stereo pair over the cell and the two ZED One wrist cameras. From that I built a MuJoCo scene with the FR2 URDF, a spinning lazy-susan turntable, 51 loose bottles at their real positions, and the case of 24. Each image below shows the real camera next to the sim rendered from the same pose.</p>
+    <div class="tags"><a href="/#agent-evals">agent evals</a></div>
+    <h1>Real2sim with a coding agent</h1>
+    <p class="lede">Real2sim usually means a lot of measuring and hand-tuning a scene. Here a frontier coding agent, Claude Code running Opus 5.5, did it in about an hour and a half. It reconstructed the cell from the robot's own cameras, the ZED X Mini stereo pair over the cell and the two ZED One wrist cameras, and kept comparing its renders with the real frames until they lined up. The result is a MuJoCo scene with the FR2 URDF, a spinning lazy-susan turntable, 51 loose bottles at their real positions, and the case of 24.</p>
+    <p class="lede">My part was one paragraph describing the scene and pointing at the URDF, then four screenshots while it worked.</p>
   </header>
 
   <section>
@@ -73,6 +78,18 @@ code{font-family:var(--mono);font-size:.88em;background:var(--accent-soft);paddi
       <video src="side60.mp4" controls muted loop playsinline preload="metadata"></video>
       <figcaption>A 29 s clip from the top camera's left eye (left) next to the sim rendered from the same camera (right), both at 60 Hz. The sim starts from the clip's first frame, and each sim frame is within 16.7 ms of its real frame.</figcaption>
     </figure>
+  </section>
+
+  <section>
+    <h2>How the agent built it</h2>
+    <ol class="steps">
+      <li><strong>Capture.</strong> It logged into the robot over SSH and pulled synchronized frames from the stereo pair and both wrist cameras, plus their factory calibration.</li>
+      <li><strong>Measure.</strong> It fitted a floor plane to stereo depth to place the top camera, picked the guard rail out of the image for the turntable's size and height, found bottle caps to place each bottle, and fitted the case grid to its 24 caps. It got the turntable's spin rate by cross-correlating frames over time.</li>
+      <li><strong>Solve the robot.</strong> It fitted each wrist camera's pose to static landmarks, then solved the base and all 12 joints so the URDF's camera links landed on those poses.</li>
+      <li><strong>Build.</strong> It wrote the MuJoCo scene: the FR2, a velocity-servoed turntable carrying the bottles by friction inside a fixed rail, and the case.</li>
+      <li><strong>Compare.</strong> It rendered the sim from every real camera pose, blended each render over the real frame, and ran the same stereo matcher on the sim pair to check depth against the real one.</li>
+    </ol>
+    <p>Comparing real and rendered views is the slow, fiddly part of real2sim. Here the agent did it itself, and I only stepped in with screenshots when something looked off.</p>
   </section>
 
   <section>

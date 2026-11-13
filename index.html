@@ -15,9 +15,9 @@ main{max-width:960px;margin:0 auto;display:grid;gap:40px}
 h1{font:700 clamp(32px,6vw,44px)/1.05 var(--display);margin:0}
 h2{font:500 12px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
 ul{list-style:none;margin:0;padding:0}
-li{border-top:1px solid var(--rule);padding:20px 0;display:grid;grid-template-columns:336px 1fr;grid-template-rows:auto auto 1fr;gap:4px 24px;align-content:start}
+li{border-top:1px solid var(--rule);padding:20px 0;display:grid;grid-template-columns:336px 1fr;grid-template-rows:auto auto auto 1fr;gap:4px 24px;align-content:start}
 li>*{grid-column:2}
-li .thumb{grid-column:1;grid-row:1/span 3;display:block;aspect-ratio:16/9;overflow:hidden;border-radius:4px;background:var(--rule)}
+li .thumb{grid-column:1;grid-row:1/span 4;display:block;aspect-ratio:16/9;overflow:hidden;border-radius:4px;background:var(--rule)}
 li .thumb img,li .thumb video{width:100%;height:100%;object-fit:cover;display:block}
 @media (max-width:720px){li{grid-template-columns:1fr;grid-template-rows:none;gap:4px}li>*,li .thumb{grid-column:1}li .thumb{grid-row:auto;margin-bottom:10px}li a{font-size:20px}}
 li a{font:600 22px/1.2 var(--display);color:var(--ink);text-decoration:none}
@@ -28,27 +28,48 @@ li p{margin:0;color:var(--muted)}
 .links{display:flex;flex-wrap:wrap;gap:6px 10px;font:500 14px/1.4 var(--mono);color:var(--muted)}
 .links a{color:var(--ink);text-decoration:underline;text-decoration-color:var(--accent);text-underline-offset:3px}
 .links a:hover{color:var(--accent)}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;align-self:start;align-items:flex-start}
+.tags a,.filter a{font:500 11px/1 var(--mono);letter-spacing:.04em;color:var(--muted);border:1px solid var(--rule);border-radius:999px;padding:5px 10px;text-decoration:none}
+.tags a:hover,.filter a:hover{color:var(--accent);border-color:var(--accent)}
+.filter{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.filter a.on{color:var(--bg);background:var(--ink);border-color:var(--ink)}
+li.hide{display:none}
 </style>
 <main>
   <header class="top">
     <h1>Jack Dubie</h1>
     <nav class="links"><a href="mailto:jack.dubie@gmail.com">jack.dubie@gmail.com</a><span>·</span><a href="https://www.linkedin.com/in/jackdubie/">LinkedIn</a><span>·</span><a href="Jack_Dubie_Resume.pdf">Resume</a></nav>
+    <nav class="filter" aria-label="Filter posts"><a href="#" data-tag="">All</a><a href="#policy-learning" data-tag="policy-learning">policy learning</a><a href="#data-collection" data-tag="data-collection">data collection</a><a href="#deployment" data-tag="deployment">deployment</a><a href="#agent-evals" data-tag="agent-evals">agent evals</a><a href="#reproduction" data-tag="reproduction">reproduction</a></nav>
   </header>
   <section>
     <ul>
-      <li>
+      <li data-tags="deployment">
         <a class="thumb" href="posts/pi-api-beta/" tabindex="-1" aria-hidden="true"><video src="posts/pi-api-beta/thumb.mp4" poster="posts/pi-api-beta/thumb.jpg" muted autoplay loop playsinline preload="metadata"></video></a>
         <time datetime="2026-10-13">October 13, 2026</time>
         <a href="posts/pi-api-beta/">Physical Intelligence featured our robot</a>
         <p>Our packaging robot in the Pi API beta launch, and why their base model impressed us.</p>
+        <div class="tags"><a href="#deployment">deployment</a></div>
       </li>
-      <li>
+      <li data-tags="agent-evals" data-order="90">
         <a class="thumb" href="posts/real2sim-case-packing-cell/" tabindex="-1" aria-hidden="true"><video src="posts/real2sim-case-packing-cell/thumb.mp4" poster="posts/real2sim-case-packing-cell/thumb.jpg" muted autoplay loop playsinline preload="metadata"></video></a>
         <time datetime="2026-10-13">October 13, 2026</time>
-        <a href="posts/real2sim-case-packing-cell/">A case-packing cell, rebuilt in MuJoCo</a>
-        <p>Measuring a robot cell from its own cameras and simulating it frame for frame against the real footage.</p>
+        <a href="posts/real2sim-case-packing-cell/">Real2sim with a coding agent</a>
+        <p>A coding agent rebuilt our case-packing cell in MuJoCo from the robot's own cameras in about an hour and a half, checking its renders against the real footage.</p>
+        <div class="tags"><a href="#agent-evals">agent evals</a></div>
       </li>
     </ul>
   </section>
 </main>
+<script>
+function applyFilter(){
+  var t=decodeURIComponent(location.hash.slice(1));
+  document.querySelectorAll('ul li').forEach(function(li){
+    var tags=(li.getAttribute('data-tags')||'').split(' ');
+    li.classList.toggle('hide', !!t && tags.indexOf(t)<0);
+  });
+  document.querySelectorAll('.filter a').forEach(function(a){a.classList.toggle('on',a.getAttribute('data-tag')===t);});
+}
+window.addEventListener('hashchange',applyFilter);applyFilter();
+</script>
+
 </html>
