@@ -33,6 +33,7 @@ MODELS = {  # key: (display name, colour, logo file or None)
     "sol": ("GPT-6.1 Sol", "#7c3aed", "openai"),
     "terra": ("GPT-6.1 Terra", "#db2777", "openai"),
     "gemini": ("Gemini 4 Argon", "#ca8a04", "google"),
+    "grok": ("Grok 4.7", "#334155", "xai"),
     "none": ("Default car, no agent", "#6b7280", None),
 }
 CREDIT = ("Car, terrain and physics: HTML5 Genetic Algorithm 2D Car Thingy by Rafael Matsunaga (rednuht.org), "
@@ -140,7 +141,8 @@ def params_at(changes: list, tick: int) -> dict:
     return p
 
 
-def draw_lane(c: cairo.Context, m: dict, tick: int, cam: list[float], box: tuple[float, float, float, float], zoom: float, lead: float) -> None:
+def draw_lane(c: cairo.Context, m: dict, tick: int, cam: list[float], box: tuple[float, float, float, float], zoom: float, lead: float,
+              label: bool = True) -> None:
     x0, y0, w, h = box
     key = m["key"]
     name, col, logo = MODELS[key]
@@ -211,6 +213,8 @@ def draw_lane(c: cairo.Context, m: dict, tick: int, cam: list[float], box: tuple
     if logo:
         badge(c, logo, col, ox + (cx - cam[0]) * zoom, oy - (cy - cam[1]) * zoom, 0.34 * zoom, -ca)
 
+    if not label:
+        return
     # label panel
     c.set_source_rgb(0.97, 0.97, 0.97)
     c.rectangle(0, y0, x0, h)

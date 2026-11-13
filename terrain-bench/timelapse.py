@@ -16,7 +16,11 @@ from pathlib import Path
 
 import cairo
 
-from render import CREDIT, FPS, H, MODELS, W, Frames, badge, ballast_r, rgb, shade, text, wheel_list
+import gzip
+
+from render import CREDIT, FPS, H, MODELS, W, Frames, badge, ballast_r, draw_lane, rgb, shade, text, wheel_list
+
+CLIP_SPEED = 8   # the best-run clips in each cell play at this many times real time
 
 PLAY_S, HOLD_S = 40, 4
 GEOMETRY = ("chassis", "wheel_vertex", "wheel_radius", "wheel_density")
@@ -52,7 +56,12 @@ def load(run: Path) -> list[dict]:
             g = body(e["params"])
             seen.setdefault(g, len(seen) + 1)
             timeline.append(((e["wall_end"] - t0) / 60, e["params"], len(seen), seen[g]))
-        out.append({"key": key, "timeline": timeline, "progress": [(p["t"] / 60, p["best"]) for p in prog],
+        bests, top = [], -1.0   # (minutes, episode id) each time the run's best episode changed, from the recordings
+        for e in eps:
+            if e["distance"] > top and (d / "sim" / "episodes" / f"{e['episode']}.json.gz").exists():
+                top = e["distance"]
+                bests.append(((e["wall_end"] - t0) / 60, e["episode"]))
+        out.append({"key": key, "timeline": timeline, "bests": bests, "dir": d, "clip": None, "progress": [(p["t"] / 60, p["best"]) for p in prog],
                     "best": json.loads((d / "meta.json").read_text())["best_distance"]})
     out.sort(key=lambda m: -m["best"])
     return out
@@ -115,6 +124,34 @@ def draw_car(c: cairo.Context, p: dict, col: str, logo: str | None, cx: float, c
         badge(c, logo, col, cx, cy, 0.3 * zoom)
 
 
+def clip(c: cairo.Context, m: dict, t: float, box: tuple) -> None:
+    """The model's best episode so far, looping at CLIP_SPEED, camera following the car."""
+    cur = at(m["bests"], t)
+    if cur is None:
+        return
+    st = m["clip"]
+    if st is None or st["episode"] != cur[1]:   # a new best: load it and start it from the beginning
+        ep = json.loads(gzip.open(m["dir"] / "sim" / "episodes" / f"{cur[1]}.json.gz").read())
+        ep["changes"] = [[k // ep["stride"], p] for k, p in ep["changes"]]
+        st = m["clip"] = {"episode": cur[1], "ep": ep, "row": 0.0, "cam": [ep["track"][0][0], ep["track"][0][1]]}
+    ep = st["ep"]
+    rows = len(ep["track"])
+    k = int(st["row"]) % rows
+    st["row"] += CLIP_SPEED * 60 / ep["stride"] / FPS
+    if k < st["row"] - CLIP_SPEED * 60 / ep["stride"] / FPS and int(st["row"]) % rows < k:  # looped: snap the camera back
+        st["cam"] = [ep["track"][0][0], ep["track"][0][1]]
+    tr = ep["track"][k]
+    st["cam"][0] += (tr[0] - st["cam"][0]) * 0.5
+    st["cam"][1] += (tr[1] - st["cam"][1]) * 0.3
+    x0, y0, w, h = box
+    c.set_source_rgb(1, 1, 1)
+    c.rectangle(x0, y0, w, h)
+    c.fill()
+    draw_lane(c, {"key": m["key"], "best": ep}, k, st["cam"], box, h / 6.0, 1.0, label=False)
+    run_x = max(r[0] for r in ep["track"][:k + 1])
+    text(c, f"best run so far · {run_x:,.0f} m", x0 + 8, y0 + 20, 15, col=(0.3, 0.3, 0.3))
+
+
 def cell(c: cairo.Context, m: dict, t: float, box: tuple) -> None:
     x0, y0, w, h = box
     name, col, logo = MODELS[m["key"]]
@@ -128,7 +165,10 @@ def cell(c: cairo.Context, m: dict, t: float, box: tuple) -> None:
         text(c, "no episode yet", x0 + w / 2, y0 + h / 2 + 8, 18, col=(0.5, 0.5, 0.5), align="center")
         return
     _, p, n_seen, this = cur
-    draw_car(c, p, col, logo, x0 + w / 2, y0 + h * 0.55, min(w, h) / 5.2)
+    side = min(w * 0.36, h)   # left: the body being tried now; right: the best run so far, driving
+    draw_car(c, p, col, logo, x0 + side / 2 + 6, y0 + h * 0.55, min(side, h) / 5.0)
+    text(c, "trying now", x0 + side / 2 + 6, y0 + h * 0.55 + min(side, h) * 0.42, 14, col=(0.45, 0.45, 0.45), align="center")
+    clip(c, m, t, (x0 + side + 12, y0 + 48, w - side - 20, h - 80))
     best = at(m["progress"], t, (0, 0))[1]
     text(c, f"body #{this} of {n_seen} tried", x0 + 16, y0 + h - 16, 17, col=(0.35, 0.35, 0.35))
     text(c, f"best {best:,.0f} m", x0 + w - 16, y0 + h - 16, 17, col=(0.2, 0.2, 0.2), bold=True, align="right")

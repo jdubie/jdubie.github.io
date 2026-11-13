@@ -43,6 +43,12 @@ GEMINI_KEY_FILE = Path.home() / ".config/gemini"
 CLAUDE_MODELS = {"opus": "claude-opus-5-5", "sonnet": "claude-sonnet-5-5", "haiku": "claude-haiku-5-5"}
 GEMINI_MODELS = {"gemini": "gemini-4-argon"}
 CODEX_MODELS = {"sol": "gpt-6.1-sol", "terra": "gpt-6.1-terra"}  # always an explicit model; never the CLI default
+# xAI Grok CLI: a static binary mounted read-only into the sandbox image, egress through its own allowlist proxy
+# (the setup ~/distributed-speedup-env uses). grok-4.7 list prices, $/M tokens, only to stop a run that overspends.
+GROK_MODELS = {"grok": "grok-4.7"}
+GROK_BIN, GROK_PROXY, GROK_KEY_FILE = Path.home() / ".grok/downloads/grok-linux-x86_64", "grok-proxy", Path.home() / ".grok-key"
+GROK_PRICE = {"input": 2.0, "cache_read": 0.5, "output": 6.0}
+GROK_RUN_CAP_USD = float(os.environ.get("GROK_RUN_CAP_USD", "12"))
 LAUNCH = "Read PROMPT.md in the current directory and do what it says."
 NUDGE = "You have about {m} minutes left in the run. Keep working on the task in PROMPT.md."
 RESUME_MIN_S = 60
@@ -121,6 +127,10 @@ def agent_cmd(model: str, seg: int, text: str) -> tuple[str, list[str]]:
     if model in GEMINI_MODELS:
         argv = ["gemini", "-p", text, "-m", GEMINI_MODELS[model], "--approval-mode", "yolo", "--output-format", "stream-json"]
         return GEMINI_IMAGE, argv + (["--resume", "latest"] if seg else [])
+    if model in GROK_MODELS:
+        argv = ["grok", "-p", text, "-m", GROK_MODELS[model], "--always-approve", "--permission-mode", "bypassPermissions",
+                "--disable-web-search", "--output-format", "streaming-json"]
+        return IMAGE, argv + (["--continue"] if seg else [])
     if model in CODEX_MODELS:
         flags = ["--json", "-m", CODEX_MODELS[model], "--skip-git-repo-check", "--dangerously-bypass-approvals-and-sandbox", "-c", 'web_search="disabled"']
         if seg:
@@ -138,6 +148,9 @@ def sandbox(model: str, run: Path, home: Path, minutes: float) -> tuple[dict[str
     elif model in GEMINI_MODELS:
         secret["GEMINI_API_KEY"] = GEMINI_KEY_FILE.read_text().strip()
         mounts += ["-e", "GEMINI_CLI_TRUST_WORKSPACE=true"]
+    elif model in GROK_MODELS:
+        secret["XAI_API_KEY"] = GROK_KEY_FILE.read_text().strip()
+        mounts += ["-v", f"{GROK_BIN}:/usr/local/bin/grok:ro"]   # its ~/.grok (sessions, usage) lands in the run's home/
     elif model in CODEX_MODELS:
         auth = json.loads((Path.home() / ".codex/auth.json").read_text())
         auth["tokens"]["refresh_token"] = ""  # the container can use the session but never rotate it
@@ -149,6 +162,23 @@ def sandbox(model: str, run: Path, home: Path, minutes: float) -> tuple[dict[str
     passwd.write_text(f"agent:x:{os.getuid()}:{os.getgid()}::/home/agent:/bin/sh\n")
     mounts += ["-v", f"{passwd.resolve()}:/etc/passwd:ro"]
     return secret, mounts
+
+
+def grok_cost(transcript: Path) -> float:
+    """Dollars so far: the CLI's own total if a session ended cleanly, else priced from its per-call usage events."""
+    total = 0.0
+    if not transcript.exists():
+        return total
+    for line in transcript.read_text(errors="replace").splitlines():
+        try:
+            ev = json.loads(line)
+        except ValueError:
+            continue
+        if ev.get("type") == "usage":
+            u = ev["usage"]
+            total += (u.get("input_tokens", 0) * GROK_PRICE["input"] + u.get("cache_read_input_tokens", 0) * GROK_PRICE["cache_read"]
+                      + (u.get("output_tokens", 0) + u.get("reasoning_tokens", 0)) * GROK_PRICE["output"]) / 1e6
+    return total
 
 
 def protocol_for(terrain: str) -> Path:
@@ -177,6 +207,7 @@ def run_agent(tag: str, model: str, minutes: float, terrain: str = TERRAIN) -> d
     t0 = time.time()
     deadline = t0 + minutes * 60
     segments = []
+    overspent = False
     if model == "none":
         none_driver(sock, deadline)
     for seg in range(30 if model != "none" else 0):
@@ -192,17 +223,24 @@ def run_agent(tag: str, model: str, minutes: float, terrain: str = TERRAIN) -> d
                 "--cpus", "4", "--memory", "8g", "--memory-swap", "8g", "--pids-limit", "2048",
                 "-v", f"{work.resolve()}:/work", "-v", f"{home.resolve()}:/home/agent", "-w", "/work", "-e", "HOME=/home/agent"]
         for var in ("HTTPS_PROXY", "https_proxy", "HTTP_PROXY", "http_proxy"):
-            argv += ["-e", f"{var}=http://{PROXY}:3128"]
+            argv += ["-e", f"{var}=http://{GROK_PROXY if model in GROK_MODELS else PROXY}:3128"]
         argv += [x for k in secret for x in ("-e", k)]  # secrets travel by name only, never on the command line
         argv += mounts + [image] + cmd
         start = time.time() - t0
         with open(run / "transcript.jsonl", "ab") as out, open(run / "stderr.log", "ab") as err:
             proc = subprocess.Popen(argv, stdout=out, stderr=err, env={**os.environ, **secret})
-            try:
-                proc.wait(timeout=max(1.0, deadline - time.time()))
-            except subprocess.TimeoutExpired:
-                subprocess.run(["docker", "kill", name], capture_output=True)
-                proc.wait()
+            while proc.poll() is None:   # until it exits, the run ends, or (grok) it overspends
+                over = model in GROK_MODELS and grok_cost(run / "transcript.jsonl") > GROK_RUN_CAP_USD
+                if time.time() >= deadline or over:
+                    subprocess.run(["docker", "kill", name], capture_output=True)
+                    proc.wait()
+                    if over:
+                        overspent = True
+                    break
+                time.sleep(min(10.0, max(0.1, deadline - time.time())))
+        if overspent:
+            segments.append({"segment": seg, "start_s": round(start, 1), "end_s": round(time.time() - t0, 1), "exit": "cost_cap"})
+            break
         segments.append({"segment": seg, "start_s": round(start, 1), "end_s": round(time.time() - t0, 1), "exit": proc.returncode})
         if time.time() >= deadline - 1:
             break
@@ -214,7 +252,8 @@ def run_agent(tag: str, model: str, minutes: float, terrain: str = TERRAIN) -> d
         os.killpg(sim.pid, signal.SIGKILL)
         sim.wait()
     eps = [json.loads(line) for line in (rec / "episodes.jsonl").read_text().splitlines()]
-    meta = {"model": model, "minutes": minutes, "terrain": terrain, "seconds": round(time.time() - t0, 1), "segments": segments,
+    meta = {"model": model, "minutes": minutes, "terrain": terrain,
+            **({"cost_usd": round(grok_cost(run / "transcript.jsonl"), 3), "over_cost_cap": overspent} if model in GROK_MODELS else {}), "seconds": round(time.time() - t0, 1), "segments": segments,
             "episodes": len(eps), "best_distance": max(e["distance"] for e in eps)}
     (run / "meta.json").write_text(json.dumps(meta, indent=1))
     print(json.dumps({k: meta[k] for k in ("model", "best_distance", "episodes")} | {"sessions": len(segments)}), flush=True)
