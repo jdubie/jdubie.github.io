@@ -107,10 +107,13 @@ def reel(fr: Frames, d: Path, key: str, minutes: float, ymax: float) -> None:
         frames = round(CLIP_S * FPS)
         cam = [ep["track"][0][0], ep["track"][0][1]]
         m = {"key": key, "best": ep}
+        # smoothing only when the clip is near real time; sped up a lot, the car moves metres per frame and a lagging
+        # camera loses it
+        follow = (1.0, 1.0) if ep["sim_s"] / CLIP_S > 10 else (0.35, 0.2)
         for f in range(frames + round(HOLD_S * FPS)):
             k = min(rows - 1, round(f * (rows - 1) / max(1, frames - 1)))
-            cam[0] += (ep["track"][k][0] - cam[0]) * (1 if f == 0 else 0.35)
-            cam[1] += (ep["track"][k][1] - cam[1]) * (1 if f == 0 else 0.2)
+            cam[0] += (ep["track"][k][0] - cam[0]) * (1 if f == 0 else follow[0])
+            cam[1] += (ep["track"][k][1] - cam[1]) * (1 if f == 0 else follow[1])
             c = fr.ctx()
             draw_lane(c, m, k, cam, lane, zoom, max(1.0, ymax))
             text(c, f"episode {i + 1} of {len(eps)}", 84, top + 330, 20, col=(0.3, 0.3, 0.3))

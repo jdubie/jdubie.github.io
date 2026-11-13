@@ -147,7 +147,7 @@ def clip(c: cairo.Context, m: dict, t: float, box: tuple) -> None:
     c.set_source_rgb(1, 1, 1)
     c.rectangle(x0, y0, w, h)
     c.fill()
-    draw_lane(c, {"key": m["key"], "best": ep}, k, st["cam"], box, h / 6.0, 1.0, label=False)
+    draw_lane(c, {"key": m["key"], "best": ep}, k, st["cam"], box, min(h, w * 0.6) / 6.0, 1.0, label=False)
     run_x = max(r[0] for r in ep["track"][:k + 1])
     text(c, f"best run so far · {run_x:,.0f} m", x0 + 8, y0 + 20, 15, col=(0.3, 0.3, 0.3))
 
@@ -229,7 +229,7 @@ def main() -> None:
     fr = Frames(out / "timelapse.mp4")
     top, foot, left_w = 90, 40, 960
     cols, rows = 2, math.ceil(len(models) / 2)
-    cw, ch = left_w / cols, (H - top - foot) / rows
+    cw, ch = left_w / cols, min((H - top - foot) / rows, 320)   # a lone model gets a normal-sized cell, not the whole column
     n = PLAY_S * FPS
     for f in range(n + HOLD_S * FPS):
         t = minutes * min(1.0, f / (n - 1))
