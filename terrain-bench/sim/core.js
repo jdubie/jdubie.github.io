@@ -55,6 +55,9 @@ const TERRAINS = {
   // well-driven car gets far, and course luck cannot carry a weak one
   v4: { tiles: 2000, ramp_tiles: 2000, power: 1, min_angle: 0.45, max_angle: 1.0, jitter: 0.3, crash_angle: 1.57 },
   // v4's courses with the "free" design space (FreeCar): any chassis, 1-4 wheels with suspension, sliding ballast
+  // sum-of-sines ground (sineTiles) with the free design space
+  sines: { shape: "sines", length: 3000, tile_w: 0.75, waves: 6, wavelength: [4, 120], slope: [0.05, 0.25], gain: [1.8, 4.5],
+           crash_angle: 1.57, design: "free" },
   v4free: { tiles: 2000, ramp_tiles: 2000, power: 1, min_angle: 0.45, max_angle: 1.0, jitter: 0.3, crash_angle: 1.57, design: "free" },
 };
 
@@ -85,9 +88,49 @@ function tileAngle(t, k) {
   return sign * amp * (1 - t.jitter * ((u * 2) % 1));
 }
 
+// shape "sines": the ground follows a sum of `waves` sine waves, each with a wavelength log-uniform in `wavelength` (m), a
+// steepest slope uniform in `slope` and a random phase, all drawn from the course seed. Its height is scaled by a gain
+// growing linearly from gain[0] at the start to gain[1] at `length` m, and eased in over the first 10 m. Tiles are
+// `tile_w` m wide, straight segments between points on the curve.
+function sineTiles(t) {
+  const U = (a, b) => a + (b - a) * Math.random();
+  const waves = [];
+  for (let i = 0; i < t.waves; i++) {
+    const lam = Math.exp(U(Math.log(t.wavelength[0]), Math.log(t.wavelength[1])));
+    waves.push({ k: 2 * Math.PI / lam, a: U(t.slope[0], t.slope[1]) * lam / (2 * Math.PI), ph: U(0, 2 * Math.PI) });
+  }
+  const raw = (x) => waves.reduce((sum, w) => sum + w.a * Math.sin(w.k * x + w.ph), 0);
+  const y = (x) => {
+    const gain = t.gain[0] + (t.gain[1] - t.gain[0]) * Math.min(1, Math.max(0, x) / t.length);
+    return gain * Math.min(1, Math.max(0, x + 5) / 10) * (raw(x) - raw(-5));
+  };
+  const pts = [];
+  for (let x = -5; x <= t.length; x += t.tile_w) pts.push([x, y(x)]);
+  return pts;
+}
+
 function createFloor(world, seed, t) {
   Math.seedrandom(seed);
   const tiles = [], surface = [];     // surface: top edge of every tile, [[x0,y0],[x1,y1]]
+  if (t.shape === "sines") {
+    const pts = sineTiles(t);
+    for (let k = 0; k + 1 < pts.length; k++) {
+      const [[x0, y0], [x1, y1]] = [pts[k], pts[k + 1]];
+      const angle = Math.atan2(y1 - y0, x1 - x0), len = Math.hypot(x1 - x0, y1 - y0);
+      const bd = new b2BodyDef();
+      bd.position.Set(x0, y0);
+      const body = world.CreateBody(bd);
+      const fd = new b2FixtureDef();
+      fd.shape = new b2PolygonShape();
+      fd.friction = 0.5;
+      fd.shape.SetAsArray(rotate([{ x: 0, y: 0 }, { x: 0, y: -GROUND_H }, { x: len, y: -GROUND_H }, { x: len, y: 0 }], angle));
+      body.CreateFixture(fd);
+      surface.push([[x0, y0], [x1, y1]]);
+      tiles.push(body);
+    }
+    Math.seedrandom(crypto.randomBytes(16).toString("hex"));
+    return { tiles, surface, endX: pts[pts.length - 1][0], xs: surface.map((sg) => sg[0][0]) };
+  }
   let pos = { x: -5, y: 0 };
   for (let k = 0; k < t.tiles; k++) {
     const angle = tileAngle(t, k);
@@ -111,7 +154,14 @@ function createFloor(world, seed, t) {
 }
 
 // Topmost terrain surface on the vertical line x (late tiles can tilt past vertical, so take the max). null past the course.
-function terrainHeight(surface, x) {
+function terrainHeight(surface, x, xs) {
+  if (xs) {   // a course that never folds back: binary search on the tiles' start x
+    let lo = 0, hi = xs.length - 1;
+    if (x < xs[0] || x > surface[hi][1][0]) return null;
+    while (lo < hi) { const mid = (lo + hi + 1) >> 1; if (xs[mid] <= x) lo = mid; else hi = mid - 1; }
+    const [[x0, y0], [x1, y1]] = surface[lo];
+    return y0 + (y1 - y0) * (x - x0) / (x1 - x0);
+  }
   let best = null;
   for (const [[x0, y0], [x1, y1]] of surface) {
     const lo = Math.min(x0, x1), hi = Math.max(x0, x1);
@@ -456,7 +506,7 @@ class Episode {
 
   obs() {
     const c = this.car.chassis, p = c.GetPosition(), v = c.GetLinearVelocity();
-    const h = terrainHeight(this.floor.surface, p.x + LOOKAHEAD_M);
+    const h = terrainHeight(this.floor.surface, p.x + LOOKAHEAD_M, this.floor.xs);
     return { type: "obs", episode: this.index, tick: this.frames, t: +(this.frames / FPS).toFixed(4),
              pos: [p.x, p.y], rot: c.GetAngle(), vel: [v.x, v.y], angvel: c.GetAngularVelocity(), terrain_ahead: h,
              ...(this.energy !== null ? { energy_left: Math.max(0, this.energy - this.used) } : {}) };

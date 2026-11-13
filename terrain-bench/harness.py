@@ -182,6 +182,8 @@ def grok_cost(transcript: Path) -> float:
 
 
 def protocol_for(terrain: str) -> Path:
+    if terrain == "sines":
+        return ROOT / "PROTOCOL_SINES.md"
     return ROOT / ("PROTOCOL_FREE.md" if terrain.endswith("free") else "PROTOCOL.md")
 
 
