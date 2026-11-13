@@ -19,13 +19,32 @@ const MAX_STEP = 6000;   // ticks per step command
 if (!isMainThread) {
   // ---- one environment ----
   const core = require("./core.js");
-  const { terrain, maxS } = workerData;
+  const { terrain, maxS, recordDir, envId } = workerData;
+  const zlib = require("zlib");
+  const GEOMETRY = ["chassis", "wheel_vertex", "wheel_radius", "wheel_density"];
+  // Every episode, for replay: chassis and wheel poses every 4th tick (15 Hz), the body's geometry whenever it changed,
+  // and the terrain up to a little past the furthest point reached. ~35 kB gzipped for a long episode.
+  const saveEpisode = (r) => {
+    if (!recordDir) return;
+    const every = 4, track = ep.track.filter((_, i) => i % every === 0 || i === ep.track.length - 1);
+    const geo = [];
+    let prev = null;
+    for (const [tick, p] of ep.changes) {
+      const g = JSON.stringify(GEOMETRY.map((k) => p[k]));
+      if (g !== prev) geo.push([tick, p]);
+      prev = g;
+    }
+    const surface = ep.floor.surface.filter(([[x0]]) => x0 < ep.maxX + 30);
+    const body = { env: envId, ...r, stride: every, n_ticks: ep.track.length, track, changes: geo, surface };
+    fs.writeFileSync(path.join(recordDir, "episodes", `${r.episode}.json.gz`), zlib.gzipSync(JSON.stringify(body)));
+  };
   let params = workerData.params, index = workerData.index, ep = null;
   const start = () => { ep = new core.Episode(index++, crypto.randomBytes(4).toString("hex"), params, terrain, true); return startMsg(); };
   const startMsg = () => ({ type: "episode_start", episode: ep.index, params: ep.car.params });
   let done = false;   // the run's episode budget ran out: no episode in this environment any more
   const end = (reason, best) => {
     const r = ep.result(reason);
+    saveEpisode(r);
     params = ep.car.params;
     const rec = ep.maxX > best ? ep.recording(reason) : null;
     return { r, rec };
@@ -108,7 +127,7 @@ function parseArgs(argv) {
 const args = parseArgs(process.argv);
 const wallT0 = Date.now() / 1000;
 const rec = (name) => path.join(args.record, name);
-if (args.record) fs.mkdirSync(args.record, { recursive: true });
+if (args.record) fs.mkdirSync(path.join(args.record, "episodes"), { recursive: true });
 let best = 0, ticksTotal = 0, rid = 0, episodeCounter = 0;
 let started = 0, reserved = 0;   // episodes begun, and grants handed to requests still in flight
 const left = () => args.episodes - started;
@@ -126,7 +145,8 @@ function logEnds(env, msg) {
 }
 
 function spawn(env) {
-  env.worker = new Worker(__filename, { workerData: { terrain: args.terrain, maxS: args.maxS, params: env.params, index: episodeCounter } });
+  env.worker = new Worker(__filename, { workerData: { terrain: args.terrain, maxS: args.maxS, params: env.params, index: episodeCounter,
+                                                            recordDir: args.record, envId: env.id } });
   episodeCounter += 100000;  // episode numbers stay unique across restarted workers
   env.worker.on("message", (msg) => {
     const p = env.pending.get(msg.rid);

@@ -71,6 +71,11 @@ You may be stopped and resumed. Programs you start do not survive the end of you
 """
 
 
+def budget_spent(rec: Path) -> bool:
+    lines = (rec / "progress.jsonl").read_text().splitlines() if (rec / "progress.jsonl").exists() else []
+    return bool(lines) and json.loads(lines[-1]).get("episodes", 0) >= EPISODES
+
+
 def none_driver(sock: Path, deadline: float) -> None:
     """The baseline: the default car, never changed, stepped through course after course in every environment."""
     import socket as so
@@ -173,6 +178,8 @@ def run_agent(tag: str, model: str, minutes: float) -> dict:
     for seg in range(30 if model != "none" else 0):
         left = deadline - time.time()
         if seg and left < RESUME_MIN_S:
+            break
+        if seg and budget_spent(rec):  # nothing left to drive: do not resume the agent just to idle
             break
         name = f"terrain-{tag}-{model}-{seg}"
         image, cmd = agent_cmd(model, seg, LAUNCH if seg == 0 else NUDGE.format(m=round(left / 60)))
