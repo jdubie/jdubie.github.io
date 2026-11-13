@@ -167,7 +167,11 @@ def run_agent(tag: str, model: str, minutes: float) -> dict:
             break
     time.sleep(max(0.0, deadline - time.time()))  # an agent that quit early still has its car driving to the end
     os.killpg(sim.pid, signal.SIGTERM)  # the simulator records the episode in progress, then exits
-    sim.wait()
+    try:
+        sim.wait(timeout=10)
+    except subprocess.TimeoutExpired:  # wedged inside a physics step (seen once, sweep1 gemini): it cannot handle SIGTERM
+        os.killpg(sim.pid, signal.SIGKILL)
+        sim.wait()
     eps = [json.loads(line) for line in (rec / "episodes.jsonl").read_text().splitlines()]
     meta = {"model": model, "minutes": minutes, "seconds": round(time.time() - t0, 1), "segments": segments,
             "episodes": len(eps), "best_distance": max(e["distance"] for e in eps)}
