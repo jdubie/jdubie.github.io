@@ -115,6 +115,22 @@ def badge(c: cairo.Context, logo: str | None, col: str, x: float, y: float, r: f
     c.restore()
 
 
+def wheel_list(p: dict) -> list[tuple[float, float]]:
+    """(radius, density) per wheel, for either design space."""
+    if "wheels" in p:
+        return [(w["radius"], w["density"]) for w in p["wheels"]]
+    return list(zip(p["wheel_radius"], p["wheel_density"]))
+
+
+def shade(density: float, p: dict) -> float:
+    lo, hi = (20, 200) if "wheels" in p else (40, 140)   # cawro: lighter wheels are less dense
+    return max(0.0, min(1.0, 1 - (density - lo) / (hi - lo)))
+
+
+def ballast_r(p: dict) -> float:
+    return 0.08 + 0.17 * math.sqrt(p["ballast"]["mass"] / 200)
+
+
 def params_at(changes: list, tick: int) -> dict:
     p = changes[0][1]
     for t, q in changes:
@@ -160,10 +176,11 @@ def draw_lane(c: cairo.Context, m: dict, tick: int, cam: list[float], box: tuple
     c.fill_preserve()
     c.set_source_rgb(0, 0, 0)
     c.stroke()
-    for i in range(2):  # wheels: shaded by density (cw_drawCars), with a spoke showing rotation
+    for i, (r, dens) in enumerate(wheel_list(p)):  # wheels: shaded by density (cw_drawCars), a spoke showing rotation
+        if 3 * i + 3 > len(wheels):
+            break
         wx, wy, wa = wheels[3 * i:3 * i + 3]
-        r = p["wheel_radius"][i]
-        g = round(255 - 255 * (p["wheel_density"][i] - 40) / 100) / 255
+        g = shade(dens, p)
         c.arc(wx, wy, r, 0, 2 * math.pi)
         c.set_source_rgb(g, g, g)
         c.fill_preserve()
@@ -174,16 +191,22 @@ def draw_lane(c: cairo.Context, m: dict, tick: int, cam: list[float], box: tuple
         c.stroke()
     cos, sin = math.cos(ca), math.sin(ca)
     pts = [(cx + vx * cos - vy * sin, cy + vx * sin + vy * cos) for vx, vy in p["chassis"]]
-    for i in range(8):  # the chassis is 8 triangles fanned from its origin; the original outlines each one
+    for i in range(len(pts)):  # the chassis is triangles fanned from its origin; the original outlines each one
         c.move_to(cx, cy)
         c.line_to(*pts[i])
-        c.line_to(*pts[(i + 1) % 8])
+        c.line_to(*pts[(i + 1) % len(pts)])
         c.close_path()
     c.set_source_rgb(*rgb(col, 0.82))
     c.fill_preserve()
     c.set_source_rgb(*rgb(col))
     c.set_line_width(2 / zoom)
     c.stroke()
+    if "ballast" in p and p["ballast"]["mass"] > 0 and len(track[k]) >= 3 + 3 * len(p["wheels"]) + 2:
+        bx, by = track[k][-2:]
+        c.new_path()
+        c.arc(cx + bx * cos - by * sin, cy + bx * sin + by * cos, ballast_r(p), 0, 2 * math.pi)
+        c.set_source_rgb(0.15, 0.15, 0.15)
+        c.fill()
     c.restore()
     if logo:
         badge(c, logo, col, ox + (cx - cam[0]) * zoom, oy - (cy - cam[1]) * zoom, 0.34 * zoom, -ca)

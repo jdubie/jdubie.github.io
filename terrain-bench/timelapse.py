@@ -16,10 +16,24 @@ from pathlib import Path
 
 import cairo
 
-from render import CREDIT, FPS, H, MODELS, W, Frames, badge, rgb, text
+from render import CREDIT, FPS, H, MODELS, W, Frames, badge, ballast_r, rgb, shade, text, wheel_list
 
 PLAY_S, HOLD_S = 40, 4
 GEOMETRY = ("chassis", "wheel_vertex", "wheel_radius", "wheel_density")
+
+
+def body(p: dict) -> str:
+    """Identity of a car body: everything but motor settings and where the ballast currently is."""
+    if "wheels" in p:
+        return json.dumps([p["chassis"], p.get("chassis_density"), p["ballast"]["mass"],
+                           [[w["vertex"], w["radius"], w["density"], w["friction"], w["suspension"]] for w in p["wheels"]]])
+    return json.dumps([p[k] for k in GEOMETRY])
+
+
+def axles(p: dict) -> list[tuple[float, float]]:
+    if "wheels" in p:
+        return [tuple(p["chassis"][w["vertex"]]) for w in p["wheels"]]
+    return [tuple(p["chassis"][v]) for v in p["wheel_vertex"]]
 
 
 def load(run: Path) -> list[dict]:
@@ -35,7 +49,7 @@ def load(run: Path) -> list[dict]:
         eps.sort(key=lambda e: e["wall_end"])
         timeline, seen = [], {}
         for e in eps:  # (minutes, body params, distinct bodies so far)
-            g = json.dumps([e["params"][k] for k in GEOMETRY])
+            g = body(e["params"])
             seen.setdefault(g, len(seen) + 1)
             timeline.append(((e["wall_end"] - t0) / 60, e["params"], len(seen), seen[g]))
         out.append({"key": key, "timeline": timeline, "progress": [(p["t"] / 60, p["best"]) for p in prog],
@@ -61,10 +75,8 @@ def draw_car(c: cairo.Context, p: dict, col: str, logo: str | None, cx: float, c
     c.save()
     c.translate(cx, cy)
     c.scale(zoom, -zoom)
-    for i in range(2):
-        wx, wy = p["chassis"][p["wheel_vertex"][i]]
-        r = p["wheel_radius"][i]
-        g = round(255 - 255 * (p["wheel_density"][i] - 40) / 100) / 255
+    for (wx, wy), (r, dens) in zip(axles(p), wheel_list(p)):
+        g = shade(dens, p)
         c.new_path()
         c.arc(wx, wy, r, 0, 2 * math.pi)
         c.set_source_rgb(g, g, g)
@@ -73,16 +85,31 @@ def draw_car(c: cairo.Context, p: dict, col: str, logo: str | None, cx: float, c
         c.set_line_width(1.5 / zoom)
         c.stroke()
     pts = p["chassis"]
-    for i in range(8):
+    for i in range(len(pts)):
         c.move_to(0, 0)
         c.line_to(*pts[i])
-        c.line_to(*pts[(i + 1) % 8])
+        c.line_to(*pts[(i + 1) % len(pts)])
         c.close_path()
     c.set_source_rgb(*rgb(col, 0.82))
     c.fill_preserve()
     c.set_source_rgb(*rgb(col))
     c.set_line_width(2 / zoom)
     c.stroke()
+    for (wx, wy), w in zip(axles(p), p.get("wheels", [])):   # suspension: the axle's travel, as a line
+        s = w.get("suspension")
+        if s:
+            n = math.hypot(*s["axis"])
+            dx, dy = s["axis"][0] / n * s["travel"], s["axis"][1] / n * s["travel"]
+            c.move_to(wx - dx, wy - dy)
+            c.line_to(wx + dx, wy + dy)
+            c.set_source_rgb(0.85, 0.1, 0.1)
+            c.set_line_width(3 / zoom)
+            c.stroke()
+    if "ballast" in p and p["ballast"]["mass"] > 0:
+        c.new_path()
+        c.arc(*p["ballast"]["pos"], ballast_r(p), 0, 2 * math.pi)
+        c.set_source_rgb(0.15, 0.15, 0.15)
+        c.fill()
     c.restore()
     if logo:
         badge(c, logo, col, cx, cy, 0.3 * zoom)
@@ -152,9 +179,10 @@ def plot(c: cairo.Context, models: list[dict], t: float, minutes: float, box: tu
 def main() -> None:
     run = Path(sys.argv[1])
     models = load(run)
-    # the clock runs until the last episode of the sweep ends (agents often spend their episode budget early)
+    # the clock stops a little after the last time any model's best improved: after that nothing changes on screen
+    last_gain = max(next(t for t, b in m["progress"] if b >= m["progress"][-1][1] - 1e-6) for m in models if m["progress"])
     minutes = min(max(json.loads((run / m["key"] / "meta.json").read_text())["minutes"] for m in models),
-                  math.ceil(max(m["timeline"][-1][0] for m in models if m["timeline"]) + 0.5))
+                  math.ceil(last_gain * 1.08 + 0.5))
     ymax = math.ceil(max(m["best"] for m in models) * 1.08 / 250) * 250
     out = run / "site"
     out.mkdir(exist_ok=True)

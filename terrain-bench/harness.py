@@ -57,9 +57,9 @@ PROMPT = """\
 
 A physics simulator is running on the unix socket ./sim.sock: a 2D car on rough terrain. PROTOCOL.md describes it
 fully. In short: the car's wheel motors push it to the right; you observe the chassis position, angle, velocity and
-angular velocity plus one number, the height of the ground 2 m ahead; at any tick you can change the car's chassis
-shape, wheel placement, wheel size and density, and each motor's speed and torque. The car crashes if it tips past
-90°, and stalls if it stops making progress. Time is yours: nothing moves unless you step it, and you can run up to 8
+angular velocity plus one number, the height of the ground 2 m ahead; at any tick you can change the car's design and
+its motors (PROTOCOL.md lists everything you can change). The car crashes if it tips past 90°, and stalls if it stops
+making progress. Time is yours: nothing moves unless you step it, and you can run up to 8
 environments in parallel, each on its own random course.
 
 This run lasts {minutes} minutes of wall-clock time from when you were started, and allows {episodes} episodes in total:
@@ -151,7 +151,11 @@ def sandbox(model: str, run: Path, home: Path, minutes: float) -> tuple[dict[str
     return secret, mounts
 
 
-def run_agent(tag: str, model: str, minutes: float) -> dict:
+def protocol_for(terrain: str) -> Path:
+    return ROOT / ("PROTOCOL_FREE.md" if terrain.endswith("free") else "PROTOCOL.md")
+
+
+def run_agent(tag: str, model: str, minutes: float, terrain: str = TERRAIN) -> dict:
     run = ROOT / "runs" / tag / model
     if (run / "meta.json").exists():
         return json.loads((run / "meta.json").read_text())
@@ -161,13 +165,13 @@ def run_agent(tag: str, model: str, minutes: float) -> dict:
     for d in (work, home, rec):
         d.mkdir(parents=True)
     (work / "PROMPT.md").write_text(PROMPT.format(minutes=round(minutes), episodes=EPISODES))
-    shutil.copy(ROOT / "PROTOCOL.md", work / "PROTOCOL.md")
+    shutil.copy(protocol_for(terrain), work / "PROTOCOL.md")
     secret, mounts = sandbox(model, run, home, minutes) if model != "none" else ({}, [])
 
     sock = work / "sim.sock"
     # its own scope with a CPU cap, so runs in parallel get equal compute however many environments they use
     sim = subprocess.Popen(["systemd-run", "--user", "--scope", "-q", "-p", f"CPUQuota={SIM_CPUS * 100}%", "node", str(SERVER),
-                            "--socket", str(sock), "--record", str(rec), "--terrain", TERRAIN, "--episodes", str(EPISODES)], stderr=subprocess.DEVNULL, start_new_session=True)
+                            "--socket", str(sock), "--record", str(rec), "--terrain", terrain, "--episodes", str(EPISODES)], stderr=subprocess.DEVNULL, start_new_session=True)
     while not sock.exists():
         time.sleep(0.05)
     t0 = time.time()
@@ -210,7 +214,7 @@ def run_agent(tag: str, model: str, minutes: float) -> dict:
         os.killpg(sim.pid, signal.SIGKILL)
         sim.wait()
     eps = [json.loads(line) for line in (rec / "episodes.jsonl").read_text().splitlines()]
-    meta = {"model": model, "minutes": minutes, "seconds": round(time.time() - t0, 1), "segments": segments,
+    meta = {"model": model, "minutes": minutes, "terrain": terrain, "seconds": round(time.time() - t0, 1), "segments": segments,
             "episodes": len(eps), "best_distance": max(e["distance"] for e in eps)}
     (run / "meta.json").write_text(json.dumps(meta, indent=1))
     print(json.dumps({k: meta[k] for k in ("model", "best_distance", "episodes")} | {"sessions": len(segments)}), flush=True)
@@ -218,7 +222,7 @@ def run_agent(tag: str, model: str, minutes: float) -> dict:
 
 
 def cmd_run(a: argparse.Namespace) -> None:
-    jobs = [(a.tag, m, a.minutes) for m in a.models.split(",")]
+    jobs = [(a.tag, m, a.minutes, a.terrain) for m in a.models.split(",")]
 
     def guarded(job):
         try:
@@ -243,6 +247,7 @@ def main() -> None:
     r.add_argument("--models", default="none,opus,sonnet,haiku,sol,terra,gemini")
     r.add_argument("--minutes", type=float, default=30)
     r.add_argument("--tag", required=True)
+    r.add_argument("--terrain", default=TERRAIN, help="a preset in sim/core.js TERRAINS; *free presets use PROTOCOL_FREE.md")
     r.set_defaults(fn=cmd_run)
     s = sub.add_parser("summary")
     s.add_argument("run")

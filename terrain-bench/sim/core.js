@@ -54,6 +54,8 @@ const TERRAINS = {
   // v3, but already 0.45 rad steep at the start and rising linearly to 1.0 rad at 3 km, so that only a well-designed,
   // well-driven car gets far, and course luck cannot carry a weak one
   v4: { tiles: 2000, ramp_tiles: 2000, power: 1, min_angle: 0.45, max_angle: 1.0, jitter: 0.3, crash_angle: 1.57 },
+  // v4's courses with the "free" design space (FreeCar): any chassis, 1-4 wheels with suspension, sliding ballast
+  v4free: { tiles: 2000, ramp_tiles: 2000, power: 1, min_angle: 0.45, max_angle: 1.0, jitter: 0.3, crash_angle: 1.57, design: "free" },
 };
 
 // jitter (optional, 0..1): instead of uniform in +-amp, the slope is amp * (1 - jitter * v) with a random sign, so every
@@ -236,6 +238,182 @@ class Car {
   }
 }
 
+
+// ---- the "free" design space: any star-shaped chassis, 1-4 wheels with optional suspension, a sliding ballast ----
+const FREE = {
+  vertices: [3, 16], radius: [0.1, 1.5], min_triangle: 0.005, chassis_density: [20, 200], wheels: [1, 4],
+  wheel_radius: [0.1, 0.9], wheel_density: [20, 200], friction: [0.1, 2], motor_speed: [-40, 40], torque_scale: [0, 3],
+  travel: [0.02, 0.6], hz: [0.5, 15], damping: [0, 1], ballast_mass: [0, 200], ballast_speed: 2.0,
+};
+const FREE_DEFAULT = {
+  chassis: DEFAULT_PARAMS.chassis, chassis_density: 80,
+  wheels: [
+    { vertex: 4, radius: 0.4, density: 70, friction: 1, motor_speed: 20, torque_scale: 1, suspension: null },
+    { vertex: 0, radius: 0.4, density: 70, friction: 1, motor_speed: 20, torque_scale: 1, suspension: null },
+  ],
+  ballast: { mass: 0, pos: [0, 0] },
+};
+
+function validateFree(p) {
+  const err = (m) => { throw new Error(m); };
+  const num = (x, what) => (typeof x === "number" && isFinite(x)) || err(`${what}: want a number, got ${JSON.stringify(x)}`);
+  const range = (x, [lo, hi], what) => { num(x, what); if (x < lo || x > hi) err(`${what} = ${x}: want ${lo} .. ${hi}`); };
+  const c = p.chassis;
+  if (!Array.isArray(c) || c.length < FREE.vertices[0] || c.length > FREE.vertices[1]) err(`chassis: want ${FREE.vertices[0]}-${FREE.vertices[1]} [x, y] vertices`);
+  c.forEach((v, i) => { if (!Array.isArray(v) || v.length !== 2) err(`chassis[${i}]: want [x, y]`); num(v[0], `chassis[${i}][0]`); num(v[1], `chassis[${i}][1]`);
+    range(Math.hypot(v[0], v[1]), FREE.radius, `chassis[${i}] distance from the origin`); });
+  for (let i = 0; i < c.length; i++) {   // counter-clockwise around the origin, every fan triangle a real triangle
+    const a = c[i], b = c[(i + 1) % c.length];
+    const cross = a[0] * b[1] - a[1] * b[0];
+    if (cross / 2 < FREE.min_triangle) err(`chassis: vertices ${i} and ${(i + 1) % c.length} must go counter-clockwise around the origin, ` +
+      `less than 180 degrees apart, making a triangle with the origin of at least ${FREE.min_triangle} m^2 (got ${(cross / 2).toFixed(4)})`);
+  }
+  let turn = 0;
+  for (let i = 0; i < c.length; i++) { const a = c[i], b = c[(i + 1) % c.length]; turn += Math.atan2(a[0] * b[1] - a[1] * b[0], a[0] * b[0] + a[1] * b[1]); }
+  if (Math.abs(turn - 2 * Math.PI) > 1e-6) err("chassis: the vertices must wind once around the origin");
+  range(p.chassis_density, FREE.chassis_density, "chassis_density");
+  const w = p.wheels;
+  if (!Array.isArray(w) || w.length < FREE.wheels[0] || w.length > FREE.wheels[1]) err(`wheels: want a list of ${FREE.wheels[0]}-${FREE.wheels[1]} wheels`);
+  const used = new Set();
+  w.forEach((wh, i) => {
+    const at = `wheels[${i}]`;
+    if (!Number.isInteger(wh.vertex) || wh.vertex < 0 || wh.vertex >= c.length) err(`${at}.vertex: an index into chassis, 0..${c.length - 1}`);
+    if (used.has(wh.vertex)) err(`${at}.vertex ${wh.vertex}: another wheel is already there`);
+    used.add(wh.vertex);
+    range(wh.radius, FREE.wheel_radius, `${at}.radius`); range(wh.density, FREE.wheel_density, `${at}.density`);
+    range(wh.friction, FREE.friction, `${at}.friction`); range(wh.motor_speed, FREE.motor_speed, `${at}.motor_speed`);
+    range(wh.torque_scale, FREE.torque_scale, `${at}.torque_scale`);
+    const s = wh.suspension;
+    if (s !== null && s !== undefined) {
+      if (!Array.isArray(s.axis) || s.axis.length !== 2 || Math.hypot(s.axis[0], s.axis[1]) < 1e-3) err(`${at}.suspension.axis: a non-zero [x, y] direction`);
+      range(s.travel, FREE.travel, `${at}.suspension.travel`); range(s.hz, FREE.hz, `${at}.suspension.hz`); range(s.damping, FREE.damping, `${at}.suspension.damping`);
+    }
+  });
+  const bl = p.ballast;
+  if (!bl || !Array.isArray(bl.pos) || bl.pos.length !== 2) err("ballast: want {mass, pos: [x, y]}");
+  range(bl.mass, FREE.ballast_mass, "ballast.mass");
+  num(bl.pos[0], "ballast.pos[0]"); num(bl.pos[1], "ballast.pos[1]");
+  if (Math.hypot(...bl.pos) > FREE.radius[1]) err(`ballast.pos: at most ${FREE.radius[1]} m from the chassis origin`);
+}
+
+class FreeCar {
+  constructor(world, params) {
+    this.world = world;
+    this.params = JSON.parse(JSON.stringify(params));
+    validateFree(this.params);
+    const bd = new b2BodyDef();
+    bd.type = b2Body.b2_dynamicBody;
+    bd.position.Set(0.0, 4.0);
+    this.chassis = world.CreateBody(bd);
+    this.wheels = []; this.axles = []; this.joints = []; this.extraJoints = [];
+    this.ballastPos = this.params.ballast.pos.slice(); this.ballastFixture = null;
+    this.build();
+  }
+
+  fixture(body, shape, density, friction, collide) {
+    const fd = new b2FixtureDef();
+    fd.shape = shape; fd.density = density; fd.friction = friction; fd.restitution = 0.2; fd.filter.groupIndex = -1;
+    if (!collide) { fd.isSensor = true; fd.filter.maskBits = 0; }
+    return body.CreateFixture(fd);
+  }
+
+  // (Re)build everything except the chassis body itself, keeping its pose and velocity; wheels start on their axles.
+  build() {
+    const w = this.world, ch = this.chassis, p = this.params;
+    this.joints.concat(this.extraJoints).forEach((j) => w.DestroyJoint(j));
+    const spins = this.wheels.map((b) => b.GetAngularVelocity());
+    this.wheels.concat(this.axles).forEach((b) => w.DestroyBody(b));
+    this.wheels = []; this.axles = []; this.joints = []; this.extraJoints = [];
+    for (let f = ch.GetFixtureList(); f;) { const n = f.GetNext(); ch.DestroyFixture(f); f = n; }
+    this.ballastFixture = null;
+    const v = p.chassis.map(([x, y]) => new b2Vec2(x, y));
+    for (let i = 0; i < v.length; i++) {
+      const s = new b2PolygonShape();
+      s.SetAsArray([v[i], v[(i + 1) % v.length], b2Vec2.Make(0, 0)], 3);
+      this.fixture(ch, s, p.chassis_density, 10, true);
+    }
+    this.placeBallast();
+    const vel = ch.GetLinearVelocity();
+    p.wheels.forEach((wh, i) => {
+      const [ax, ay] = p.chassis[wh.vertex];
+      const at = ch.GetWorldPoint(new b2Vec2(ax, ay));
+      const mk = () => { const d = new b2BodyDef(); d.type = b2Body.b2_dynamicBody; d.position.Set(at.x, at.y); const b = w.CreateBody(d); b.SetLinearVelocity(vel.Copy()); return b; };
+      const wheel = mk();
+      this.fixture(wheel, new b2CircleShape(wh.radius), wh.density, wh.friction, true);
+      if (spins[i] !== undefined) wheel.SetAngularVelocity(spins[i]);
+      let hub = ch, hubAnchor = new b2Vec2(ax, ay);
+      if (wh.suspension) {   // the wheel turns on an axle that slides along `axis`, held by a spring
+        const s = wh.suspension, n = Math.hypot(...s.axis), dir = new b2Vec2(s.axis[0] / n, s.axis[1] / n);
+        const axle = mk();
+        this.fixture(axle, new b2CircleShape(0.05), 20, 0, false);
+        this.axles.push(axle);
+        const pj = new b2PrismaticJointDef();
+        pj.bodyA = ch; pj.bodyB = axle; pj.localAnchorA.Set(ax, ay); pj.localAnchorB.Set(0, 0);
+        pj.localAxisA.Set(dir.x, dir.y); pj.enableLimit = true; pj.lowerTranslation = -s.travel; pj.upperTranslation = s.travel;
+        this.extraJoints.push(w.CreateJoint(pj));
+        const dj = new b2DistanceJointDef();
+        dj.bodyA = ch; dj.bodyB = axle; dj.localAnchorA.Set(ax + dir.x, ay + dir.y); dj.localAnchorB.Set(0, 0);
+        dj.length = 1; dj.frequencyHz = s.hz; dj.dampingRatio = s.damping;
+        this.extraJoints.push(w.CreateJoint(dj));
+        hub = axle; hubAnchor = new b2Vec2(0, 0);
+      }
+      const rj = new b2RevoluteJointDef();
+      rj.bodyA = hub; rj.bodyB = wheel; rj.localAnchorA.Set(hubAnchor.x, hubAnchor.y); rj.localAnchorB.Set(0, 0); rj.enableMotor = true;
+      this.joints.push(w.CreateJoint(rj));
+      this.wheels.push(wheel);
+    });
+    this.applyMotors();
+  }
+
+  placeBallast() {
+    if (this.ballastFixture) this.chassis.DestroyFixture(this.ballastFixture);
+    this.ballastFixture = null;
+    const m = this.params.ballast.mass;
+    if (m > 0) {
+      const s = new b2CircleShape(0.1);
+      s.SetLocalPosition(new b2Vec2(this.ballastPos[0], this.ballastPos[1]));
+      this.ballastFixture = this.fixture(this.chassis, s, m / (Math.PI * 0.01), 0, false);
+    }
+    this.chassis.ResetMassData();
+  }
+
+  // Per tick: the ballast slides toward its target at most ballast_speed m/s.
+  tick() {
+    const t = this.params.ballast.pos, b = this.ballastPos, dx = t[0] - b[0], dy = t[1] - b[1], d = Math.hypot(dx, dy);
+    if (d < 1e-9 || this.params.ballast.mass === 0) { this.ballastPos = t.slice(); return; }
+    const k = Math.min(1, FREE.ballast_speed / FPS / d);
+    this.ballastPos = [b[0] + dx * k, b[1] + dy * k];
+    this.placeBallast();
+  }
+
+  mass() { return this.chassis.GetMass() + this.wheels.concat(this.axles).reduce((s, b) => s + b.GetMass(), 0); }
+
+  applyMotors() {
+    const mass = this.mass();
+    this.params.wheels.forEach((wh, i) => {
+      this.joints[i].SetMaxMotorTorque(this.flat ? 0 : wh.torque_scale * mass * -GRAVITY.y / wh.radius);
+      this.joints[i].SetMotorSpeed(-wh.motor_speed);
+    });
+    [this.chassis, ...this.wheels, ...this.axles].forEach((b) => b.SetAwake(true));
+  }
+
+  // update: any subset of the params; a `wheels` list replaces the whole list (send every wheel).
+  set(update) {
+    for (const k of Object.keys(update)) if (!(k in FREE_DEFAULT)) throw new Error(`unknown param ${k}; want ${Object.keys(FREE_DEFAULT).join(", ")}`);
+    const next = { ...this.params, ...JSON.parse(JSON.stringify(update)) };
+    if (update.ballast) next.ballast = { ...this.params.ballast, ...update.ballast };
+    if (next.wheels) next.wheels = next.wheels.map((w) => ({ suspension: null, ...w }));
+    validateFree(next);
+    const structural = (a, b) => JSON.stringify([a.chassis, a.chassis_density, a.wheels.map((w) => [w.vertex, w.radius, w.density, w.friction, w.suspension])]) !==
+                                 JSON.stringify([b.chassis, b.chassis_density, b.wheels.map((w) => [w.vertex, w.radius, w.density, w.friction, w.suspension])]);
+    const rebuild = structural(next, this.params);
+    const massChange = next.ballast.mass !== this.params.ballast.mass;
+    this.params = next;
+    if (rebuild) this.build();
+    else { if (massChange) this.placeBallast(); this.applyMotors(); }
+  }
+}
+
 // ---- episode (one car on one course; cw_Car.checkDeath) ----
 const r4 = (x) => Math.round(x * 1e4) / 1e4;
 
@@ -248,7 +426,8 @@ class Episode {
     this.crashAngle = terrain.crash_angle || null;
     this.world = new b2World(GRAVITY, true);
     this.floor = createFloor(this.world, seed, terrain);
-    this.car = new Car(this.world, params);
+    this.design = terrain.design || "cawro";
+    this.car = this.design === "free" ? new FreeCar(this.world, params) : new Car(this.world, params);
     this.frames = 0; this.health = MAX_HEALTH; this.maxX = 0;
     this.track = [];                                   // per tick: chassis x,y,angle, wheel0 x,y,angle, wheel1 x,y,angle
     this.changes = [[0, this.car.params]];             // [tick, full params] whenever params change
@@ -258,7 +437,8 @@ class Episode {
     this.world.Step(1 / FPS, 20, 20);
     this.frames++;
     const car = this.car, wc = car.chassis.GetAngularVelocity();
-    for (let i = 0; i < 2; i++) this.used += Math.abs(car.joints[i].m_motorImpulse * (car.wheels[i].GetAngularVelocity() - wc));
+    if (car.tick) car.tick();
+    for (let i = 0; i < car.joints.length; i++) this.used += Math.abs(car.joints[i].m_motorImpulse * (car.wheels[i].GetAngularVelocity() - wc));
     if (this.energy !== null && this.used >= this.energy && !car.flat) { car.flat = true; car.applyMotors(); }
     const p = this.car.chassis.GetPosition();
     if (p.x > this.maxX + 0.02) { this.health = MAX_HEALTH; this.maxX = p.x; }
@@ -267,7 +447,11 @@ class Episode {
       if (Math.abs(this.car.chassis.GetLinearVelocity().x) < 0.001) this.health -= 5;
       this.health--;
     }
-    if (this.record) this.track.push([this.car.chassis, ...this.car.wheels].flatMap((b) => [r4(b.GetPosition().x), r4(b.GetPosition().y), r4(b.GetAngle())]));
+    if (this.record) {   // chassis x, y, angle; each wheel x, y, angle; for a free car, then the ballast's chassis-frame x, y
+      const row = [this.car.chassis, ...this.car.wheels].flatMap((b) => [r4(b.GetPosition().x), r4(b.GetPosition().y), r4(b.GetAngle())]);
+      if (this.car.ballastPos) row.push(r4(this.car.ballastPos[0]), r4(this.car.ballastPos[1]));
+      this.track.push(row);
+    }
   }
 
   obs() {
@@ -279,7 +463,7 @@ class Episode {
   }
 
   result(reason) {
-    return { type: "episode_end", episode: this.index, seed: this.seed, reason, distance: this.maxX, sim_s: this.frames / FPS, energy_used: this.used,
+    return { type: "episode_end", design: this.design, episode: this.index, seed: this.seed, reason, distance: this.maxX, sim_s: this.frames / FPS, energy_used: this.used,
              wall_start: this.wallStart, wall_end: Date.now() / 1000, params: this.car.params };
   }
 
@@ -301,4 +485,6 @@ class Episode {
 }
 
 
-module.exports = { FPS, DEFAULT_PARAMS, TERRAINS, Episode, terrainHeight, validate, r4 };
+const defaultParams = (terrain) => (terrain.design === "free" ? FREE_DEFAULT : DEFAULT_PARAMS);
+
+module.exports = { FPS, DEFAULT_PARAMS, FREE_DEFAULT, FREE, TERRAINS, Episode, terrainHeight, validate, validateFree, defaultParams, r4 };

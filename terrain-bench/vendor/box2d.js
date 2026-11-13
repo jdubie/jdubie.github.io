@@ -10584,7 +10584,7 @@ b2World.prototype.SolveTOI = function(step) {
   for(j = this.m_jointList;j;j = j.m_next) {
     j.m_islandFlag = false
   }
-  for(;;) {
+  for(var toiIter = 0; toiIter < 500; toiIter++) {  // terrain-bench patch: cap TOI events per step (see vendor/PATCHES.md)
     var minContact = null;
     var minTOI = 1;
     for(c = this.m_contactList;c;c = c.m_next) {

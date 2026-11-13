@@ -189,7 +189,7 @@ function call(env, m, ticks = 0) {
 async function makeEnv() {
   if (envs.size >= args.envs) throw new Error(`at most ${args.envs} environments; close one first`);
   if (args.episodes - started - reserved <= 0) throw new Error("the run's episode budget is used up");
-  const env = { id: nextEnvId++, pending: new Map(), maxX: 0, params: core.DEFAULT_PARAMS };
+  const env = { id: nextEnvId++, pending: new Map(), maxX: 0, params: core.defaultParams(args.terrain) };
   envs.set(env.id, env);
   spawn(env);
   const init = await call(env, { cmd: "init" });

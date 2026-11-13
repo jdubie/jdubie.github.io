@@ -33,7 +33,7 @@ if (isMainThread) {
   const { POLICIES } = require("./policies.js");
   parentPort.on("message", (job) => {
     const terrain = typeof job.terrain === "string" ? core.TERRAINS[job.terrain] : job.terrain;
-    const params = { ...core.DEFAULT_PARAMS, ...(job.params || {}) };
+    const params = { ...core.defaultParams(terrain), ...(job.params || {}) };
     const out = { id: job.id };
     try {
       const ep = new core.Episode(0, String(job.seed), params, terrain, false);
