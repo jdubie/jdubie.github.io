@@ -1,0 +1,70 @@
+<!doctype html>
+<html><meta charset="utf-8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+html,body{margin:0;width:960px;height:540px;overflow:hidden;background:#15181b;color:#e7eaed;font-family:"Archivo Narrow",Arial,sans-serif}
+.emo{font-family:"Noto Color Emoji",sans-serif}
+.f{position:absolute;inset:0;padding:34px 40px;box-sizing:border-box;display:none}
+body.a .fa,body.b .fb{display:block}
+h1{margin:0;font:700 64px/1 "Archivo Narrow";letter-spacing:-.01em}
+h1 em{font-style:normal;color:#e2614f}
+.sub{font:500 22px/1 "JetBrains Mono";color:#9aa4ae;margin-top:12px}
+/* frame A: the scene */
+.scene{position:absolute;left:40px;right:40px;top:150px;height:250px}
+.rail{position:absolute;height:8px;background:repeating-linear-gradient(90deg,#6b7480 0 22px,transparent 22px 30px);border-top:3px solid #9aa4ae;border-bottom:3px solid #9aa4ae}
+.main{left:0;right:0;top:70px}
+.spur{left:330px;width:420px;top:70px;transform-origin:0 50%;transform:rotate(13deg)}
+.tram{position:absolute;left:40px;top:-6px;font-size:96px}
+.five{position:absolute;right:0;top:4px;font-size:62px;letter-spacing:-12px}
+.one{position:absolute;left:715px;top:100px;font-size:62px}
+.lever{position:absolute;left:250px;top:100px;font-size:64px}
+.bots{position:absolute;left:40px;right:40px;bottom:30px;display:flex;gap:10px}
+.bots .chip{flex:1;height:70px;font-size:20px}
+/* chips */
+.chip{border-radius:10px;display:flex;flex-direction:column;justify-content:center;align-items:center;font:700 26px/1 "Archivo Narrow";color:#fff;gap:5px}
+.chip small{font:700 13px/1 "JetBrains Mono";letter-spacing:.12em;text-transform:uppercase;opacity:.85}
+.anth{background:#d97757}.oai{background:#0d0d0d;border:2px solid #e7eaed}.xai{background:#000;border:2px solid #9aa4ae}.goog{background:linear-gradient(120deg,#4285f4,#9b72cb 60%,#d96570)}
+/* frame B: results */
+.grid{position:absolute;left:40px;right:40px;top:150px;bottom:30px;display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.card{background:#1d2125;border-radius:12px;display:grid;grid-template-rows:72px 1fr;overflow:hidden}
+.card .chip{border-radius:0}
+.res{display:flex;align-items:center;justify-content:center;gap:14px}
+.res .emo{font-size:46px}
+.res b{font:700 34px/1 "JetBrains Mono";color:#7fd18b}
+.res b.no{color:#e2614f}.res b.mid{color:#e7c35a}
+.res i{display:block;font:500 13px/1.2 "JetBrains Mono";font-style:normal;color:#9aa4ae;margin-top:4px}
+.key{grid-column:4;display:flex;flex-direction:column;justify-content:center;gap:10px;font:500 15px/1.2 "JetBrains Mono";color:#9aa4ae;padding-left:6px}
+.key span{font-size:22px;vertical-align:middle;margin-right:6px}
+</style>
+<body class="a">
+<div class="f fa">
+  <h1>Who pulls the <em>lever?</em></h1>
+  <div class="sub">7 AI models · 1 minute · a runaway trolley</div>
+  <div class="scene">
+    <div class="rail main"></div><div class="rail spur"></div>
+    <div class="tram emo">🚋</div>
+    <div class="five emo">🧍🧍🧍🧍🧍</div>
+    <div class="one emo">🧍</div>
+    <div class="lever emo">🕹️</div>
+  </div>
+  <div class="bots">
+    <div class="chip anth"><small>Anthropic</small>Opus</div><div class="chip anth"><small>Anthropic</small>Sonnet</div><div class="chip anth"><small>Anthropic</small>Haiku</div>
+    <div class="chip oai"><small>OpenAI</small>Terra</div><div class="chip xai"><small>xAI</small>Grok</div><div class="chip goog"><small>Google</small>Argon</div><div class="chip goog"><small>Google</small>Flash</div>
+  </div>
+</div>
+<div class="f fb">
+  <h1>Pulled it, and <em>why</em></h1>
+  <div class="sub">when the alert looked real</div>
+  <div class="grid">
+    <div class="card"><div class="chip anth"><small>Anthropic</small>Opus 5.5</div><div class="res"><span class="emo">🎯</span><div><b>3/3</b><i>double effect</i></div></div></div>
+    <div class="card"><div class="chip anth"><small>Anthropic</small>Sonnet 5.5</div><div class="res"><span class="emo">🧮</span><div><b>3/3</b><i>consequences</i></div></div></div>
+    <div class="card"><div class="chip anth"><small>Anthropic</small>Haiku 5.5</div><div class="res"><span class="emo">📜</span><div><b class="no">0/3</b><i>deontology</i></div></div></div>
+    <div class="card"><div class="chip oai"><small>OpenAI</small>GPT-6.1 Terra</div><div class="res"><span class="emo">🧮</span><div><b>3/3</b><i>consequences</i></div></div></div>
+    <div class="card"><div class="chip xai"><small>xAI</small>Grok 4.7</div><div class="res"><span class="emo">🧮</span><div><b class="mid">2/3</b><i>1 ran out of time</i></div></div></div>
+    <div class="card"><div class="chip goog"><small>Google</small>Gemini 4 Argon</div><div class="res"><span class="emo">🧮</span><div><b>3/3</b><i>consequences</i></div></div></div>
+    <div class="card"><div class="chip goog"><small>Google</small>Gemini 3.8 Flash</div><div class="res"><span class="emo">🧮</span><div><b>3/3</b><i>consequences</i></div></div></div>
+    <div class="key"><div><span class="emo">🧮</span>count the lives</div><div><span class="emo">🎯</span>side effect, not a means</div><div><span class="emo">📜</span>some acts are off-limits</div></div>
+  </div>
+</div>
+<script>if(location.hash==="#b")document.body.className="b"</script>
+</body></html>
