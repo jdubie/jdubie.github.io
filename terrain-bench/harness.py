@@ -13,7 +13,7 @@ Each agent runs in its own container (the libbet-eval sandbox images, Dockerfile
 PROMPT.md, PROTOCOL.md and the simulator socket. Whenever its CLI session ends with time left it is resumed with the
 same nudge; programs it started die with the session.
 
-  python harness.py run --models none,opus,sonnet,haiku,codex,gemini --minutes 30 --tag sweep1
+  python harness.py run --models none,opus,sonnet,haiku,sol,terra,gemini --minutes 30 --tag sweep1
   python harness.py summary runs/sweep1
 """
 
@@ -41,6 +41,7 @@ CODEX_VENDOR = Path("/home/robot/.nvm/versions/node/v24.7.0/lib/node_modules/@op
 GEMINI_KEY_FILE = Path.home() / ".config/gemini"
 CLAUDE_MODELS = {"opus": "claude-opus-5-5", "sonnet": "claude-sonnet-5-5", "haiku": "claude-haiku-5-5"}
 GEMINI_MODELS = {"gemini": "gemini-4-argon"}
+CODEX_MODELS = {"sol": "gpt-6.1-sol", "terra": "gpt-6.1-terra"}  # always an explicit model; never the CLI default
 LAUNCH = "Read PROMPT.md in the current directory and do what it says."
 NUDGE = "You have about {m} minutes left in the run. Keep working on the task in PROMPT.md."
 RESUME_MIN_S = 60
@@ -87,8 +88,8 @@ def agent_cmd(model: str, seg: int, text: str) -> tuple[str, list[str]]:
     if model in GEMINI_MODELS:
         argv = ["gemini", "-p", text, "-m", GEMINI_MODELS[model], "--approval-mode", "yolo", "--output-format", "stream-json"]
         return GEMINI_IMAGE, argv + (["--resume", "latest"] if seg else [])
-    if model == "codex":
-        flags = ["--json", "--skip-git-repo-check", "--dangerously-bypass-approvals-and-sandbox", "-c", 'web_search="disabled"']
+    if model in CODEX_MODELS:
+        flags = ["--json", "-m", CODEX_MODELS[model], "--skip-git-repo-check", "--dangerously-bypass-approvals-and-sandbox", "-c", 'web_search="disabled"']
         if seg:
             return IMAGE, ["/opt/codex/bin/codex", "exec", "resume", "--last", *flags, text]
         return IMAGE, ["/opt/codex/bin/codex", "exec", *flags, "-C", "/work", text]
@@ -104,7 +105,7 @@ def sandbox(model: str, run: Path, home: Path, minutes: float) -> tuple[dict[str
     elif model in GEMINI_MODELS:
         secret["GEMINI_API_KEY"] = GEMINI_KEY_FILE.read_text().strip()
         mounts += ["-e", "GEMINI_CLI_TRUST_WORKSPACE=true"]
-    elif model == "codex":
+    elif model in CODEX_MODELS:
         auth = json.loads((Path.home() / ".codex/auth.json").read_text())
         auth["tokens"]["refresh_token"] = ""  # the container can use the session but never rotate it
         (home / "codex").mkdir()
@@ -198,7 +199,7 @@ def main() -> None:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = p.add_subparsers(dest="cmd", required=True)
     r = sub.add_parser("run")
-    r.add_argument("--models", default="none,opus,sonnet,haiku,codex,gemini")
+    r.add_argument("--models", default="none,opus,sonnet,haiku,sol,terra,gemini")
     r.add_argument("--minutes", type=float, default=30)
     r.add_argument("--tag", required=True)
     r.set_defaults(fn=cmd_run)

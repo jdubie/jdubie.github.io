@@ -39,7 +39,7 @@ Needs `node`, `ffmpeg`, pycairo, Docker, and the sandbox images and proxy networ
 are copied into [`docker/`](docker/)).
 
 ```
-python harness.py run --models none,opus,sonnet,haiku,codex,gemini --minutes 30 --tag sweep1   # all in parallel
+python harness.py run --models none,opus,sonnet,haiku,sol,terra,gemini --minutes 30 --tag sweep1   # all in parallel
 python harness.py summary runs/sweep1
 python render.py runs/sweep1                  # runs/sweep1/site/terrain_bench.mp4
 node sim/server.js --socket /tmp/sim.sock     # a simulator to drive by hand

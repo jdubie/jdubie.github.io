@@ -29,7 +29,8 @@ MODELS = {  # key: (display name, colour, logo file or None)
     "opus": ("Opus 5.5", "#c2410c", "anthropic"),
     "sonnet": ("Sonnet 5.5", "#2563eb", "anthropic"),
     "haiku": ("Haiku 5.5", "#059669", "anthropic"),
-    "codex": ("Codex", "#7c3aed", "openai"),
+    "sol": ("GPT-6.1 Sol", "#7c3aed", "openai"),
+    "terra": ("GPT-6.1 Terra", "#db2777", "openai"),
     "gemini": ("Gemini 4 Argon", "#ca8a04", "google"),
     "none": ("Default car, no agent", "#6b7280", None),
 }
