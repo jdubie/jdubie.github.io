@@ -12,6 +12,7 @@ Needs pycairo and ffmpeg (no numpy).
 
 from __future__ import annotations
 
+import html
 import json
 import math
 import subprocess
@@ -303,7 +304,46 @@ def main() -> None:
     race(fr, models, run.name)
     chart(fr, models, minutes)
     fr.close()
+    page(run, models, minutes)
     print(out / "terrain_bench.mp4")
+
+
+def page(run: Path, models: list[dict], minutes: float) -> None:
+    """runs/<tag>/site/index.html: the headline, the video, and one row per model."""
+    rows = []
+    for m in models:
+        name, col, _ = MODELS[m["key"]]
+        meta = json.loads((run / m["key"] / "meta.json").read_text())
+        b = m["best"]
+        p = b["params"]
+        car = (f"wheels r={p['wheel_radius'][0]:g}/{p['wheel_radius'][1]:g} m on vertices {p['wheel_vertex'][0]}/{p['wheel_vertex'][1]}, "
+               f"motor {p['motor_speed'][0]:g}/{p['motor_speed'][1]:g} rad/s, torque x{p['torque_scale'][0]:g}/{p['torque_scale'][1]:g}")
+        t_best = next((q for q in m["progress"] if q["best"] >= b["distance"] - 1e-3), m["progress"][-1])["t"]
+        rows.append(f"<tr><th><span class=dot style='background:{col}'></span>{html.escape(name)}</th><td><b>{b['distance']:.1f} m</b></td>"
+                    f"<td>{t_best / 60:.1f} min</td><td>{meta['episodes']}</td><td>{len(meta['segments'])}</td>"
+                    f"<td>{b['reason']}, {b['sim_s']:.0f} s, {len(b['changes']) - 1} mid-run changes</td><td class=dim>{html.escape(car)}</td></tr>")
+    lead, base = models[0], next((m for m in models if m["key"] == "none"), None)
+    head = f"{MODELS[lead['key']][0]} drove furthest: {lead['best']['distance']:.1f} m"
+    if base and lead is not base:
+        head += f", against {base['best']['distance']:.1f} m for the default car with no agent"
+    (run / "site" / "index.html").write_text(f"""<!doctype html><html><head><meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1"><title>terrain-bench {html.escape(run.name)}</title><style>
+:root{{--bg:#fff;--fg:#111;--dim:#777;--line:#ddd}}
+@media (prefers-color-scheme:dark){{:root{{--bg:#111;--fg:#eee;--dim:#999;--line:#333}}}}
+body{{background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,sans-serif;max-width:1100px;margin:2em auto;padding:0 16px}}
+a{{color:inherit}} video{{width:100%;border:1px solid var(--line)}} .dim{{color:var(--dim);font-size:13px}} .wrap{{overflow-x:auto}}
+table{{border-collapse:collapse;margin:1em 0}} th,td{{padding:6px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}}
+.dot{{display:inline-block;width:10px;height:10px;border-radius:5px;margin-right:8px}}</style></head><body>
+<h1>terrain-bench · {html.escape(run.name)}</h1>
+<p><b>{html.escape(head)}.</b> Each agent had {minutes:g} minutes in its own sandbox with a live simulator, resetting to new courses
+whenever it liked; the reward is the furthest x any of its cars reached.</p>
+<video src="terrain_bench.mp4" controls autoplay muted loop playsinline></video>
+<div class=wrap><table><tr><th>model</th><th>furthest</th><th>reached at</th><th>episodes</th><th>sessions</th><th>that episode</th><th>car at its end</th></tr>
+{''.join(rows)}</table></div>
+<p class=dim>Every reset draws a new random course, so lanes in the race are different courses. "Sessions" counts CLI sessions;
+an agent that stopped early was resumed with a nudge. Car, terrain and physics: <a href="http://rednuht.org/genetic_cars_2/">HTML5
+Genetic Algorithm 2D Car Thingy</a> by Rafael Matsunaga (read from <a href="https://santex.github.io/singularity/seed/idx.html">this
+copy</a>), after <a href="http://boxcar2d.com/">BoxCar2D</a>, on <a href="https://box2d.org/">Box2D</a>.</p></body></html>""")
 
 
 if __name__ == "__main__":
