@@ -58,12 +58,29 @@ const TERRAINS = {
 
 // jitter (optional, 0..1): instead of uniform in +-amp, the slope is amp * (1 - jitter * v) with a random sign, so every
 // tile at a given distance is about equally steep and difficulty depends on distance, not on luck.
+// max_run (optional): at most this many tiles in a row tilt the same way, so no course has a long climb that others lack.
+let runSign = 0, runLen = 0, wallAt = 0, wallLeft = 0;
 function tileAngle(t, k) {
+  if (k === 0) { runSign = 0; runLen = 0; wallLeft = 0; if (t.walls) wallAt = t.walls.every[0] + Math.floor(Math.random() * (t.walls.every[1] - t.walls.every[0])); }
+  // walls (optional): every `every` tiles (uniform in the range), `len` tiles in a row climb at an angle growing linearly
+  // from angle0 to angle1 over the ramp: obstacles that need a run-up, between stretches of rough ground
+  if (t.walls && (wallLeft > 0 || k >= wallAt)) {
+    if (wallLeft === 0) wallLeft = t.walls.len;
+    if (--wallLeft === 0) wallAt = k + t.walls.every[0] + Math.floor(Math.random() * (t.walls.every[1] - t.walls.every[0]));
+    const f = Math.min(1, k / t.ramp_tiles);
+    return t.walls.angle0 + (t.walls.angle1 - t.walls.angle0) * f;
+  }
   const a0 = t.min_angle || 0;   // steepness at the start of the course
   const amp = a0 + (t.max_angle - a0) * Math.pow(Math.min(1, k / t.ramp_tiles), t.power);
   const u = Math.random();
   if (t.jitter === undefined) return (u * 2 - 1) * amp;
-  return (u < 0.5 ? -1 : 1) * amp * (1 - t.jitter * ((u * 2) % 1));
+  let sign = u < 0.5 ? -1 : 1;
+  // persist (optional, 0..1): chance a tile keeps the previous tile's tilt, which turns zigzags into long hills
+  if (t.persist && runSign && Math.random() < t.persist) sign = runSign;
+  if (t.max_run && sign === runSign && runLen >= t.max_run) sign = -sign;
+  runLen = sign === runSign ? runLen + 1 : 1;
+  runSign = sign;
+  return sign * amp * (1 - t.jitter * ((u * 2) % 1));
 }
 
 function createFloor(world, seed, t) {

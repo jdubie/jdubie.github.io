@@ -3,6 +3,26 @@
 const MAX = { motor_speed: [30, 30], torque_scale: [2, 2], wheel_radius: [0.6, 0.6] };
 const wrap = (a) => Math.atan2(Math.sin(a), Math.cos(a));
 const POLICIES = {
+  // Opus 5.5's controller from pilot3 (runs/pilot3/opus/work/scripts/ctl3.py), ported: pitch control with a dead-band,
+  // plus a stuck state machine (back up, then charge). Acts every 3 ticks, as Opus stepped it.
+  opus_p3: (g) => {
+    let best = -1e9, tbest = 0, mode = "run", tm = 0, k = 0, last = null;
+    return (o) => {
+      if (k++ % 3) return null;
+      const t = o.t, x = o.pos[0];
+      if (x > best + 0.05) { best = x; tbest = t; }
+      if (mode === "run" && t - tbest > g.st) { mode = "back"; tm = t; }
+      else if (mode === "back" && t - tm > g.bt) { mode = "charge"; tm = t; }
+      else if (mode === "charge" && (t - tm > 6 || x > best + 0.5)) { mode = "run"; tbest = t; }
+      const v = { run: g.vmax, back: g.bv, charge: g.cv }[mode];
+      const rot = o.rot, w = o.angvel;
+      const e = rot > g.thr ? rot - g.thr : rot < -g.thr ? rot + g.thr : 0;
+      const sp = Math.max(-30, Math.min(30, v - Math.abs(v) * (g.kp * e + g.kd * w)));
+      if (sp === last) return null;
+      last = sp;
+      return { motor_speed: [sp, sp] };
+    };
+  },
   // tunable feedback driver: speed = base - kp*pitch - kd*angvel - kdrop*drop_ahead + krise*rise_ahead, clamped
   tuned: (g) => (o) => {
     const e = wrap(o.rot);

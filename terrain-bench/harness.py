@@ -5,9 +5,10 @@ http://rednuht.org/genetic_cars_2/, read from https://santex.github.io/singulari
 on BoxCar2D (http://boxcar2d.com/). See README.md.
 
 A run is one simulator and one agent for MINUTES of wall time. The simulator is stepped ("fake time"): nothing moves
-unless the agent steps it, in up to 8 parallel environments, as fast as its 3 CPU cores allow. Reward = the furthest x
+unless the agent steps it, in up to 8 parallel environments, as fast as its 3 CPU cores allow, for at most EPISODES
+episodes in all (every course driven counts, resets included). Reward = the furthest x
 any episode reached during the run; the curve of that over time is the progress plot. Model `none` is no agent: a
-script that runs the default car through course after course, in all 8 environments, for the same time.
+script that runs the default car through course after course, in all 8 environments, until the budget is used.
 
 Each agent runs in its own container (the libbet-eval sandbox images, Dockerfiles in docker/), with /work holding
 PROMPT.md, PROTOCOL.md and the simulator socket. Whenever its CLI session ends with time left it is resumed with the
@@ -48,6 +49,7 @@ RESUME_MIN_S = 60
 TOKEN_MARGIN_MIN = 5
 
 TERRAIN = "v4"
+EPISODES = 1000   # per run, across all environments: every course driven, including the first in each environment
 SIM_CPUS = 3
 
 PROMPT = """\
@@ -60,9 +62,10 @@ shape, wheel placement, wheel size and density, and each motor's speed and torqu
 90°, and stalls if it stops making progress. Time is yours: nothing moves unless you step it, and you can run up to 8
 environments in parallel, each on its own random course.
 
-This run lasts {minutes} minutes of wall-clock time from when you were started. Your reward is the furthest x that any
-of your cars reaches at any moment during the run, in any environment. Only that maximum counts: reset as often as you
-like, and failed attempts cost nothing but time.
+This run lasts {minutes} minutes of wall-clock time from when you were started, and allows {episodes} episodes in total:
+every course you drive counts, whether it ends by crashing, stalling or a reset, including the first course of each
+environment you make. Once they are used up nothing more can be driven. Your reward is the furthest x that any of your
+cars reaches at any moment during the run, in any environment.
 
 You may be stopped and resumed. Programs you start do not survive the end of your session.
 """
@@ -74,17 +77,19 @@ def none_driver(sock: Path, deadline: float) -> None:
     s = so.socket(so.AF_UNIX)
     s.connect(str(sock))
     f = s.makefile("rw")
-    envs = []
+    envs = set()
     for _ in range(8):
         f.write(json.dumps({"cmd": "make"}) + "\n")
         f.flush()
-        envs.append(json.loads(f.readline())["env"])
-    while time.time() < deadline:
+        envs.add(json.loads(f.readline())["env"])
+    while envs and time.time() < deadline:  # until the episode budget runs out
         for e in envs:
-            f.write(json.dumps({"cmd": "step", "env": e, "n": 6000, "obs": "none"}) + "\n")
+            f.write(json.dumps({"cmd": "step", "env": e, "n": 6000, "obs": "none", "id": e}) + "\n")
         f.flush()
-        for _ in envs:
-            f.readline()
+        for _ in list(envs):
+            r = json.loads(f.readline())
+            if r["type"] == "error":
+                envs.discard(r["id"])
 
 
 def claude_token(minutes: float) -> str:
@@ -150,14 +155,14 @@ def run_agent(tag: str, model: str, minutes: float) -> dict:
     work, home, rec = run / "work", run / "home", run / "sim"
     for d in (work, home, rec):
         d.mkdir(parents=True)
-    (work / "PROMPT.md").write_text(PROMPT.format(minutes=round(minutes)))
+    (work / "PROMPT.md").write_text(PROMPT.format(minutes=round(minutes), episodes=EPISODES))
     shutil.copy(ROOT / "PROTOCOL.md", work / "PROTOCOL.md")
     secret, mounts = sandbox(model, run, home, minutes) if model != "none" else ({}, [])
 
     sock = work / "sim.sock"
     # its own scope with a CPU cap, so runs in parallel get equal compute however many environments they use
     sim = subprocess.Popen(["systemd-run", "--user", "--scope", "-q", "-p", f"CPUQuota={SIM_CPUS * 100}%", "node", str(SERVER),
-                            "--socket", str(sock), "--record", str(rec), "--terrain", TERRAIN], stderr=subprocess.DEVNULL, start_new_session=True)
+                            "--socket", str(sock), "--record", str(rec), "--terrain", TERRAIN, "--episodes", str(EPISODES)], stderr=subprocess.DEVNULL, start_new_session=True)
     while not sock.exists():
         time.sleep(0.05)
     t0 = time.time()

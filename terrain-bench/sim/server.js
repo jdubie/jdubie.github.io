@@ -1,7 +1,7 @@
 // terrain-bench simulator: stepped ("fake time") parallel environments over a unix socket. Physics is sim/core.js, a
 // headless port of Rafael Matsunaga's HTML5 Genetic Algorithm 2D Car Thingy (cawro.js), after BoxCar2D, on Box2D.
 //
-//   node sim/server.js --socket /path/sim.sock [--record DIR] [--terrain NAME|JSON] [--envs 8] [--max-s 600]
+//   node sim/server.js --socket /path/sim.sock [--record DIR] [--terrain NAME|JSON] [--envs 8] [--max-s 600] [--episodes N]
 //
 // Nothing moves unless a client steps it. Each environment runs in its own worker thread; a step that hangs inside the
 // physics engine is killed by a watchdog and the environment restarts on a new course. --record writes
@@ -23,6 +23,7 @@ if (!isMainThread) {
   let params = workerData.params, index = workerData.index, ep = null;
   const start = () => { ep = new core.Episode(index++, crypto.randomBytes(4).toString("hex"), params, terrain, true); return startMsg(); };
   const startMsg = () => ({ type: "episode_start", episode: ep.index, params: ep.car.params });
+  let done = false;   // the run's episode budget ran out: no episode in this environment any more
   const end = (reason, best) => {
     const r = ep.result(reason);
     params = ep.car.params;
@@ -32,8 +33,9 @@ if (!isMainThread) {
   parentPort.on("message", (m) => {
     const out = { rid: m.rid, events: [], recs: [], ends: [] };
     try {
-      if (m.cmd === "init") out.events.push(start());
+      if (m.cmd === "init") { out.events.push(start()); out.started = 1; }
       else if (m.cmd === "step") {
+        if (done) throw new Error("the run's episode budget is used up; this environment has no episode");
         const all = [];
         let n = 0;
         for (; n < m.n; n++) {
@@ -45,7 +47,7 @@ if (!isMainThread) {
             out.ends.push(r); out.events.push(r);
             if (rec) out.recs.push(rec);
             out.last = ep.obs();
-            out.events.push(start());
+            if (m.allow_new) { out.events.push(start()); out.started = 1; } else done = true;
             n++;
             break;
           }
@@ -53,6 +55,8 @@ if (!isMainThread) {
         out.ticks = n;
         out.obs = m.obs === "all" ? all : m.obs === "none" ? undefined : out.last || ep.obs();
         delete out.last;
+      } else if (done && ["set", "get_params", "reset"].includes(m.cmd)) {
+        throw new Error("the run's episode budget is used up; this environment has no episode");
       } else if (m.cmd === "set") {
         ep.car.set(m.params || {});
         ep.changes.push([ep.frames, ep.car.params]);
@@ -62,9 +66,11 @@ if (!isMainThread) {
         const { r, rec } = end("reset", m.best);
         out.ends.push(r); out.events.push(r);
         if (rec) out.recs.push(rec);
-        out.events.push(start());
+        if (m.allow_new) { out.events.push(start()); out.started = 1; } else done = true;
       } else if (m.cmd === "finish") {          // run over: report the episode in progress
+        if (done) throw new Error("no episode");
         const { r, rec } = end("run_end", m.best);
+        done = true;
         out.ends.push(r);
         if (rec) out.recs.push(rec);
       }
@@ -83,7 +89,7 @@ if (!isMainThread) {
 const core = require("./core.js");
 
 function parseArgs(argv) {
-  const a = { socket: null, record: null, terrain: "cawro", envs: 8, maxS: 600 };
+  const a = { socket: null, record: null, terrain: "cawro", envs: 8, maxS: 600, episodes: Infinity };
   for (let i = 2; i < argv.length; i++) {
     const k = argv[i], v = argv[++i];
     if (k === "--socket") a.socket = v;
@@ -91,6 +97,7 @@ function parseArgs(argv) {
     else if (k === "--terrain") a.terrain = v;
     else if (k === "--envs") a.envs = +v;
     else if (k === "--max-s") a.maxS = +v;
+    else if (k === "--episodes") a.episodes = +v;
     else throw new Error("unknown arg " + k);
   }
   if (!a.socket) throw new Error("--socket is required");
@@ -103,6 +110,8 @@ const wallT0 = Date.now() / 1000;
 const rec = (name) => path.join(args.record, name);
 if (args.record) fs.mkdirSync(args.record, { recursive: true });
 let best = 0, ticksTotal = 0, rid = 0, episodeCounter = 0;
+let started = 0, reserved = 0;   // episodes begun, and grants handed to requests still in flight
+const left = () => args.episodes - started;
 const envs = new Map();   // id -> {worker, pending: Map(rid -> resolve), maxX, params, busy}
 let nextEnvId = 0;
 
@@ -130,8 +139,15 @@ function spawn(env) {
 }
 
 // Send one request to an env's worker, with a watchdog that restarts the env if the physics engine hangs.
+// Requests that may begin an episode (make, step, reset) carry allow_new only if the budget has room, counting
+// in-flight grants, so parallel environments cannot overshoot it.
 function call(env, m, ticks = 0) {
-  return new Promise((resolve) => {
+  const canStart = ["init", "step", "reset"].includes(m.cmd);
+  const grant = canStart && args.episodes - started - reserved > 0;
+  if (grant) reserved++;
+  const settle = (msg) => { if (grant) reserved--; if (msg && msg.started) started++; return msg; };
+  return new Promise((resolve0) => {
+    const resolve = (msg) => resolve0(settle(msg));
     const id = ++rid;
     const timer = setTimeout(() => {
       env.pending.delete(id);
@@ -146,12 +162,13 @@ function call(env, m, ticks = 0) {
         resolve({ error: "the physics engine hung; this environment was restarted on a new course", events: [lost, ...init.events] }));
     }, 3000 + ticks * 2);
     env.pending.set(id, { resolve, timer });
-    env.worker.postMessage({ ...m, rid: id, best });
+    env.worker.postMessage({ ...m, rid: id, best, allow_new: grant });
   });
 }
 
 async function makeEnv() {
   if (envs.size >= args.envs) throw new Error(`at most ${args.envs} environments; close one first`);
+  if (args.episodes - started - reserved <= 0) throw new Error("the run's episode budget is used up");
   const env = { id: nextEnvId++, pending: new Map(), maxX: 0, params: core.DEFAULT_PARAMS };
   envs.set(env.id, env);
   spawn(env);
@@ -178,7 +195,7 @@ async function handle(m) {
       const r = await call(env, { cmd: "step", n, obs }, n);
       if (r.error) throw Object.assign(new Error(r.error), { events: r.events });
       ticksTotal += r.ticks;
-      return reply({ env: env.id, ticks: r.ticks, obs: r.obs, events: r.events, best_distance: best });
+      return reply({ env: env.id, ticks: r.ticks, obs: r.obs, events: r.events, best_distance: best, episodes_left: left() });
     }
     case "set": case "get_params": case "reset": {
       const env = getEnv(m);
@@ -194,7 +211,8 @@ async function handle(m) {
       return reply({ env: env.id, closed: true });
     }
     case "status":
-      return reply({ envs: [...envs.keys()], best_distance: best, wall_s: Date.now() / 1000 - wallT0, ticks_total: ticksTotal });
+      return reply({ envs: [...envs.keys()], best_distance: best, wall_s: Date.now() / 1000 - wallT0, ticks_total: ticksTotal,
+                     episodes_used: started, episodes_left: left() });
     default:
       throw new Error(`unknown cmd ${JSON.stringify(m.cmd)}; want make | step | set | get_params | reset | close | status`);
   }
@@ -203,7 +221,8 @@ async function handle(m) {
 const progress = () => {
   if (!args.record) return;
   const live = Math.max(0, ...[...envs.values()].map((e) => e.maxX));
-  fs.appendFileSync(rec("progress.jsonl"), JSON.stringify({ t: core.r4(Date.now() / 1000 - wallT0), best: core.r4(Math.max(best, live)), ticks: ticksTotal }) + "\n");
+  fs.appendFileSync(rec("progress.jsonl"), JSON.stringify({ t: core.r4(Date.now() / 1000 - wallT0), best: core.r4(Math.max(best, live)), ticks: ticksTotal,
+                                                           episodes: started }) + "\n");
 };
 setInterval(progress, 1000);
 

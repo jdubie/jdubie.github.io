@@ -7,6 +7,10 @@ torque. You can change any of these at any tick.
 **Time is yours.** Nothing moves unless you step it. You can run up to **8 environments** at once, each on its own
 course, and step each one as many ticks at a time as you like. Physics runs at 60 ticks per simulated second.
 
+**Episodes are not.** A run allows a fixed number of episodes in total, across all environments (the prompt says how
+many). Every course driven counts: the first one in each environment you make, and each one after a crash, stall,
+finish or reset. When none are left, commands that would need an episode reply with an error.
+
 ## Connecting
 
 Unix stream socket `./sim.sock`, newline-delimited JSON in both directions. Each request gets exactly one reply. Add
@@ -32,18 +36,18 @@ print(r["obs"]["pos"], r["events"])
 | command | reply |
 |---|---|
 | `{"cmd": "make"}` | `{env, events}`: a new environment on a new course, with the default params |
-| `{"cmd": "step", "env": E, "n": N, "obs": "last"}` | advance N ticks (1–6000). `obs` is `"last"` (the final tick's observation), `"all"` (a list, one per tick) or `"none"`. Reply: `{ticks, obs, events, best_distance}`. Stepping stops early at the end of an episode, so `ticks` can be less than N |
+| `{"cmd": "step", "env": E, "n": N, "obs": "last"}` | advance N ticks (1–6000). `obs` is `"last"` (the final tick's observation), `"all"` (a list, one per tick) or `"none"`. Reply: `{ticks, obs, events, best_distance, episodes_left}`. Stepping stops early at the end of an episode, so `ticks` can be less than N |
 | `{"cmd": "set", "env": E, "params": {...}}` | change any subset of the params below; applies from the next tick. Reply carries the full new set |
 | `{"cmd": "get_params", "env": E}` | the current params |
 | `{"cmd": "reset", "env": E}` | end this environment's episode now and start a new random course from the beginning, keeping the params |
 | `{"cmd": "close", "env": E}` | remove the environment |
-| `{"cmd": "status"}` | `{envs, best_distance, wall_s, ticks_total}` |
+| `{"cmd": "status"}` | `{envs, best_distance, wall_s, ticks_total, episodes_used, episodes_left}` |
 
 A rejected command replies `{"type": "error", "msg": ...}` and changes nothing.
 
 `events` lists `episode_end` (`{episode, seed, reason, distance, sim_s, params}`) and `episode_start`
 (`{episode, params}`) in the order they happened. When an episode ends, the next one starts immediately on a new random
-course, keeping the car's params. `reason` is `stalled`, `crashed`, `finished`, `timeout` (600 simulated seconds) or
+course, keeping the car's params, if the budget has an episode left. `reason` is `stalled`, `crashed`, `finished`, `timeout` (600 simulated seconds) or
 `reset`. If the physics engine ever hangs, the step replies with an error, the episode ends as `physics_error` (its
 distance still counts), and the environment restarts on a new course.
 

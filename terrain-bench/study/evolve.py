@@ -65,10 +65,11 @@ def cross(a: dict, b: dict, rng: random.Random) -> dict:
     return c
 
 
-def evaluate(cars: list[dict], terrain: dict, seeds: list[int], max_s: float, workers: int) -> list[float]:
-    jobs = "".join(json.dumps({"id": [i, s], "seed": s, "terrain": terrain, "max_s": max_s, "policy": "tuned", "policy_args": c["gains"],
-                               "params": {k: v for k, v in c.items() if k != "gains"}}) + "\n"
-                   for i, c in enumerate(cars) for s in seeds)
+def evaluate(cars: list[dict], terrain: dict, seeds: list[int], max_s: float, workers: int, static: bool = False) -> list[float]:
+    def job(i: int, c: dict, s: int) -> dict:
+        j = {"id": [i, s], "seed": s, "terrain": terrain, "max_s": max_s, "params": {k: v for k, v in c.items() if k != "gains"}}
+        return j if static else {**j, "policy": "tuned", "policy_args": c["gains"]}
+    jobs = "".join(json.dumps(job(i, c, s)) + "\n" for i, c in enumerate(cars) for s in seeds)
     out = subprocess.run(["node", str(ROOT / "sim" / "batch.js"), "--workers", str(workers)], input=jobs, capture_output=True, text=True, check=True)
     tot = [0.0] * len(cars)
     for line in out.stdout.splitlines():
@@ -86,6 +87,7 @@ def main() -> None:
     ap.add_argument("--max-s", type=float, default=600)
     ap.add_argument("--workers", type=int, default=20)
     ap.add_argument("--out", required=True)
+    ap.add_argument("--static", action="store_true", help="no controller: the car's params never change (a fixed-car search)")
     a = ap.parse_args()
     terrain = json.loads(a.terrain)
     out = Path(a.out)
@@ -94,7 +96,7 @@ def main() -> None:
     pop = [random_car(rng) for _ in range(a.pop)]
     for g in range(a.gens):
         seeds = [rng.randrange(10**9) for _ in range(a.seeds)]
-        fit = evaluate(pop, terrain, seeds, a.max_s, a.workers)
+        fit = evaluate(pop, terrain, seeds, a.max_s, a.workers, a.static)
         order = sorted(range(len(pop)), key=lambda i: -fit[i])
         with (out / "log.jsonl").open("a") as f:
             f.write(json.dumps({"gen": g, "best": fit[order[0]], "mean": sum(fit) / len(fit), "params": pop[order[0]]}) + "\n")
