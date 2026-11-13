@@ -1,13 +1,13 @@
 # terrain-bench
 
-An agent benchmark: coding agents drive a 2D car over rough terrain, in real time, through a unix socket.
+An agent benchmark: coding agents design and drive a 2D car over rough terrain through a unix socket.
 
-A run is one simulator and one agent for a fixed wall-clock time (30 minutes by default). The car drives from the first
-second, on default settings, whether or not the agent is connected. The agent sees the chassis pose, velocity and
-angular velocity, plus one number (the ground height 2 m ahead), at 60 Hz. It can change the car while it drives
-(chassis shape, wheel placement, wheel size and density, each motor's speed and torque) and reset to a new random
-course whenever it likes. It cannot steer or brake. **Reward is the furthest x any episode reaches during the run.**
-There is no separate practice or evaluation phase. The agent-facing protocol is [PROTOCOL.md](PROTOCOL.md).
+A run is one agent and one simulator for a fixed wall-clock time (30 minutes by default). Time inside the simulator is
+the agent's to spend: nothing moves unless it steps an environment, and it may run up to 8 environments in parallel,
+as fast as the simulator's 3 CPU cores allow. Each tick it sees the chassis pose, velocity and angular velocity plus
+one number, the ground height 2 m ahead. At any tick it can change the car: chassis shape, wheel placement, wheel size
+and density, each motor's speed and torque. It cannot steer. The car crashes if it tips past 90°. **Reward is the
+furthest x any episode reaches during the run.** The agent-facing protocol is [PROTOCOL.md](PROTOCOL.md).
 
 ## Credit
 
@@ -27,11 +27,16 @@ That program is in turn loosely based on [BoxCar2D](http://boxcar2d.com/) and us
 
 Changed for the benchmark:
 
-- one car instead of a population of 20, and no genetic algorithm; the agent is the designer
+- one car instead of a population of 20, and no genetic algorithm; the agent is the designer and the driver
 - wheels start on their axles instead of at the origin
 - motor speed and torque limit are adjustable; cawro fixes them at 20 rad/s and car mass × g / radius
-- every parameter can be changed mid-run, and the car keeps its parameters from one course to the next
-- a 180 s episode cap; reward is distance alone (cawro adds average speed)
+- every parameter can be changed mid-episode, and the car keeps its parameters from one course to the next
+- **the terrain (preset `v3` in [`sim/core.js`](sim/core.js))**: cawro's courses are unclimbable by design: every one
+  has an uphill tile steeper than 75° by about 175 m and ends at about 223 m ([study/](study/)). v3 keeps cawro's tile
+  generator but runs 2000 tiles (3 km), makes every tile at a given distance about equally steep (±30% jitter, random
+  sign) so that difficulty depends on distance rather than luck, and grows that steepness as √distance to 0.9 rad
+- a crash rule: tipping past 90° ends the episode, so driving flat out flips the car and control matters
+- stepped "fake time" and parallel environments instead of cawro's real-time loop; reward is distance alone
 
 ## Running
 
@@ -45,7 +50,12 @@ python render.py runs/sweep1                  # runs/sweep1/site/terrain_bench.m
 node sim/server.js --socket /tmp/sim.sock     # a simulator to drive by hand
 ```
 
-`none` is the baseline: no agent, the default car alone for the same time, resetting only when it stalls.
+`none` is the baseline: no agent; a script runs the default car through course after course in all 8 environments
+for the same time, so it is the best that course luck alone gives the default car.
+
+Calibration tools: [`sim/batch.js`](sim/batch.js) runs thousands of episodes in parallel threads, with optional
+scripted drivers ([`sim/policies.js`](sim/policies.js)); [`study/evolve.py`](study/evolve.py) evolves a car and
+controller gains together, which gives a lower bound on how far a good agent could get.
 
 The video ([`render.py`](render.py)) is the race, then the reward over time. The race replays every model's furthest
 episode side by side from the same start, one lane each, drawn as the original page draws its cars, with the company
@@ -57,7 +67,8 @@ Each run gets `runs/<tag>/<model>/`: the agent transcript, its working directory
 
 Caveats:
 
-- Courses are random per reset, so a longer run or a reset-heavy strategy samples more courses; the `none` baseline
-  shows how far course luck alone gets the default car.
-- Programs an agent starts die when its CLI session ends. It is then resumed with a nudge, and meanwhile the car
-  drives on its last settings.
+- Courses are random per reset, so a reset-heavy strategy samples more courses; the `none` baseline shows how far
+  course luck alone gets the default car.
+- Programs an agent starts die when its CLI session ends. It is then resumed with a nudge.
+- In sweep1 the Box2D port hung twice inside a physics step, both times on a thin stretched chassis. Not reproduced.
+  The server now runs each environment in a worker thread with a watchdog, but that path has not been exercised.

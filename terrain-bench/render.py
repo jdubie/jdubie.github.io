@@ -12,6 +12,7 @@ Needs pycairo and ffmpeg (no numpy).
 
 from __future__ import annotations
 
+import bisect
 import html
 import json
 import math
@@ -142,7 +143,10 @@ def draw_lane(c: cairo.Context, m: dict, tick: int, cam: list[float], box: tuple
     c.scale(zoom, -zoom)
     c.set_line_width(1 / zoom)
     lo, hi = cam[0] - w * 0.35 / zoom - 2, cam[0] + w * 0.65 / zoom + 2
-    for (ax, ay), (bx, by) in best["surface"]:
+    surf = best["surface"]
+    if "_x0" not in best:  # start x of each tile; tiles never fold back on these terrains, so it is sorted
+        best["_x0"] = [min(a[0], b[0]) for a, b in surf]
+    for (ax, ay), (bx, by) in surf[max(0, bisect.bisect_left(best["_x0"], lo) - 3):bisect.bisect_right(best["_x0"], hi) + 1]:
         if max(ax, bx) < lo or min(ax, bx) > hi:
             continue
         ang = math.atan2(by - ay, bx - ax)
