@@ -50,6 +50,13 @@ li.hide{display:none}
         <p>Our packaging robot in the Pi API beta launch, and why their base model impressed us.</p>
         <div class="tags"><a href="#deployment">deployment</a></div>
       </li>
+      <li data-tags="agent-evals" data-order="60">
+        <a class="thumb" href="posts/cad-finger-benchmark/" tabindex="-1" aria-hidden="true"><video src="posts/cad-finger-benchmark/thumb.mp4" poster="posts/cad-finger-benchmark/thumb.jpg" muted autoplay loop playsinline preload="metadata"></video></a>
+        <time datetime="2026-10-13">October 13, 2026</time>
+        <a href="posts/cad-finger-benchmark/">Can a coding agent CAD a robot finger from pictures?</a>
+        <p>Five coding agents got five pictures of a robot gripper finger and 20 minutes to rebuild it in CAD.</p>
+        <div class="tags"><a href="#agent-evals">agent evals</a></div>
+      </li>
       <li data-tags="agent-evals" data-order="90">
         <a class="thumb" href="posts/real2sim-case-packing-cell/" tabindex="-1" aria-hidden="true"><video src="posts/real2sim-case-packing-cell/thumb.mp4" poster="posts/real2sim-case-packing-cell/thumb.jpg" muted autoplay loop playsinline preload="metadata"></video></a>
         <time datetime="2026-10-13">October 13, 2026</time>
@@ -61,6 +68,12 @@ li.hide{display:none}
   </section>
 </main>
 <script>
+// Newest date first; posts sharing a date sort by data-order, low first (unset = 50).
+(function(){
+  var ul=document.querySelector('section ul');
+  var key=function(li){return [li.querySelector('time').getAttribute('datetime'), +(li.getAttribute('data-order')||50)];};
+  Array.from(ul.children).sort(function(a,b){var x=key(a),y=key(b);return x[0]<y[0]?1:x[0]>y[0]?-1:x[1]-y[1];}).forEach(function(li){ul.appendChild(li);});
+})();
 function applyFilter(){
   var t=decodeURIComponent(location.hash.slice(1));
   document.querySelectorAll('ul li').forEach(function(li){

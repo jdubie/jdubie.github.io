@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="tags" content="agent evals">
+<meta name="order" content="60">
+<title>CAD a Finger from Pictures</title>
+<meta name="description" content="Five coding agents got five pictures of a robot gripper finger and 20 minutes to rebuild it in CAD; Opus and Haiku matched a careful hand-built model, and most quit within six minutes.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@600;700&family=Public+Sans:wght@400;500&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+:root{--bg:#f3f4f5;--surface:#fff;--ink:#1b1f23;--muted:#5d6670;--rule:#d9dde1;--accent:#a3271b;
+  --display:"Archivo Narrow","Arial Narrow",Arial,sans-serif;--body:"Public Sans",system-ui,sans-serif;--mono:"JetBrains Mono",ui-monospace,monospace;
+  --s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a;--s4:#eda100;--s5:#e87ba4}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#15181b;--surface:#1d2125;--ink:#e7eaed;--muted:#9aa4ae;--rule:#2f353b;--accent:#e2614f;color-scheme:dark;
+  --s1:#3987e5;--s2:#d95926;--s3:#199e70;--s4:#c98500;--s5:#d55181}}
+:root[data-theme="dark"]{--bg:#15181b;--surface:#1d2125;--ink:#e7eaed;--muted:#9aa4ae;--rule:#2f353b;--accent:#e2614f;color-scheme:dark;
+  --s1:#3987e5;--s2:#d95926;--s3:#199e70;--s4:#c98500;--s5:#d55181}
+body{background:var(--bg);color:var(--ink);font:400 16px/1.65 var(--body);margin:0;padding:28px 16px 64px}
+main{max-width:720px;margin:0 auto;display:grid;gap:28px}
+main>*{min-width:0}
+.back{font:500 13px/1 var(--mono);color:var(--muted);text-decoration:none}.back:hover{color:var(--accent)}
+.eyebrow{font:500 12px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+header{display:grid;gap:14px}
+h1{font:700 clamp(30px,5vw,44px)/1.1 var(--display);margin:0;text-wrap:balance}
+p{margin:0}
+a{color:var(--accent)}
+figure{margin:0;display:grid;gap:8px}
+video{width:100%;display:block;border-radius:4px;background:#000}
+figcaption{font-size:13px;color:var(--muted)}
+blockquote{margin:0;padding:16px 20px;background:var(--surface);border-left:3px solid var(--accent);border-radius:0 4px 4px 0;display:grid;gap:10px}
+blockquote footer{font-size:13px;color:var(--muted)}
+h2{font:600 24px/1.15 var(--display);margin:8px 0 0}
+.draft{font:500 12px/1.4 var(--mono);color:var(--accent);border:1px dashed var(--accent);border-radius:4px;padding:8px 12px}
+.pair{display:grid;gap:18px}
+.label{font:500 11px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.tablewrap{overflow-x:auto;background:var(--surface);border:1px solid var(--rule);border-radius:4px}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:right;padding:8px 10px;border-bottom:1px solid var(--rule);font-variant-numeric:tabular-nums}
+th:first-child,td:first-child{text-align:left}
+tr:last-child td{border-bottom:0}
+td{white-space:nowrap}
+th{font:500 11px/1.2 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:var(--bg)}
+svg text{font:500 11px var(--mono);fill:var(--muted)}
+.legend{display:flex;flex-wrap:wrap;gap:4px 16px;font:500 12px var(--mono);color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.chart{background:var(--surface);border:1px solid var(--rule);border-radius:4px;padding:12px}
+ul{margin:0;padding-left:20px;display:grid;gap:8px}
+code{font:500 14px var(--mono)}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px 12px}
+.grid img{width:100%;display:block;border-radius:4px;border:1px solid var(--rule)}
+.grid .label{line-height:1.3}
+@media (max-width:560px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.tags{display:flex;flex-wrap:wrap;gap:6px}.tags a{font:500 11px/1 var(--mono);letter-spacing:.04em;color:var(--muted);border:1px solid var(--rule);border-radius:999px;padding:4px 9px;text-decoration:none}.tags a:hover{color:var(--accent);border-color:var(--accent)}
+</style>
+<main>
+  <header>
+    <a class="back" href="/">← Jack Dubie</a>
+    <div class="eyebrow">Agent evals · October 13, 2026</div>
+    <div class="tags"><a href="/#agent-evals">agent evals</a></div>
+    <h1>Can a coding agent CAD a robot finger from pictures?</h1>
+  </header>
+
+
+  <p><strong>Given five pictures and 20 minutes, Opus 5.5 and Haiku 5.5 rebuilt a gripper finger about as well as a careful hand-built model, and every agent that stopped on its own did so within six minutes.</strong></p>
+
+  <p>We design a lot of small parts for our robots: fingers, jigs, holders. Most start the same way, from a photo or a vendor drawing and some measurements. I wanted to know how far a coding agent gets on that job by itself, so I built a small benchmark around one part: the <code>linear_4310</code> finger from the i2rt YAM gripper.</p>
+
+  <h2>The task</h2>
+  <p>The agent gets five pictures of the finger and nothing else about its shape. It has to write a <a href="https://github.com/gumyr/build123d">build123d</a> script, <code>model.py</code>, that builds the part in millimetres.</p>
+
+  <div class="grid">
+      <figure><div class="label">1 · perspective</div><img src="pic_photo_a.png" alt="Task picture 1 · perspective" loading="lazy"></figure>
+      <figure><div class="label">2 · perspective, from below</div><img src="pic_photo_b.png" alt="Task picture 2 · perspective, from below" loading="lazy"></figure>
+      <figure><div class="label">3 · orthographic, scale bar</div><img src="pic_side_y.png" alt="Task picture 3 · orthographic, scale bar" loading="lazy"></figure>
+      <figure><div class="label">4 · orthographic, scale bar</div><img src="pic_side_x.png" alt="Task picture 4 · orthographic, scale bar" loading="lazy"></figure>
+      <figure><div class="label">5 · section at Z = +41 mm</div><img src="pic_cut.png" alt="Task picture 5 · section at Z = +41 mm" loading="lazy"></figure>
+  </div>
+  <p>Two pictures are perspective views. Two are orthographic with a 20 mm scale bar, and one is a horizontal section through the rack teeth. The prompt also gives the largest dimension, 93.84 mm. A helper tool builds the agent's script, redraws the same five pictures of its model and writes a silhouette diff against each target. The agent can run it as often as it likes within 20 minutes of wall-clock time. Whatever <code>model.py</code> holds at the end is scored.</p>
+  <p>The script may only import build123d and a few standard modules, can't read files or embed long tables of coordinates, and is capped at 333 faces and 8 solids. The sandbox has no network and no web search.</p>
+
+  <h2>How it's scored</h2>
+  <p>The hidden reference is the vendor's mesh of the finger, 68.0 × 71.6 × 93.8 mm. The reward is</p>
+  <p><code>(0.3 × volume IoU + 0.4 × surface F-score + 0.3 × part match)²</code></p>
+  <p>Volume IoU is overlap of the solids. The surface score checks how much of the reference surface lies near the submission and vice versa, at 0.41, 1.09 and 1.63 mm. The mesh is split into 101 surface patches, each weighted by the square root of its area, so small features like teeth and screw pockets count. Position doesn't matter, and any axis-aligned rotation is allowed. Squaring makes it strict: the reference scaled up 1% scores 0.944, and 5% scores 0.321.</p>
+  <p>The agent never sees its reward, only the silhouette diffs.</p>
+
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Calibration submission</th><th>Reward</th></tr></thead>
+      <tbody>
+        <tr><td>Bounding-box block</td><td>0.003</td></tr>
+        <tr><td>Rough model: plate and block</td><td>0.121</td></tr>
+        <tr><td>Careful hand-built model</td><td>0.689</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Results</h2>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Model</th><th>Reward</th><th>Volume</th><th>Surface</th><th>Part</th><th>Patches</th><th>Stopped</th></tr></thead>
+      <tbody>
+        <tr><td>Opus 5.5</td><td><strong>0.704</strong></td><td>0.862</td><td>0.800</td><td>0.867</td><td>70 / 101</td><td>2.4 min</td></tr>
+        <tr><td>Haiku 5.5</td><td><strong>0.699</strong></td><td>0.837</td><td>0.810</td><td>0.870</td><td>72 / 101</td><td>2.5 min</td></tr>
+        <tr><td>Gemini 3.8 Flash</td><td><strong>0.627</strong></td><td>0.803</td><td>0.761</td><td>0.821</td><td>78 / 101</td><td>20 min (limit)</td></tr>
+        <tr><td>Sonnet 5.5</td><td><strong>0.464</strong></td><td>0.785</td><td>0.624</td><td>0.653</td><td>30 / 101</td><td>1.0 min</td></tr>
+        <tr><td>Codex (gpt-6-luna)</td><td><strong>0.219</strong></td><td>0.513</td><td>0.434</td><td>0.466</td><td>70 / 101</td><td>5.4 min</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Patches is how many of the 101 reference surface patches were matched at the middle tolerance, 1.09 mm. Opus and Haiku land within 0.005 of each other and of the careful hand-built model. With one run each, I'd call that a tie.</p>
+
+  <figure class="chart">
+    <div class="legend"><span><i style="background:var(--s1)"></i>Opus 5.5</span><span><i style="background:var(--s2)"></i>Haiku 5.5</span><span><i style="background:var(--s3)"></i>Gemini 3.8 Flash</span><span><i style="background:var(--s4)"></i>Sonnet 5.5</span><span><i style="background:var(--s5)"></i>Codex</span></div>
+    <svg viewBox="0 0 720 272" width="100%" role="img" aria-label="Reward against wall-clock time for five models, log time axis"><line x1="48" x2="560" y1="236.0" y2="236.0" stroke="var(--rule)"/><text x="42" y="240.0" text-anchor="end">0.00</text><line x1="48" x2="560" y1="180.5" y2="180.5" stroke="var(--rule)"/><text x="42" y="184.5" text-anchor="end">0.25</text><line x1="48" x2="560" y1="125.0" y2="125.0" stroke="var(--rule)"/><text x="42" y="129.0" text-anchor="end">0.50</text><line x1="48" x2="560" y1="69.5" y2="69.5" stroke="var(--rule)"/><text x="42" y="73.5" text-anchor="end">0.75</text><line x1="48" x2="560" y1="14.0" y2="14.0" stroke="var(--rule)"/><text x="42" y="18.0" text-anchor="end">1.00</text><text x="48.0" y="254" text-anchor="middle">30s</text><text x="144.2" y="254" text-anchor="middle">1m</text><text x="240.4" y="254" text-anchor="middle">2m</text><text x="367.6" y="254" text-anchor="middle">5m</text><text x="463.8" y="254" text-anchor="middle">10m</text><text x="560.0" y="254" text-anchor="middle">20m</text><line x1="560.0" x2="560.0" y1="14" y2="236" stroke="var(--muted)" stroke-dasharray="3 3"/><text x="304.0" y="270" text-anchor="middle">wall-clock time, log scale (limit 20m)</text><path d="M139.5,108.7H184.1V72.0H212.3V79.4H228.3V79.4H235.7V79.4H247.2V79.8H263.8" fill="none" stroke="var(--s1)" stroke-width="2"/><circle cx="139.5" cy="108.7" r="4" fill="var(--s1)" stroke="var(--s1)" stroke-width="2"><title>Opus 5.5: 0.574 at 58s</title></circle><circle cx="184.1" cy="72.0" r="4" fill="var(--s1)" stroke="var(--s1)" stroke-width="2"><title>Opus 5.5: 0.739 at 80s</title></circle><circle cx="212.3" cy="79.4" r="4" fill="var(--s1)" stroke="var(--s1)" stroke-width="2"><title>Opus 5.5: 0.705 at 98s</title></circle><circle cx="228.3" cy="79.4" r="4" fill="var(--s1)" stroke="var(--s1)" stroke-width="2"><title>Opus 5.5: 0.705 at 110s</title></circle><circle cx="235.7" cy="79.4" r="4" fill="var(--s1)" stroke="var(--s1)" stroke-width="2"><title>Opus 5.5: 0.705 at 116s</title></circle><circle cx="247.2" cy="79.8" r="4" fill="var(--s1)" stroke="var(--s1)" stroke-width="2"><title>Opus 5.5: 0.704 at 126s</title></circle><text x="269.8" y="71.8" style="fill:var(--ink)">Opus 5.5 0.704</text><path d="M153.2,236.0H173.3V134.7H187.6V135.9H233.3V130.5H235.7V95.2H251.5V236.0H253.6V80.8H269.5" fill="none" stroke="var(--s2)" stroke-width="2"/><circle cx="153.2" cy="236.0" r="4" fill="var(--surface)" stroke="var(--s2)" stroke-width="2"><title>Haiku 5.5: 0.000 at 64s (build failed)</title></circle><circle cx="173.3" cy="134.7" r="4" fill="var(--s2)" stroke="var(--s2)" stroke-width="2"><title>Haiku 5.5: 0.456 at 74s</title></circle><circle cx="187.6" cy="135.9" r="4" fill="var(--s2)" stroke="var(--s2)" stroke-width="2"><title>Haiku 5.5: 0.451 at 82s</title></circle><circle cx="233.3" cy="130.5" r="4" fill="var(--s2)" stroke="var(--s2)" stroke-width="2"><title>Haiku 5.5: 0.475 at 114s</title></circle><circle cx="235.7" cy="95.2" r="4" fill="var(--s2)" stroke="var(--s2)" stroke-width="2"><title>Haiku 5.5: 0.634 at 116s</title></circle><circle cx="251.5" cy="236.0" r="4" fill="var(--surface)" stroke="var(--s2)" stroke-width="2"><title>Haiku 5.5: 0.000 at 130s (build failed)</title></circle><circle cx="253.6" cy="80.8" r="4" fill="var(--s2)" stroke="var(--s2)" stroke-width="2"><title>Haiku 5.5: 0.699 at 132s</title></circle><text x="275.5" y="90.8" style="fill:var(--ink)">Haiku 5.5 0.699</text><path d="M395.9,235.3H531.3V157.9H556.5V96.8H560.0" fill="none" stroke="var(--s3)" stroke-width="2"/><circle cx="395.9" cy="235.3" r="4" fill="var(--s3)" stroke="var(--s3)" stroke-width="2"><title>Gemini 3.8 Flash: 0.003 at 368s</title></circle><circle cx="531.3" cy="157.9" r="4" fill="var(--s3)" stroke="var(--s3)" stroke-width="2"><title>Gemini 3.8 Flash: 0.352 at 976s</title></circle><circle cx="556.5" cy="96.8" r="4" fill="var(--s3)" stroke="var(--s3)" stroke-width="2"><title>Gemini 3.8 Flash: 0.627 at 1170s</title></circle><text x="566.0" y="100.8" style="fill:var(--ink)">Gemini 3.8 Flash 0.627</text><path d="M80.8,236.0H107.3V133.0H139.5" fill="none" stroke="var(--s4)" stroke-width="2"/><circle cx="80.8" cy="236.0" r="4" fill="var(--surface)" stroke="var(--s4)" stroke-width="2"><title>Sonnet 5.5: 0.000 at 38s (build failed)</title></circle><circle cx="107.3" cy="133.0" r="4" fill="var(--s4)" stroke="var(--s4)" stroke-width="2"><title>Sonnet 5.5: 0.464 at 46s</title></circle><text x="111.3" y="125.0" style="fill:var(--ink)">Sonnet 5.5 0.464</text><path d="M134.6,230.3H212.3V204.3H255.7V207.6H312.7V191.1H334.3V192.2H349.8V193.5H369.5V187.5H378.3" fill="none" stroke="var(--s5)" stroke-width="2"/><circle cx="134.6" cy="230.3" r="4" fill="var(--s5)" stroke="var(--s5)" stroke-width="2"><title>Codex: 0.026 at 56s</title></circle><circle cx="212.3" cy="204.3" r="4" fill="var(--s5)" stroke="var(--s5)" stroke-width="2"><title>Codex: 0.143 at 98s</title></circle><circle cx="255.7" cy="207.6" r="4" fill="var(--s5)" stroke="var(--s5)" stroke-width="2"><title>Codex: 0.128 at 134s</title></circle><circle cx="312.7" cy="191.1" r="4" fill="var(--s5)" stroke="var(--s5)" stroke-width="2"><title>Codex: 0.202 at 202s</title></circle><circle cx="334.3" cy="192.2" r="4" fill="var(--s5)" stroke="var(--s5)" stroke-width="2"><title>Codex: 0.197 at 236s</title></circle><circle cx="349.8" cy="193.5" r="4" fill="var(--s5)" stroke="var(--s5)" stroke-width="2"><title>Codex: 0.191 at 264s</title></circle><circle cx="369.5" cy="187.5" r="4" fill="var(--s5)" stroke="var(--s5)" stroke-width="2"><title>Codex: 0.219 at 304s</title></circle><text x="384.3" y="191.5" style="fill:var(--ink)">Codex 0.219</text></svg>
+    <figcaption>Reward of every saved <code>model.py</code>, graded afterwards. The agents never saw these numbers. Hollow points are saves that failed to build and score 0. Each line ends when the agent stopped.</figcaption>
+  </figure>
+
+  <h2>What they built</h2>
+  <p>Each model's final part, rendered from the first picture's camera, next to the target.</p>
+  <div class="grid">
+      <figure><div class="label">Target</div><img src="photo_a_target.png" alt="Target, photo a view" loading="lazy"></figure>
+      <figure><div class="label">Opus 5.5 · 0.704</div><img src="photo_a_opus.png" alt="Opus 5.5 · 0.704, photo a view" loading="lazy"></figure>
+      <figure><div class="label">Haiku 5.5 · 0.699</div><img src="photo_a_haiku.png" alt="Haiku 5.5 · 0.699, photo a view" loading="lazy"></figure>
+      <figure><div class="label">Gemini 3.8 Flash · 0.627</div><img src="photo_a_gemini38flash.png" alt="Gemini 3.8 Flash · 0.627, photo a view" loading="lazy"></figure>
+      <figure><div class="label">Sonnet 5.5 · 0.464</div><img src="photo_a_sonnet.png" alt="Sonnet 5.5 · 0.464, photo a view" loading="lazy"></figure>
+      <figure><div class="label">Codex · 0.219</div><img src="photo_a_codex.png" alt="Codex · 0.219, photo a view" loading="lazy"></figure>
+  </div>
+  <p>And the orthographic side view, where the window, taper and rail block are easiest to compare.</p>
+  <div class="grid">
+      <figure><div class="label">Target</div><img src="side_y_target.png" alt="Target, side y view" loading="lazy"></figure>
+      <figure><div class="label">Opus 5.5 · 0.704</div><img src="side_y_opus.png" alt="Opus 5.5 · 0.704, side y view" loading="lazy"></figure>
+      <figure><div class="label">Haiku 5.5 · 0.699</div><img src="side_y_haiku.png" alt="Haiku 5.5 · 0.699, side y view" loading="lazy"></figure>
+      <figure><div class="label">Gemini 3.8 Flash · 0.627</div><img src="side_y_gemini38flash.png" alt="Gemini 3.8 Flash · 0.627, side y view" loading="lazy"></figure>
+      <figure><div class="label">Sonnet 5.5 · 0.464</div><img src="side_y_sonnet.png" alt="Sonnet 5.5 · 0.464, side y view" loading="lazy"></figure>
+      <figure><div class="label">Codex · 0.219</div><img src="side_y_codex.png" alt="Codex · 0.219, side y view" loading="lazy"></figure>
+  </div>
+  <p>Every model found the main features: the triangular window, the tapered web, the toothed rack and the rail block. The scores mostly come down to millimetres. Codex's part has all of them, but its rail block sits a few millimetres low and the web and window are shifted, which is outside the surface tolerances everywhere.</p>
+
+  <h2>What stood out</h2>
+  <ul>
+    <li><strong>Almost nobody used the time.</strong> Sonnet stopped after 1 minute, Opus and Haiku after about 2.5, Codex after 5.4. Each had 20.</li>
+    <li><strong>Gemini 3.8 Flash was the exception, and it kept improving.</strong> Its first save at 6 minutes scored 0.003; it reached 0.352 at 16 minutes and 0.627 at 19.5, then hit the limit. It's the only hint here of what the extra time is worth.</li>
+    <li><strong>Opus got worse and couldn't tell.</strong> It peaked at 0.739 at 80 seconds and finished at 0.704. Silhouettes don't show the difference.</li>
+    <li><strong>Codex could see it was off and stopped anyway.</strong> Its own silhouette checks read 0.60 to 0.86, against 0.90 to 0.98 for the Claude models.</li>
+    <li><strong>Sonnet's outline was close but its surfaces weren't.</strong> Its volume overlap is near the others', but it matched 30 of 101 surface patches against 70 to 78 for the rest.</li>
+    <li><strong>Two other models never produced a part.</strong> Gemini 4 Argon ran twice, and both times spent the full 20 minutes measuring the pictures with Python, reading pixel values, cropping and zooming (31 and 39 shell commands), without ever writing a <code>model.py</code>. Gemini 3.1 Pro read the prompt and the pictures, replied with a single ".", and exited after 18 seconds, which looks more like the preview model not working with Gemini CLI than a CAD result. I left both out of the table.</li>
+  </ul>
+
+  <h2>Caveats</h2>
+  <ul>
+    <li>One run per model, so small gaps mean nothing. Opus versus Haiku is noise.</li>
+    <li>The harness differs by vendor: Claude models ran in Claude Code, Codex in the Codex CLI and Gemini in Gemini CLI 0.67.0, all at default settings with web search off. Harness and model aren't separated.</li>
+    <li>Codex ran about 9 hours after the Claude models. The sandbox's proxy refused a few of its requests to OpenAI file and analytics hosts. It still described details visible only in the pictures, so it did see them.</li>
+    <li>The reference is the vendor's decimated 8,000-triangle mesh, not a CAD file, and I haven't compared it against a physical finger.</li>
+    <li>The careful hand-built model was made with the part's exact X and Y extents, which the agents don't get, so it's a calibration point, not a competitor.</li>
+    <li>The i2rt files are public. The sandbox has no network, but a model could remember rough dimensions.</li>
+  </ul>
+
+  <h2>Next</h2>
+  <p>The obvious gap is time. Most agents stopped long before they had to, and the one that didn't kept getting better. Next I want to make them use the full 20 minutes, or resume them when they try to stop, and run several repeats per model so the differences mean something.</p>
+</main>
+</html>
