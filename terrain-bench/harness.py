@@ -1,18 +1,20 @@
-"""terrain-bench: an agent tunes and drives a 2D car over rough terrain through a unix socket, in real time.
+"""terrain-bench: coding agents drive a 2D car over rough terrain through a unix socket, in real time.
 
 The car and courses are a headless port of Rafael Matsunaga's "HTML5 Genetic Algorithm 2D Car Thingy" (cawro.js,
 http://rednuht.org/genetic_cars_2/, read from https://santex.github.io/singularity/seed/idx.html), itself loosely based
 on BoxCar2D (http://boxcar2d.com/). See README.md.
 
-Each run:
-  1. practice  the agent (`claude -p`, Bash/Read/Write/Edit/Glob/Grep) gets BUDGET minutes in an empty dir with a live
-               simulator at ./sim.sock on random courses, plus PROTOCOL.md. It must leave an executable ./drive.
-  2. eval      a fresh simulator runs COURSES hidden courses (the same for every model in a tag); ./drive is started
-               once with the socket path and drives them all. Score = mean cawro score (furthest x + average speed).
-  Model `none` skips both and lets the default car drive the eval courses: the do-nothing baseline.
+A run is one simulator and one agent for MINUTES of wall time. The simulator starts with the run and the default car
+drives from the first second, whether or not the agent is connected. The agent changes the car and resets to new courses
+whenever it likes. Reward = the furthest x any episode reached during the run; the curve of that over time is the
+progress plot. Model `none` is no agent: the default car alone for the same time.
 
-  python harness.py run --models none,haiku --budget 20
-  python harness.py summary
+Each agent runs in its own container (the libbet-eval sandbox images, Dockerfiles in docker/), with /work holding
+PROMPT.md, PROTOCOL.md and the simulator socket. Whenever its CLI session ends with time left it is resumed with the
+same nudge; programs it started die with the session.
+
+  python harness.py run --models none,opus,sonnet,haiku,codex,gemini --minutes 30 --tag sweep1
+  python harness.py summary runs/sweep1
 """
 
 from __future__ import annotations
@@ -20,169 +22,191 @@ from __future__ import annotations
 import argparse
 import json
 import os
-import secrets
 import shutil
 import signal
 import subprocess
 import tempfile
+import threading
 import time
-from collections import defaultdict
-from datetime import datetime, timedelta
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
-RUNS = ROOT / "runs"
 SERVER = ROOT / "sim" / "server.js"
-MODELS = {"opus": "claude-opus-5-5", "sonnet": "claude-sonnet-5-5", "haiku": "claude-haiku-5-5", "fable": "claude-fable-5-1"}
-MAX_EPISODE_S = 180
-
-SYSTEM = "You are an AI agent taking part in a benchmark. You work in your current directory and must finish before the deadline."
+IMAGE, GEMINI_IMAGE = "libbet-sandbox:1", "libbet-gemini:1"
+NET, PROXY = "cadenv-agents", "cadenv-proxy"
+CLAUDE_BIN = Path.home() / ".local/share/claude/versions/2.1.322"
+CODEX_VENDOR = Path("/home/robot/.nvm/versions/node/v24.7.0/lib/node_modules/@openai/codex/node_modules/"
+                    "@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl")
+GEMINI_KEY_FILE = Path.home() / ".config/gemini"
+CLAUDE_MODELS = {"opus": "claude-opus-5-5", "sonnet": "claude-sonnet-5-5", "haiku": "claude-haiku-5-5"}
+GEMINI_MODELS = {"gemini": "gemini-4-argon"}
+LAUNCH = "Read PROMPT.md in the current directory and do what it says."
+NUDGE = "You have about {m} minutes left in the run. Keep working on the task in PROMPT.md."
+RESUME_MIN_S = 60
+TOKEN_MARGIN_MIN = 5
 
 PROMPT = """\
-Drive a 2D car as far as you can over rough terrain.
+# Drive a car as far as you can
 
-A physics simulator is running now, in real time at 60 Hz, on the unix socket ./sim.sock. PROTOCOL.md (in this
-directory) describes it fully. In short: the car drives itself to the right; you observe the chassis position, angle,
-velocity and angular velocity plus one number, the height of the ground 2 m ahead, every tick; and at any moment you
-can change the car's chassis shape, wheel placement, wheel size and density, and each motor's speed and torque. A
-`reset` command starts a new random course from the beginning. Practise as much as you like.
+A physics simulator is running now on the unix socket ./sim.sock: a 2D car on rough terrain, in real time at 60 Hz.
+PROTOCOL.md describes it fully. In short: the car drives itself to the right; every tick you observe the chassis
+position, angle, velocity and angular velocity plus one number, the height of the ground 2 m ahead; at any moment you
+can change the car's chassis shape, wheel placement, wheel size and density, and each motor's speed and torque; and a
+`reset` command starts a new random course from the beginning.
 
-Deadline: {deadline} ({budget} minutes from now). Your session ends then.
+This run lasts {minutes} minutes from when you were started, whatever you do. Your reward is the furthest x that any of
+your cars reaches at any moment during the run. Only that maximum counts: reset as often as you like, and failed
+attempts cost nothing but time. The car keeps driving on its current settings whether or not you are connected.
 
-Deliverable: an executable file ./drive in this directory. After the deadline it is started once, as
-`./drive <socket path>` from this directory, against a fresh simulator that runs {courses} courses you have not seen,
-one after another (the next starts as soon as one ends; the socket closes after the last). It drives them all.
-Your score is the mean over those courses of (furthest x reached + average speed). The car is reset to the default
-params at the start of every course. If ./drive is missing or crashes, the default car drives on its own.
-
-Write ./drive early and improve it; whatever is there at the deadline is what runs.
+You may be stopped and resumed. Programs you start do not survive the end of your session.
 """
 
 
-def start_server(sock: Path, log: Path, seeds: list[str] | None = None) -> subprocess.Popen:
-    argv = ["node", str(SERVER), "--socket", str(sock), "--log", str(log), "--max-s", str(MAX_EPISODE_S)]
-    if seeds:
-        argv += ["--seeds", ",".join(seeds)]
-    proc = subprocess.Popen(argv, stderr=subprocess.DEVNULL, start_new_session=True)
-    for _ in range(100):
-        if sock.exists():
-            return proc
-        time.sleep(0.05)
-    raise RuntimeError("simulator did not open its socket")
+def claude_token(minutes: float) -> str:
+    """An access token valid for the whole run; the refresh token never enters a container."""
+    path = Path.home() / ".claude/.credentials.json"
+    while True:
+        o = json.loads(path.read_text())["claudeAiOauth"]
+        left = (o["expiresAt"] / 1000 - time.time()) / 60
+        if left >= minutes + TOKEN_MARGIN_MIN:
+            return o["accessToken"]
+        if left <= 0.5:
+            with tempfile.TemporaryDirectory() as tmp:
+                subprocess.run(["claude", "-p", "Reply with the single word ok", "--model", CLAUDE_MODELS["haiku"]],
+                               cwd=tmp, capture_output=True, timeout=120)
+        time.sleep(20)
 
 
-def kill(proc: subprocess.Popen) -> None:
-    if proc.poll() is None:
-        os.killpg(proc.pid, signal.SIGKILL)
-    proc.wait()
+def agent_cmd(model: str, seg: int, text: str) -> tuple[str, list[str]]:
+    """(image, argv) for one CLI session; seg > 0 resumes the previous session."""
+    if model in CLAUDE_MODELS:
+        argv = ["claude", "-p", text, "--model", CLAUDE_MODELS[model], "--dangerously-skip-permissions",
+                "--output-format", "stream-json", "--verbose", "--disallowedTools", "WebSearch,WebFetch"]
+        return IMAGE, argv + (["--continue"] if seg else [])
+    if model in GEMINI_MODELS:
+        argv = ["gemini", "-p", text, "-m", GEMINI_MODELS[model], "--approval-mode", "yolo", "--output-format", "stream-json"]
+        return GEMINI_IMAGE, argv + (["--resume", "latest"] if seg else [])
+    if model == "codex":
+        flags = ["--json", "--skip-git-repo-check", "--dangerously-bypass-approvals-and-sandbox", "-c", 'web_search="disabled"']
+        if seg:
+            return IMAGE, ["/opt/codex/bin/codex", "exec", "resume", "--last", *flags, text]
+        return IMAGE, ["/opt/codex/bin/codex", "exec", *flags, "-C", "/work", text]
+    raise ValueError(f"unknown model {model}")
 
 
-def practice(model: str, work: Path, out: Path, budget_min: float, courses: int) -> dict:
-    deadline = datetime.now() + timedelta(minutes=budget_min)
+def sandbox(model: str, run: Path, home: Path, minutes: float) -> tuple[dict[str, str], list[str]]:
+    secret: dict[str, str] = {}
+    mounts: list[str] = []
+    if model in CLAUDE_MODELS:
+        secret["CLAUDE_CODE_OAUTH_TOKEN"] = claude_token(minutes)
+        mounts += ["-v", f"{CLAUDE_BIN}:/usr/local/bin/claude:ro", "-e", "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1", "-e", "DISABLE_AUTOUPDATER=1"]
+    elif model in GEMINI_MODELS:
+        secret["GEMINI_API_KEY"] = GEMINI_KEY_FILE.read_text().strip()
+        mounts += ["-e", "GEMINI_CLI_TRUST_WORKSPACE=true"]
+    elif model == "codex":
+        auth = json.loads((Path.home() / ".codex/auth.json").read_text())
+        auth["tokens"]["refresh_token"] = ""  # the container can use the session but never rotate it
+        (home / "codex").mkdir()
+        (home / "codex/auth.json").write_text(json.dumps(auth))
+        (home / "codex/auth.json").chmod(0o600)
+        mounts += ["-e", "CODEX_HOME=/home/agent/codex", "-v", f"{CODEX_VENDOR}:/opt/codex:ro"]
+    passwd = run / "passwd"
+    passwd.write_text(f"agent:x:{os.getuid()}:{os.getgid()}::/home/agent:/bin/sh\n")
+    mounts += ["-v", f"{passwd.resolve()}:/etc/passwd:ro"]
+    return secret, mounts
+
+
+def run_agent(tag: str, model: str, minutes: float) -> dict:
+    run = ROOT / "runs" / tag / model
+    if (run / "meta.json").exists():
+        return json.loads((run / "meta.json").read_text())
+    if run.exists():
+        shutil.rmtree(run)
+    work, home, rec = run / "work", run / "home", run / "sim"
+    for d in (work, home, rec):
+        d.mkdir(parents=True)
+    (work / "PROMPT.md").write_text(PROMPT.format(minutes=round(minutes)))
     shutil.copy(ROOT / "PROTOCOL.md", work / "PROTOCOL.md")
-    text = PROMPT.format(deadline=deadline.strftime("%H:%M:%S"), budget=budget_min, courses=courses)
-    sim = start_server(work / "sim.sock", out / "practice.jsonl")
-    argv = ["claude", "-p", text, "--model", MODELS[model], "--system-prompt", SYSTEM, "--tools", "Bash,Read,Write,Edit,Glob,Grep",
-            "--permission-mode", "bypassPermissions", "--setting-sources", "", "--strict-mcp-config", "--output-format", "json"]
-    start = time.monotonic()
-    with (out / "claude.json").open("wb") as so, (out / "stderr.txt").open("wb") as se:
-        agent = subprocess.Popen(argv, cwd=work, stdout=so, stderr=se, start_new_session=True)
-        try:
-            agent.wait(timeout=budget_min * 60)
-            timed_out = False
-        except subprocess.TimeoutExpired:
-            timed_out = True
-    elapsed = time.monotonic() - start
-    kill(agent)  # also takes down anything it left running in its process group
-    kill(sim)
-    (out / "prompt.txt").write_text(text)
-    return {"agent_s": round(elapsed, 1), "agent_timed_out": timed_out}
+    secret, mounts = sandbox(model, run, home, minutes) if model != "none" else ({}, [])
 
-
-def evaluate(work: Path, out: Path, seeds: list[str]) -> dict:
     sock = work / "sim.sock"
-    sock.unlink(missing_ok=True)
-    sim = start_server(sock, out / "eval.jsonl", seeds)
-    drive = work / "drive"
-    has_drive = drive.is_file() and os.access(drive, os.X_OK)
-    drv = None
-    if has_drive:
-        with (out / "drive.log").open("wb") as log:
-            drv = subprocess.Popen([str(drive), str(sock)], cwd=work, stdout=log, stderr=subprocess.STDOUT, start_new_session=True)
-    try:
-        sim.wait(timeout=len(seeds) * MAX_EPISODE_S + 60)
-    except subprocess.TimeoutExpired:
-        pass
-    drive_rc = drv.poll() if drv else None
-    if drv:
-        kill(drv)
-    kill(sim)
-    eps = [json.loads(line) for line in (out / "eval.jsonl").read_text().splitlines()] if (out / "eval.jsonl").exists() else []
-    scores = [e["score"] for e in eps] + [0.0] * (len(seeds) - len(eps))
-    return {"has_drive": has_drive, "drive_exit": drive_rc, "scores": scores, "distances": [e["distance"] for e in eps],
-            "reasons": [e["reason"] for e in eps], "mean_score": sum(scores) / len(seeds)}
+    sim = subprocess.Popen(["node", str(SERVER), "--socket", str(sock), "--record", str(rec)], stderr=subprocess.DEVNULL, start_new_session=True)
+    while not sock.exists():
+        time.sleep(0.05)
+    t0 = time.time()
+    deadline = t0 + minutes * 60
+    segments = []
+    if model == "none":
+        time.sleep(minutes * 60)
+    for seg in range(30 if model != "none" else 0):
+        left = deadline - time.time()
+        if seg and left < RESUME_MIN_S:
+            break
+        name = f"terrain-{tag}-{model}-{seg}"
+        image, cmd = agent_cmd(model, seg, LAUNCH if seg == 0 else NUDGE.format(m=round(left / 60)))
+        argv = ["docker", "run", "--rm", "--init", "--name", name, "--cap-drop", "ALL", "--security-opt", "no-new-privileges",
+                "--read-only", "--user", f"{os.getuid()}:{os.getgid()}", "--network", NET, "--tmpfs", "/tmp:size=4g,exec",
+                "--cpus", "4", "--memory", "8g", "--memory-swap", "8g", "--pids-limit", "2048",
+                "-v", f"{work.resolve()}:/work", "-v", f"{home.resolve()}:/home/agent", "-w", "/work", "-e", "HOME=/home/agent"]
+        for var in ("HTTPS_PROXY", "https_proxy", "HTTP_PROXY", "http_proxy"):
+            argv += ["-e", f"{var}=http://{PROXY}:3128"]
+        argv += [x for k in secret for x in ("-e", k)]  # secrets travel by name only, never on the command line
+        argv += mounts + [image] + cmd
+        start = time.time() - t0
+        with open(run / "transcript.jsonl", "ab") as out, open(run / "stderr.log", "ab") as err:
+            proc = subprocess.Popen(argv, stdout=out, stderr=err, env={**os.environ, **secret})
+            try:
+                proc.wait(timeout=max(1.0, deadline - time.time()))
+            except subprocess.TimeoutExpired:
+                subprocess.run(["docker", "kill", name], capture_output=True)
+                proc.wait()
+        segments.append({"segment": seg, "start_s": round(start, 1), "end_s": round(time.time() - t0, 1), "exit": proc.returncode})
+        if time.time() >= deadline - 1:
+            break
+    time.sleep(max(0.0, deadline - time.time()))  # an agent that quit early still has its car driving to the end
+    os.killpg(sim.pid, signal.SIGTERM)  # the simulator records the episode in progress, then exits
+    sim.wait()
+    eps = [json.loads(line) for line in (rec / "episodes.jsonl").read_text().splitlines()]
+    meta = {"model": model, "minutes": minutes, "seconds": round(time.time() - t0, 1), "segments": segments,
+            "episodes": len(eps), "best_distance": max(e["distance"] for e in eps)}
+    (run / "meta.json").write_text(json.dumps(meta, indent=1))
+    print(json.dumps({k: meta[k] for k in ("model", "best_distance", "episodes")} | {"sessions": len(segments)}), flush=True)
+    return meta
 
 
-def run_one(model: str, tag: str, rep: int, seeds: list[str], budget_min: float) -> dict:
-    out = RUNS / tag / f"{model}-{rep}"
-    out.mkdir(parents=True, exist_ok=True)
-    work = Path(tempfile.mkdtemp(prefix="tb-", dir="/tmp"))  # short path: unix socket paths are capped at 108 bytes
-    try:
-        info = {"agent_s": 0, "agent_timed_out": False}
-        if model != "none":
-            info = practice(model, work, out, budget_min, len(seeds))
-        res = evaluate(work, out, seeds)
-        (work / "sim.sock").unlink(missing_ok=True)
-        shutil.copytree(work, out / "workdir", dirs_exist_ok=True, ignore=shutil.ignore_patterns("node_modules", ".venv", "__pycache__"))
-    finally:
-        shutil.rmtree(work, ignore_errors=True)
-    practice_eps = 0
-    if (out / "practice.jsonl").exists():
-        practice_eps = len((out / "practice.jsonl").read_text().splitlines())
-    return {"model": model, "rep": rep, "budget_min": budget_min, "practice_episodes": practice_eps, **info, **res}
+def cmd_run(a: argparse.Namespace) -> None:
+    jobs = [(a.tag, m, a.minutes) for m in a.models.split(",")]
+
+    def guarded(job):
+        try:
+            return run_agent(*job)
+        except Exception as e:  # one broken run must not end the sweep
+            print("RUN FAILED", job, type(e).__name__, e, flush=True)
+
+    with ThreadPoolExecutor(len(jobs)) as ex:  # all at once: every run is real time, and they share nothing
+        list(ex.map(guarded, jobs))
 
 
-def cmd_run(args: argparse.Namespace) -> None:
-    tag = args.tag or datetime.now().strftime("%Y%m%d-%H%M%S")
-    seeds_file = RUNS / tag / "seeds.json"
-    seeds_file.parent.mkdir(parents=True, exist_ok=True)
-    if not seeds_file.exists():  # hidden eval courses, shared by every model and rep in this tag
-        seeds_file.write_text(json.dumps([secrets.token_hex(4) for _ in range(args.courses)]))
-    seeds = json.loads(seeds_file.read_text())
-    for rep in range(args.reps):
-        for model in args.models.split(","):
-            r = run_one(model, tag, rep, seeds, args.budget)
-            with (RUNS / tag / "results.jsonl").open("a") as f:
-                f.write(json.dumps(r) + "\n")
-            print(f"{model:>6} rep {rep}: mean {r['mean_score']:.1f}  scores {[round(s, 1) for s in r['scores']]}  "
-                  f"drive={r['has_drive']} practice_eps={r['practice_episodes']} agent {r['agent_s']}s", flush=True)
-
-
-def cmd_summary(_: argparse.Namespace) -> None:
-    groups: dict[str, list[dict]] = defaultdict(list)
-    for path in sorted(RUNS.glob("*/results.jsonl")):
-        for line in path.read_text().splitlines():
-            r = json.loads(line)
-            groups[r["model"]].append(r)
-    for model, rs in sorted(groups.items(), key=lambda kv: -sum(r["mean_score"] for r in kv[1]) / len(kv[1])):
-        m = [r["mean_score"] for r in rs]
-        print(f"{model:>6} n={len(rs):<3} mean={sum(m) / len(m):7.1f}  best={max(m):7.1f}  drive={sum(r['has_drive'] for r in rs)}/{len(rs)}")
+def cmd_summary(a: argparse.Namespace) -> None:
+    metas = [json.loads(p.read_text()) for p in sorted(Path(a.run).glob("*/meta.json"))]
+    for m in sorted(metas, key=lambda m: -m["best_distance"]):
+        print(f"{m['model']:>7} best {m['best_distance']:7.1f} m  episodes {m['episodes']:<5} sessions {len(m['segments'])}")
 
 
 def main() -> None:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = p.add_subparsers(dest="cmd", required=True)
     r = sub.add_parser("run")
-    r.add_argument("--models", default="none,haiku")
-    r.add_argument("--reps", type=int, default=1)
-    r.add_argument("--budget", type=float, default=30, help="practice minutes per agent")
-    r.add_argument("--courses", type=int, default=5)
-    r.add_argument("--tag")
+    r.add_argument("--models", default="none,opus,sonnet,haiku,codex,gemini")
+    r.add_argument("--minutes", type=float, default=30)
+    r.add_argument("--tag", required=True)
     r.set_defaults(fn=cmd_run)
     s = sub.add_parser("summary")
+    s.add_argument("run")
     s.set_defaults(fn=cmd_summary)
-    args = p.parse_args()
-    args.fn(args)
+    a = p.parse_args()
+    a.fn(a)
 
 
 if __name__ == "__main__":

@@ -4,7 +4,8 @@ A 2D car (box2d) drives itself to the right across rough terrain. You cannot ste
 is the car itself: its chassis shape, where its two wheels attach, their size and weight, and each wheel motor's speed and
 torque. You can change any of these while it drives.
 
-The simulator runs in **real time at 60 Hz** and never waits for you.
+The simulator runs in **real time at 60 Hz** and never waits for you. The car keeps driving whether or not anyone is
+connected.
 
 ## Connecting
 
@@ -37,15 +38,14 @@ Several clients may connect at once. Every client receives every message; any cl
 
 If your client reads too slowly the simulator drops `obs` messages for it rather than slowing down.
 
-`episode_start` — `{episode, course_end_x, params, mode, episodes_left}`. The car is rebuilt with the default params at
-the start of every episode.
+`episode_start` — `{episode, course_end_x, params, best_distance}`, also sent to each client when it connects. The car
+keeps whatever params it had on the previous course.
 
-`episode_end` — `{episode, seed, reason, distance, avg_speed, score, sim_s, params}`. The next episode starts
-immediately on a new course. `reason` is `stalled`, `finished`, `timeout` (180 s) or `reset`.
+`episode_end` — `{episode, seed, reason, distance, sim_s, params, best_distance}`. The next episode starts immediately
+on a new random course. `reason` is `stalled`, `finished`, `timeout` (180 s) or `reset`. `distance` is the furthest x
+this episode reached; `best_distance` is the furthest over the whole run so far.
 
 `ok` / `error` — the reply to each command. A rejected `set` changes nothing and says why.
-
-`done` — evaluation only: every course has been driven; the socket closes.
 
 ## Commands
 
@@ -53,7 +53,7 @@ immediately on a new course. `reason` is `stalled`, `finished`, `timeout` (180 s
 |---|---|
 | `{"cmd": "set", "params": {...}}` | change any subset of the params below, applied before the next tick; the reply carries the full new set |
 | `{"cmd": "get_params"}` | reply with the current params |
-| `{"cmd": "reset"}` | end this episode now (scored as it stands) and start a new course from the beginning |
+| `{"cmd": "reset"}` | end this episode now and start a new random course from the beginning, keeping the params |
 
 ## Params
 
@@ -77,7 +77,7 @@ Changing `chassis` or `wheel_vertex` mid-run rebuilds the chassis and moves both
 their velocity. Changing a wheel's radius or density rebuilds that wheel. The motor torque limit is recomputed from the
 new mass whenever anything changes.
 
-## Courses and scoring
+## Courses and reward
 
 A course is 200 ground tiles, each 1.5 m long, laid end to end from `x = -5`. Each tile's slope is random and the
 range grows with distance: flat at the start, up to ±2.25 rad by the end, so late tiles can be steeper than vertical.
@@ -86,5 +86,5 @@ No car is expected to finish.
 The car **stalls** when it goes 10 s (600 ticks) without getting 0.02 m further right than its best so far; each tick
 it is also nearly stopped (`|vx| < 0.001`) costs 5 extra ticks.
 
-Score per course = furthest x reached + average speed (that distance divided by sim seconds driven). A reset scores
-the episode as it stands.
+The reward for a run is the furthest x any episode reaches at any point during the run. Only that maximum counts:
+short or failed episodes cost nothing but time.

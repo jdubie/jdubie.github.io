@@ -3,8 +3,12 @@
 // itself loosely based on BoxCar2D (http://boxcar2d.com/). Terrain, car construction, physics constants, the death rule
 // and the score are cawro's, run on the same box2d.js and seedrandom.js the page loads (vendor/). What is new here:
 // one car instead of a population of 20, no genetic algorithm, and an agent that drives over a unix socket.
+// The car keeps its params from one course to the next; cawro's score is replaced by distance alone.
 //
-//   node sim/server.js --socket /path/sim.sock [--seeds a,b,c] [--log episodes.jsonl] [--speed 1] [--max-s 180]
+//   node sim/server.js --socket /path/sim.sock [--record DIR] [--speed 1] [--max-s 180]
+//
+// --record writes DIR/episodes.jsonl (every episode), DIR/progress.jsonl (best distance so far, 1 Hz) and DIR/best.json
+// (the furthest episode, every tick of every body, for replay).
 //
 // Protocol (newline-delimited JSON, both directions) is documented in PROTOCOL.md.
 "use strict";
@@ -44,12 +48,11 @@ const DEFAULT_PARAMS = {
 };
 
 function parseArgs(argv) {
-  const a = { socket: null, seeds: null, log: null, speed: 1, maxS: 180 };
+  const a = { socket: null, record: null, speed: 1, maxS: 180 };
   for (let i = 2; i < argv.length; i++) {
     const k = argv[i], v = argv[++i];
     if (k === "--socket") a.socket = v;
-    else if (k === "--seeds") a.seeds = v.split(",").filter(Boolean);
-    else if (k === "--log") a.log = v;
+    else if (k === "--record") a.record = v;
     else if (k === "--speed") a.speed = parseFloat(v);
     else if (k === "--max-s") a.maxS = parseFloat(v);
     else throw new Error("unknown arg " + k);
@@ -215,14 +218,18 @@ class Car {
   }
 }
 
-// ---- episode (one car on one course; cw_Car.checkDeath / kill) ----
+// ---- episode (one car on one course; cw_Car.checkDeath) ----
+const r4 = (x) => Math.round(x * 1e4) / 1e4;
+
 class Episode {
   constructor(index, seed, params) {
-    this.index = index; this.seed = seed;
+    this.index = index; this.seed = seed; this.wallStart = Date.now() / 1000;
     this.world = new b2World(GRAVITY, true);
     this.floor = createFloor(this.world, seed);
     this.car = new Car(this.world, params);
     this.frames = 0; this.health = MAX_HEALTH; this.maxX = 0;
+    this.track = [];                                   // per tick: chassis x,y,angle, wheel0 x,y,angle, wheel1 x,y,angle
+    this.changes = [[0, this.car.params]];             // [tick, full params] whenever params change
   }
 
   step() {
@@ -235,6 +242,7 @@ class Episode {
       if (Math.abs(this.car.chassis.GetLinearVelocity().x) < 0.001) this.health -= 5;
       this.health--;
     }
+    this.track.push([this.car.chassis, ...this.car.wheels].flatMap((b) => [r4(b.GetPosition().x), r4(b.GetPosition().y), r4(b.GetAngle())]));
   }
 
   obs() {
@@ -244,51 +252,47 @@ class Episode {
              pos: [p.x, p.y], rot: c.GetAngle(), vel: [v.x, v.y], angvel: c.GetAngularVelocity(), terrain_ahead: h };
   }
 
-  // cawro score: furthest x reached + average speed over the run (m + m/s).
   result(reason) {
-    const avg = this.frames ? this.maxX / this.frames * FPS : 0;
-    return { type: "episode_end", episode: this.index, seed: this.seed, reason, distance: this.maxX, avg_speed: avg,
-             score: this.maxX + avg, sim_s: this.frames / FPS, params: this.car.params };
+    return { type: "episode_end", episode: this.index, seed: this.seed, reason, distance: this.maxX, sim_s: this.frames / FPS,
+             wall_start: this.wallStart, wall_end: Date.now() / 1000, params: this.car.params };
+  }
+
+  recording(reason) {
+    return { ...this.result(reason), fps: FPS, surface: this.floor.surface, changes: this.changes, track: this.track };
   }
 }
 
 function main() {
   const args = parseArgs(process.argv);
-  const evalMode = !!args.seeds;
   const clients = new Set();
-  const results = [];
-  let index = 0, ep = null, queue = [];
+  const wallT0 = Date.now() / 1000;
+  let index = 0, ep = null, queue = [], best = 0, params = DEFAULT_PARAMS;
+  const rec = (name) => path.join(args.record, name);
+  if (args.record) fs.mkdirSync(args.record, { recursive: true });
 
   const send = (sock, msg) => {
     if (sock.destroyed) return;
-    if (msg.type === "obs" && sock.writableLength > 1 << 20) { sock.dropped = (sock.dropped || 0) + 1; return; }  // slow reader
+    if (msg.type === "obs" && sock.writableLength > 1 << 20) return;   // slow reader: drop obs rather than slow down
     sock.write(JSON.stringify(msg) + "\n");
   };
   const broadcast = (msg) => clients.forEach((s) => send(s, msg));
-  const nextSeed = () => (evalMode ? args.seeds[index] : crypto.randomBytes(4).toString("hex"));
-  const start = () => {
-    ep = new Episode(index, nextSeed(), DEFAULT_PARAMS);
-    broadcast({ type: "episode_start", episode: ep.index, course_end_x: ep.floor.endX, params: ep.car.params, mode: evalMode ? "eval" : "practice",
-                episodes_left: evalMode ? args.seeds.length - index : null });
-  };
-  const finish = (reason) => {
+  const startMsg = () => ({ type: "episode_start", episode: ep.index, course_end_x: ep.floor.endX, params: ep.car.params, best_distance: best });
+  const start = () => { ep = new Episode(index, crypto.randomBytes(4).toString("hex"), params); broadcast(startMsg()); };
+  const finish = (reason, restart = true) => {
     const r = ep.result(reason);
-    results.push(r);
-    if (args.log) fs.appendFileSync(args.log, JSON.stringify(r) + "\n");
-    broadcast(r);
-    ep.world = null;
-    index++;
-    if (evalMode && index >= args.seeds.length) {
-      const mean = results.reduce((s, x) => s + x.score, 0) / results.length;
-      broadcast({ type: "done", mean_score: mean, episodes: results.length });
-      clients.forEach((s) => s.end());
-      server.close();
-      fs.rmSync(args.socket, { force: true });
-      setTimeout(() => process.exit(0), 200);
-      ep = null;
-      return;
+    if (args.record) {
+      fs.appendFileSync(rec("episodes.jsonl"), JSON.stringify(r) + "\n");
+      if (ep.maxX > best) fs.writeFileSync(rec("best.json"), JSON.stringify(ep.recording(reason)));
     }
-    start();
+    best = Math.max(best, ep.maxX);
+    params = ep.car.params;            // the car keeps its params on the next course
+    broadcast({ ...r, best_distance: best });
+    index++;
+    if (restart) start();
+  };
+  const progress = () => {
+    if (args.record && ep) fs.appendFileSync(rec("progress.jsonl"),
+      JSON.stringify({ t: r4(Date.now() / 1000 - wallT0), best: r4(Math.max(best, ep.maxX)), episode: ep.index }) + "\n");
   };
 
   const handle = (sock, line) => {
@@ -299,10 +303,12 @@ function main() {
   const apply = () => {
     const q = queue; queue = [];
     for (const [sock, msg] of q) {
-      if (!ep) return;
       try {
-        if (msg.cmd === "set") { ep.car.set(msg.params || {}); send(sock, { type: "ok", cmd: "set", tick: ep.frames, params: ep.car.params }); }
-        else if (msg.cmd === "get_params") send(sock, { type: "ok", cmd: "get_params", params: ep.car.params });
+        if (msg.cmd === "set") {
+          ep.car.set(msg.params || {});
+          ep.changes.push([ep.frames, ep.car.params]);
+          send(sock, { type: "ok", cmd: "set", tick: ep.frames, params: ep.car.params });
+        } else if (msg.cmd === "get_params") send(sock, { type: "ok", cmd: "get_params", params: ep.car.params });
         else if (msg.cmd === "reset") { send(sock, { type: "ok", cmd: "reset" }); finish("reset"); }
         else throw new Error(`unknown cmd ${JSON.stringify(msg.cmd)}; want set | get_params | reset`);
       } catch (e) { send(sock, { type: "error", cmd: msg.cmd, msg: e.message }); }
@@ -320,21 +326,19 @@ function main() {
     });
     sock.on("error", () => {});
     sock.on("close", () => clients.delete(sock));
-    if (ep) send(sock, { type: "episode_start", episode: ep.index, course_end_x: ep.floor.endX, params: ep.car.params, mode: evalMode ? "eval" : "practice",
-                         episodes_left: evalMode ? args.seeds.length - index : null });
+    send(sock, startMsg());
   });
-  server.listen(args.socket, () => process.stderr.write(`terrain-bench sim on ${args.socket} (${evalMode ? "eval, " + args.seeds.length + " courses" : "practice"})\n`));
+  server.listen(args.socket, () => { fs.chmodSync(args.socket, 0o777); process.stderr.write(`terrain-bench sim on ${args.socket}\n`); });
 
   start();
+  setInterval(progress, 1000);
   const dt = 1000 / FPS / args.speed;
   const t0 = performance.now();
   let ticks = 0;
   const loop = () => {
-    if (!ep) return;
     const owed = Math.floor((performance.now() - t0) / dt) - ticks;
-    for (let n = 0; n < Math.min(owed, 10) && ep; n++, ticks++) {   // at most 10 catch-up steps per wake; never faster than real time x speed
+    for (let n = 0; n < Math.min(owed, 10); n++, ticks++) {   // at most 10 catch-up steps per wake; never faster than real time x speed
       apply();
-      if (!ep) break;
       ep.step();
       broadcast(ep.obs());
       if (ep.health <= 0) finish("stalled");
@@ -345,8 +349,9 @@ function main() {
     setTimeout(loop, Math.max(0, t0 + (ticks + 1) * dt - performance.now()));
   };
   loop();
-  process.on("SIGTERM", () => { fs.rmSync(args.socket, { force: true }); process.exit(0); });
-  process.on("SIGINT", () => { fs.rmSync(args.socket, { force: true }); process.exit(0); });
+  const stop = () => { progress(); finish("run_end", false); fs.rmSync(args.socket, { force: true }); process.exit(0); };
+  process.on("SIGTERM", stop);
+  process.on("SIGINT", stop);
 }
 
 main();
