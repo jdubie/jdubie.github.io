@@ -48,7 +48,7 @@ def load(run: Path) -> list[dict]:
     out = []
     for key in MODELS:
         d = run / key / "sim"
-        if not (d / "best.json").exists():
+        if not (d / "best.json").exists() or not (run / key / "meta.json").exists():  # finished runs only
             continue
         best = json.loads((d / "best.json").read_text())
         prog = [json.loads(line) for line in (d / "progress.jsonl").read_text().splitlines()]
@@ -305,6 +305,10 @@ def main() -> None:
     race(fr, models, run.name)
     chart(fr, models, minutes)
     fr.close()
+    for m in models:  # one full-height clip per model: its furthest run on its own
+        solo = Frames(out / f"best_{m['key']}.mp4")
+        race(solo, [m], run.name)
+        solo.close()
     page(run, models, minutes)
     print(out / "terrain_bench.mp4")
 
@@ -339,6 +343,8 @@ table{{border-collapse:collapse;margin:1em 0}} th,td{{padding:6px 10px;border-bo
 <p><b>{html.escape(head)}.</b> Each agent had {minutes:g} minutes in its own sandbox with a live simulator, resetting to new courses
 whenever it liked; the reward is the furthest x any of its cars reached.</p>
 <video src="terrain_bench.mp4" controls autoplay muted loop playsinline></video>
+<h2>Each agent's furthest run</h2>
+{''.join(f"<h3>{html.escape(MODELS[m['key']][0])} · {m['best']['distance']:.1f} m</h3><video src='best_{m['key']}.mp4' controls muted loop playsinline preload=metadata></video>" for m in models)}
 <div class=wrap><table><tr><th>model</th><th>furthest</th><th>reached at</th><th>episodes</th><th>sessions</th><th>that episode</th><th>car at its end</th></tr>
 {''.join(rows)}</table></div>
 <p class=dim>Every reset draws a new random course, so lanes in the race are different courses. "Sessions" counts CLI sessions;
