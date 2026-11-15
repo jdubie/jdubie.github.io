@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="tags" content="data collection">
+<title>Remote Toy Cleanup</title>
+<meta name="description" content="A home robot with under $1k of parts, leader-follower arms and an internet teleop link, picking up toys while I drove it from 7,000 miles away.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@600;700&family=Public+Sans:wght@400;500&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+:root{--bg:#f3f4f5;--surface:#fff;--ink:#1b1f23;--muted:#5d6670;--rule:#d9dde1;--accent:#a3271b;
+  --display:"Archivo Narrow","Arial Narrow",Arial,sans-serif;--body:"Public Sans",system-ui,sans-serif;--mono:"JetBrains Mono",ui-monospace,monospace}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#15181b;--surface:#1d2125;--ink:#e7eaed;--muted:#9aa4ae;--rule:#2f353b;--accent:#e2614f;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#15181b;--surface:#1d2125;--ink:#e7eaed;--muted:#9aa4ae;--rule:#2f353b;--accent:#e2614f;color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font:400 16px/1.65 var(--body);margin:0;padding:28px 16px 64px}
+main{max-width:720px;margin:0 auto;display:grid;gap:28px}
+.back{font:500 13px/1 var(--mono);color:var(--muted);text-decoration:none}.back:hover{color:var(--accent)}
+.eyebrow{font:500 12px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+header{display:grid;gap:14px}
+h1{font:700 clamp(30px,5vw,44px)/1.1 var(--display);margin:0;text-wrap:balance}
+p{margin:0}
+a{color:var(--accent)}
+figure{margin:0;display:grid;gap:8px}
+video{width:100%;display:block;border-radius:4px;background:#000}
+figcaption{font-size:13px;color:var(--muted)}
+blockquote{margin:0;padding:16px 20px;background:var(--surface);border-left:3px solid var(--accent);border-radius:0 4px 4px 0;display:grid;gap:10px}
+blockquote footer{font-size:13px;color:var(--muted)}
+.draft{font:500 12px/1.4 var(--mono);color:var(--accent);border:1px dashed var(--accent);border-radius:4px;padding:8px 12px}
+video{max-height:80vh;width:auto;max-width:100%;margin:0 auto}
+.tags{display:flex;flex-wrap:wrap;gap:6px}.tags a{font:500 11px/1 var(--mono);letter-spacing:.04em;color:var(--muted);border:1px solid var(--rule);border-radius:999px;padding:4px 9px;text-decoration:none}.tags a:hover{color:var(--accent);border-color:var(--accent)}
+</style>
+<main>
+  <header>
+    <a class="back" href="/">← Jack Dubie</a>
+    <div class="eyebrow">Draft · March 19, 2024</div>
+    <div class="tags"><a href="/#data-collection">data collection</a></div>
+    <h1>Cleaning up toys from 7,000 miles away</h1>
+  </header>
+
+  <p class="draft">DRAFT, not published.</p>
+
+  <p>Can a cheap home robot be run remotely? I built one to find out: a toy-cleanup robot with under $1,000 of parts, a pair of leader-follower arms, and a teleop link that runs over the ordinary internet.</p>
+
+  <figure>
+    <video src="toy_cleanup.mp4" poster="poster.jpg" controls muted loop playsinline preload="metadata"></video>
+    <figcaption>Picking up magnetic tiles, blocks and a rubber duck into the bin, teleoperated from 7,000 miles away. Sped up, as <a href="https://x.com/jackdubie/status/1770201499639136656">posted at the time</a>.</figcaption>
+  </figure>
+
+  <p>The operator moves a leader arm; the follower arms on the robot copy it, with the joint commands and the camera feed crossing the internet in each direction. <a href="https://x.com/tonyzzhao">Tony Zhao</a> advised on the build.</p>
+
+  <p>The point was the cost. If a robot this cheap can be driven from anywhere, a person in one place can do chores in a home on the other side of the world, and every one of those sessions is training data.</p>
+</main>
+</html>

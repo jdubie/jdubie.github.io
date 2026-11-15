@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="tags" content="agent evals">
+<title>Agents Design a Car</title>
+<meta name="description" content="Seven coding agents got 30 minutes and 1,000 attempts to design and drive a 2D car over rough terrain, through a socket; GPT-6.1 Sol, Opus 5.5 and GPT-6.1 Terra went about 2.4 km, Haiku 5.5 about 0.4 km.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@600;700&family=Public+Sans:wght@400;500&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+:root{--bg:#f3f4f5;--surface:#fff;--ink:#1b1f23;--muted:#5d6670;--rule:#d9dde1;--accent:#a3271b;
+  --display:"Archivo Narrow","Arial Narrow",Arial,sans-serif;--body:"Public Sans",system-ui,sans-serif;--mono:"JetBrains Mono",ui-monospace,monospace;
+  --s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a;--s4:#eda100;--s5:#e87ba4}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#15181b;--surface:#1d2125;--ink:#e7eaed;--muted:#9aa4ae;--rule:#2f353b;--accent:#e2614f;color-scheme:dark;
+  --s1:#3987e5;--s2:#d95926;--s3:#199e70;--s4:#c98500;--s5:#d55181}}
+:root[data-theme="dark"]{--bg:#15181b;--surface:#1d2125;--ink:#e7eaed;--muted:#9aa4ae;--rule:#2f353b;--accent:#e2614f;color-scheme:dark;
+  --s1:#3987e5;--s2:#d95926;--s3:#199e70;--s4:#c98500;--s5:#d55181}
+body{background:var(--bg);color:var(--ink);font:400 16px/1.65 var(--body);margin:0;padding:28px 16px 64px}
+main{max-width:720px;margin:0 auto;display:grid;gap:28px}
+main>*{min-width:0}
+.back{font:500 13px/1 var(--mono);color:var(--muted);text-decoration:none}.back:hover{color:var(--accent)}
+.eyebrow{font:500 12px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+header{display:grid;gap:14px}
+h1{font:700 clamp(30px,5vw,44px)/1.1 var(--display);margin:0;text-wrap:balance}
+p{margin:0}
+a{color:var(--accent)}
+figure{margin:0;display:grid;gap:8px}
+video{width:100%;display:block;border-radius:4px;background:#000}
+figcaption{font-size:13px;color:var(--muted)}
+blockquote{margin:0;padding:16px 20px;background:var(--surface);border-left:3px solid var(--accent);border-radius:0 4px 4px 0;display:grid;gap:10px}
+blockquote footer{font-size:13px;color:var(--muted)}
+h2{font:600 24px/1.15 var(--display);margin:8px 0 0}
+.draft{font:500 12px/1.4 var(--mono);color:var(--accent);border:1px dashed var(--accent);border-radius:4px;padding:8px 12px}
+.pair{display:grid;gap:18px}
+.label{font:500 11px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.tablewrap{overflow-x:auto;background:var(--surface);border:1px solid var(--rule);border-radius:4px}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:right;padding:8px 10px;border-bottom:1px solid var(--rule);font-variant-numeric:tabular-nums}
+th:first-child,td:first-child{text-align:left}
+tr:last-child td{border-bottom:0}
+td{white-space:nowrap}
+th{font:500 11px/1.2 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:var(--bg)}
+svg text{font:500 11px var(--mono);fill:var(--muted)}
+.legend{display:flex;flex-wrap:wrap;gap:4px 16px;font:500 12px var(--mono);color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.chart{background:var(--surface);border:1px solid var(--rule);border-radius:4px;padding:12px}
+ul{margin:0;padding-left:20px;display:grid;gap:8px}
+code{font:500 14px var(--mono)}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px 12px}
+.grid img{width:100%;display:block;border-radius:4px;border:1px solid var(--rule)}
+.grid .label{line-height:1.3}
+@media (max-width:560px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.tags{display:flex;flex-wrap:wrap;gap:6px}.tags a{font:500 11px/1 var(--mono);letter-spacing:.04em;color:var(--muted);border:1px solid var(--rule);border-radius:999px;padding:4px 9px;text-decoration:none}.tags a:hover{color:var(--accent);border-color:var(--accent)}
+</style>
+<main>
+  <header>
+    <a class="back" href="/">← Jack Dubie</a>
+    <div class="eyebrow">Draft · November 13, 2026</div>
+    <div class="tags"><a href="/#agent-evals">agent evals</a></div>
+    <h1>Can a coding agent design a car and drive it?</h1>
+  </header>
+  <p class="draft">DRAFT, not published.</p>
+  <p><strong>Given 30 minutes and 1,000 attempts to design and drive a 2D car over rough terrain, GPT-6.1 Sol, Opus 5.5 and GPT-6.1 Terra each got about 2.4 km. Haiku 5.5 got 0.4 km, and Sonnet 5.5 spent its attempts before it found a car that worked.</strong></p>
+  <figure>
+    <video src="free_timelapse.mp4" poster="poster.jpg" controls muted playsinline preload="metadata"></video>
+    <figcaption>Each agent's 30-minute run, sped up. Left of each cell: the car it is trying at that moment. Right: its best run so far, driving. Right panel: furthest distance so far.</figcaption>
+  </figure>
+  <p>The car and the terrain come from Rafael Matsunaga's <a href="http://rednuht.org/genetic_cars_2/">HTML5 Genetic Algorithm 2D Car Thingy</a> (I read <a href="https://santex.github.io/singularity/seed/idx.html">this copy</a>), itself after <a href="http://boxcar2d.com/">BoxCar2D</a>. It evolves random two-wheeled shapes into cars with a genetic algorithm, on the <a href="https://box2d.org/">Box2D</a> physics engine. I ported its physics to run headless, kept its car, terrain generator and stall rule, and replaced the genetic algorithm with a coding agent.</p>
+  <h2>The task</h2>
+  <p>The agent runs in a sandbox with a shell and a Unix socket to the simulator. Every tick it can read the chassis position, angle, velocity and angular velocity, plus one number: the height of the ground 2 m ahead. At any tick it can change the car: chassis shape, where the wheels attach, wheel size, weight and grip, and each motor's speed and torque. It cannot steer or brake. A reset starts a new random course from the beginning.</p>
+  <p>Time inside the simulator is free. Nothing moves unless the agent steps it, it can run eight courses in parallel, and it can step thousands of ticks at once, so it can test ideas much faster than real time. Attempts are limited: 1,000 episodes per run, counting every course driven, resets included. The reward is the furthest any car got, in any episode, during the 30 minutes.</p>
+  <h2>Two ways to build a car</h2>
+  <p>In the <strong>original car</strong>, the design space is cawro's: an eight-vertex chassis, two wheels, and their sizes, weights, positions and motors. In the <strong>free design</strong>, the agent can build a chassis of 3–16 vertices, put 1–4 wheels anywhere on it, give each wheel spring suspension, and carry a ballast weight that it can slide around inside the car while driving.</p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Model</th><th>Free design</th><th>Original car</th></tr></thead>
+      <tbody>
+        <tr><td>GPT-6.1 Sol</td><td><strong>2,424 m</strong></td><td>1,624 m</td></tr>
+        <tr><td>Opus 5.5</td><td><strong>2,392 m</strong></td><td>2,047 m</td></tr>
+        <tr><td>GPT-6.1 Terra</td><td><strong>2,357 m</strong></td><td>1,462 m</td></tr>
+        <tr><td>Gemini 4 Argon</td><td><strong>2,086 m</strong></td><td><strong>2,418 m</strong></td></tr>
+        <tr><td>Grok 4.7</td><td>1,368 m</td><td>571 m</td></tr>
+        <tr><td>Haiku 5.5</td><td>423 m</td><td>1,195 m</td></tr>
+        <tr><td>Default car, no agent</td><td>239 m</td><td>244 m</td></tr>
+        <tr><td>Sonnet 5.5</td><td>138 m</td><td>1,046 m</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>The default car is a script that runs the starting car, unchanged, through its 1,000 episodes as fast as possible: the distance course luck alone gets you.</p>
+  <figure>
+    <video src="cawro_timelapse.mp4" poster="poster_cawro.jpg" controls muted playsinline preload="metadata"></video>
+    <figcaption>The same view for the original car.</figcaption>
+  </figure>
+  <h2>What they built</h2>
+  <ul>
+    <li><strong>Sol and Terra hung the weight below the car.</strong> Both took the full 200 kg of ballast and put it under the chassis, outside the body, like a keel, on large overlapping wheels. A low centre of mass is hard to flip.</li>
+    <li><strong>Opus built a skid and a controller.</strong> On the original car it shrank the body to a small top over a long, low frame with the wheels on its bottom corners. Then it wrote a three-mode driver: hold the pitch steady while driving; when stuck, back up; then charge the obstacle. Its best episode changed the motor speeds about 7,000 times. On the free design it added a third wheel and the ballast.</li>
+    <li><strong>Grok was the only one to use suspension</strong>, on four sprung wheels.</li>
+    <li><strong>Haiku and Sonnet barely changed the car's shape.</strong> They tuned the default car's numbers. In the free-design run, Sonnet spent about 890 of its 1,000 episodes on one near-default car, at a median of 3 m each, before noticing.</li>
+    <li><strong>Gemini used few attempts.</strong> On the original car it won with 193 of its 1,000 episodes, and kept improving until near the end of both runs.</li>
+  </ul>
+  <h2>Making the original game into a benchmark</h2>
+  <p>On the original page every course gets steeper with distance by design. Over 1,000 courses, the first uphill tile steeper than 75° comes at a median 174 m, and the course ends at about 223 m. My first version used those courses, and every agent finished between 176 and 236 m, so it was measuring where the course ended.</p>
+  <figure>
+    <img src="survival.png" alt="Fraction of 1,000 original courses still climbable against distance" style="width:100%;border-radius:4px;border:1px solid var(--rule)">
+    <figcaption>Original courses: the fraction still free of an uphill tile steeper than 30°, 45°, 60° and 75°, and of courses not yet ended, against distance. The vertical lines are where the first version's agents got to.</figcaption>
+  </figure>
+  <p>Three changes made it a benchmark:</p>
+  <ul>
+    <li><strong>Longer, steadier courses.</strong> 2,000 tiles of 1.5 m. Every tile at a given distance is about equally steep (±30%), tilted up or down at random: 0.45 rad at the start, rising to 1.0 rad at 3 km. Difficulty depends on distance, not on drawing a lucky course.</li>
+    <li><strong>Tipping past 90° is a crash.</strong> Without it, the best car was simply every motor at full power. With it, full power flips the car at the start, and the motors become a way to control pitch.</li>
+    <li><strong>1,000 episodes.</strong> With unlimited attempts, Haiku 5.5 ran a random search over the car's settings for about 12,000 episodes and its luckiest run came within 1.5× of Opus's. Over the first 1,000 episodes of the same runs, the gap was 4.6×.</li>
+  </ul>
+  <h2>Caveats</h2>
+  <ul>
+    <li><strong>One run per model per design space.</strong> Run to run, it moves a lot. Haiku got 340 m and 1,195 m in two runs of the same setup. I would want three runs each before trusting the order of the top four.</li>
+    <li>Agents ran in Docker containers with no web access, each with 4 CPUs, and each simulator was capped at 3 cores. A model that stopped early was resumed with the same nudge, until its episodes ran out. Grok cost $1.52 and $0.60 for its two runs.</li>
+    <li>The old Box2D port could hang forever when a car was rebuilt while overlapping the ground. I capped that loop, a one-line change to the vendored engine; ordinary runs are unchanged.</li>
+  </ul>
+  <p>Code: <a href="https://github.com/jdubie/jdubie.github.io/tree/terrain-bench/terrain-bench">terrain-bench</a>.</p>
+</main>
