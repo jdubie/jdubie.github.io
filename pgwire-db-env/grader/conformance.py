@@ -27,7 +27,7 @@ import time
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-sys.path.insert(0, str(HERE.parent / "task/tools"))
+sys.path.append(str(HERE.parent / "task/tools"))  # after grader/, so the kit's dbbox shim never shadows grader/dbbox.py
 import pgproto as pp  # noqa: E402
 from pgproto import Session  # noqa: E402
 

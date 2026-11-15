@@ -73,7 +73,7 @@ rule is ever broken.
    statements, batches, metadata queries against pg_catalog, fetch-size portals, CopyManager, query
    timeout cancel). These exact scripts are in `tools/clients/`, with PostgreSQL's answers.
 3. **sql (0.30)**: PostgreSQL's own regression suite, `src/test/regress` at REL 16.16, the **whole
-   parallel_schedule run serially through real psql** against one database, ~45,000 statements. Every
+   parallel_schedule run serially through real psql** against one database: ~45,500 statements, ~26,000 of them scored. Every
    statement's output is compared with PostgreSQL's: result tables exactly as psql prints them (rows in any
    order when the statement has no top-level ORDER BY), command tags, NOTICE/WARNING text, `\d` output,
    and the SQLSTATE class of errors (psql runs with VERBOSITY=terse; error text is ignored). Score = mean
@@ -125,15 +125,19 @@ directory exists.
 
 - `python3 tools/run_public.py [protocol|clients|sql|acid|scale] [filter] [-v]` starts your server from
   `start.sh` on a fresh data directory and runs the public checks with PostgreSQL's expected answers:
-  ~25 of the protocol tests, all client scripts, 30 regression files run as a schedule (with
-  test_setup first), a subset of the ACID scenarios, and the scale run. It scans the data directory with
-  the grader's scanner (`/opt/efs/scan.py`). It does not apply the tmpfs limit, seccomp or crash points.
-  Respect them anyway.
-- `tools/pgproto.py`: the byte-level protocol client the conformance tests are written with.
-  `tools/conformance_public.py`: the public conformance tests. `tools/pgwire.py`: a small simple-query client.
-- `tools/regress.py`: the exact harness that splits, runs and scores the regression files through psql.
-  `public/regress/sql/` holds **all** upstream regression files and `public/regress/data/` their data;
-  `public/expected/regress.json` holds PostgreSQL's per-statement output for the public subset.
+  25 of the protocol tests, all client scripts, 34 regression files run as one schedule (with
+  test_setup first), 11 of the ACID scenarios (on a different seed from the grader's), and the scale run.
+  It scans the data directory with the grader's scanner (`/opt/efs/scan.py`). It does not apply the tmpfs
+  limit, seccomp or crash points. Respect them anyway.
+- The harness code is the grader's own: `tools/conformance_public.py` (the public conformance tests),
+  `tools/clients_suite.py` with the scripts in `tools/clients/` and their expected answers in
+  `tools/clients/expected.json`, `tools/regress.py` (splits, runs and scores the regression files through
+  psql), `tools/acid.py` (all the crash and isolation scenarios), `tools/scale.py`.
+  `tools/pgproto.py` is the byte-level protocol client the conformance tests use; `tools/pgwire.py` a small
+  simple-query client.
+- `public/regress/sql/` holds **all** upstream regression files, `public/regress/data/` their data and
+  `public/regress/parallel_schedule` the order; `public/expected/regress.json` holds PostgreSQL's
+  per-statement output for the public subset, `public/expected/conformance.json` its protocol transcripts.
 - psql and pgbench (16.16) are on PATH; `/opt/clients/venv/bin/python` has psycopg 3.2.3;
   `node` with `/opt/clients/node/node_modules/pg`; `java -cp /opt/clients/postgresql-42.7.4.jar File.java`.
 

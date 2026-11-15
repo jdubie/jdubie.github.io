@@ -10,3 +10,6 @@ ref/grade-*/
 grader/expected/regress.json
 # Static binary built from supervise.c
 grader/crashpoint/supervise
+# Copy of pgsrc's regress sql/data, written by build_task.py
+task/public/regress/
+__pycache__/

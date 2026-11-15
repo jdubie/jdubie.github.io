@@ -1,4 +1,4 @@
-"""Run coding agents on the empty-files database task, each in its own sandbox container, then grade them.
+"""Run coding agents on the pgwire empty-files database task, each in its own sandbox container, then grade them.
 
   python3 run_agents.py --models opus,sonnet,haiku,sol,terra,gemini --minutes 60 --tag pilot [--concurrency 3]
 
@@ -25,7 +25,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent / "grader"))
 
 ROOT = Path(__file__).resolve().parent
 TASK = ROOT / "task"
-IMAGE, GEMINI_IMAGE = "efsdb-sandbox:1", "efsdb-gemini:1"
+IMAGE, GEMINI_IMAGE = "pgw-sandbox:1", "pgw-gemini:1"
 NET, PROXY = "cadenv-agents", "cadenv-proxy"
 CLAUDE_BIN = Path.home() / ".local/share/claude/versions/2.1.322"
 CODEX_VENDOR = Path("/home/robot/.nvm/versions/node/v24.7.0/lib/node_modules/@openai/codex/node_modules/"
@@ -58,7 +58,7 @@ def claude_token(minutes: int) -> str:
 
 
 def make_workspace(work: Path, minutes: int) -> None:
-    shutil.copytree(TASK, work)
+    shutil.copytree(TASK, work, ignore=shutil.ignore_patterns("kit", "__pycache__"))
     (work / "PROMPT.md").write_text((TASK / "PROMPT.md").read_text().replace("{minutes}", str(minutes)))
 
 
@@ -125,7 +125,7 @@ def run_agent(tag: str, model: str, rep: int, minutes: int) -> dict:
         left = deadline - time.time()
         if seg and left < RESUME_MIN_S:
             break
-        name = f"efsdb-{tag}-{model}-{rep}-{seg}"
+        name = f"pgw-agent-{tag}-{model}-{rep}-{seg}"
         image, cmd = agent_cmd(model, seg, LAUNCH if seg == 0 else NUDGE.format(m=round(left / 60)))
         argv = ["docker", "run", "--rm", "--init", "--name", name, "--cap-drop", "ALL", "--security-opt", "no-new-privileges",
                 "--read-only", "--user", f"{os.getuid()}:{os.getgid()}", "--network", NET, "--tmpfs", "/tmp:size=4g,exec",
@@ -154,7 +154,7 @@ def run_agent(tag: str, model: str, rep: int, minutes: int) -> dict:
     g = json.loads((run / "grade/grade.json").read_text()) if (run / "grade/grade.json").exists() else {"summary": {"reward": 0.0}}
     meta |= {k: (round(v, 4) if isinstance(v, float) else v) for k, v in g["summary"].items()}
     (run / "meta.json").write_text(json.dumps(meta, indent=1))
-    print(json.dumps({k: meta.get(k) for k in ("model", "rep", "seconds", "reward", "sql", "acid", "regress", "violations")}
+    print(json.dumps({k: meta.get(k) for k in ("model", "rep", "seconds", "reward", "protocol", "clients", "sql", "acid", "scale", "violations")}
                      | {"sessions": len(segments)}), flush=True)
     return meta
 

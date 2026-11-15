@@ -25,7 +25,7 @@ import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT / "task/tools"))
+sys.path.append(str(ROOT / "task/tools"))  # after grader/, so the kit's dbbox shim never shadows grader/dbbox.py
 sys.path.insert(0, str(ROOT / "grader"))
 import pgproto as pp  # noqa: E402
 from dbbox import CTL_PORT, Scanner  # noqa: E402

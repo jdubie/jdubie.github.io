@@ -15,7 +15,7 @@ import zlib
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT / "task/tools"))
+sys.path.append(str(ROOT / "task/tools"))  # after grader/, so the kit's dbbox shim never shadows grader/dbbox.py
 from pgwire import Conn  # noqa: E402
 
 T = 10.0  # per-operation client timeout

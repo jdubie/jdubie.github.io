@@ -1,0 +1,886 @@
+{
+ "groups": {
+  "psql": {
+   "scram_login": [
+    0,
+    "alice|regression\n"
+   ],
+   "md5_login": [
+    0,
+    "bob\n"
+   ],
+   "describe_objects": [
+    0,
+    "CREATE SCHEMA\nCREATE TABLE\nCREATE TABLE\nCREATE INDEX\nCREATE VIEW\nCREATE FUNCTION\nCOMMENT\n        List of relations\n Schema | Name | Type  |  Owner   \n--------+------+-------+----------\n psq    | item | table | postgres\n psq    | sale | table | postgres\n(2 rows)\n\n                                        Table \"psq.item\"\n Column |           Type           | Collation | Nullable |               Default                \n--------+--------------------------+-----------+----------+--------------------------------------\n id     | integer                  |           | not null | nextval('psq.item_id_seq'::regclass)\n name   | character varying(40)    |           | not null | \n price  | numeric(8,2)             |           |          | 0\n tags   | text[]                   |           |          | \n added  | timestamp with time zone |           |          | now()\nIndexes:\n    \"item_pkey\" PRIMARY KEY, btree (id)\n    \"item_name_key\" UNIQUE CONSTRAINT, btree (name)\nCheck constraints:\n    \"item_price_check\" CHECK (price >= 0::numeric)\nReferenced by:\n    TABLE \"psq.sale\" CONSTRAINT \"sale_item_id_fkey\" FOREIGN KEY (item_id) REFERENCES psq.item(id) ON DELETE CASCADE\n\n                            Table \"psq.sale\"\n Column  |  Type   | Collation | Nullable |           Default            \n---------+---------+-----------+----------+------------------------------\n id      | bigint  |           | not null | generated always as identity\n item_id | integer |           |          | \n qty     | integer |           | not null | \nIndexes:\n    \"sale_pkey\" PRIMARY KEY, btree (id)\n    \"sale_item_idx\" btree (item_id)\nForeign-key constraints:\n    \"sale_item_id_fkey\" FOREIGN KEY (item_id) REFERENCES psq.item(id) ON DELETE CASCADE\n\n                             View \"psq.totals\"\n Column  |  Type   | Collation | Nullable | Default | Storage | Description \n---------+---------+-----------+----------+---------+---------+-------------\n item_id | integer |           |          |         | plain   | \n qty     | bigint  |           |          |         | plain   | \nView definition:\n SELECT item_id,\n    sum(qty) AS qty\n   FROM psq.sale\n  GROUP BY item_id;\n\n                 List of relations\n Schema |     Name      | Type  |  Owner   | Table \n--------+---------------+-------+----------+-------\n psq    | item_name_key | index | postgres | item\n psq    | item_pkey     | index | postgres | item\n psq    | sale_item_idx | index | postgres | sale\n psq    | sale_pkey     | index | postgres | sale\n(4 rows)\n\n         List of relations\n Schema |  Name  | Type |  Owner   \n--------+--------+------+----------\n psq    | totals | view | postgres\n(1 row)\n\n                        List of functions\n Schema |  Name  | Result data type | Argument data types | Type \n--------+--------+------------------+---------------------+------\n psq    | double | integer          | x integer           | func\n(1 row)\n\n             List of relations\n Schema |    Name     |   Type   |  Owner   \n--------+-------------+----------+----------\n psq    | item_id_seq | sequence | postgres\n psq    | sale_id_seq | sequence | postgres\n(2 rows)\n\n                                      List of relations\n Schema | Name | Type  |  Owner   | Persistence | Access method |    Size    |  Description   \n--------+------+-------+----------+-------------+---------------+------------+----------------\n psq    | item | table | postgres | permanent   | heap          | 8192 bytes | things we sell\n(1 row)\n\n"
+   ],
+   "list_catalog": [
+    0,
+    "      List of schemas\n  Name  |       Owner       \n--------+-------------------\n psq    | postgres\n public | pg_database_owner\n(2 rows)\n\n                             List of roles\n Role name |                         Attributes                         \n-----------+------------------------------------------------------------\n alice     | Superuser\n bob       | Superuser\n carol     | Superuser\n postgres  | Superuser, Create role, Create DB, Replication, Bypass RLS\n\n                                                   List of databases\n    Name    |  Owner   | Encoding | Locale Provider | Collate | Ctype | ICU Locale | ICU Rules |   Access privileges   \n------------+----------+----------+-----------------+---------+-------+------------+-----------+-----------------------\n postgres   | postgres | UTF8     | libc            | C       | C     |            |           | \n regression | postgres | UTF8     | libc            | C       | C     |            |           | \n template0  | postgres | UTF8     | libc            | C       | C     |            |           | =c/postgres          +\n            |          |          |                 |         |       |            |           | postgres=CTc/postgres\n template1  | postgres | UTF8     | libc            | C       | C     |            |           | =c/postgres          +\n            |          |          |                 |         |       |            |           | postgres=CTc/postgres\n(4 rows)\n\n"
+   ],
+   "copy_roundtrip": [
+    0,
+    "CREATE TABLE\nCOPY 3\nCOPY 2\n id |      v       |     d      \n----+--------------+------------\n  1 | one          | 2020-01-01\n  2 |              | \n  3 | tab     here | 1999-12-31\n  4 | x,y          | 2001-01-01\n  5 |              | \n(5 rows)\n\n3\ttab\\there\n4\tx,y\n5\t\\N\n1,one,2020-01-01\n2,,\n3,tab\there,1999-12-31\n4,\"x,y\",2001-01-01\n5,,\n5\n"
+   ],
+   "variables_and_conditionals": [
+    0,
+    "42 hi\n next \n------\n   43\n(1 row)\n\nCREATE TABLE\nINSERT 0 1\n a  \n----\n 42\n(1 row)\n\nhas rows\n gexec_result \n--------------\n            1\n(1 row)\n\n gexec_result \n--------------\n            2\n(1 row)\n\ntrue 22012\nBEGIN\n ?column? \n----------\n        1\n(1 row)\n\n1\nCOMMIT\npsql:<f>:15: ERROR:  division by zero\n"
+   ],
+   "formats": [
+    0,
+    "CREATE TABLE\nINSERT 0 3\n id | label | amount  |  note   \n----+-------+---------+---------\n  1 | alpha |    1.50 | \n  2 | multi+|  -20.00 | x|y\n    | line  |         | \n  3 |       | 1000.00 | ünïcode\n(3 rows)\n\nExpanded display is on.\n-[ RECORD 1 ]---\nid     | 1\nlabel  | alpha\namount | 1.50\nnote   | \n-[ RECORD 2 ]---\nid     | 2\nlabel  | multi  +\n       | line\namount | -20.00\nnote   | x|y\n-[ RECORD 3 ]---\nid     | 3\nlabel  | \namount | 1000.00\nnote   | ünïcode\n\nExpanded display is off.\nOutput format is csv.\nid,label,amount,note\n1,alpha,1.50,\n2,\"multi\nline\",-20.00,x|y\n3,,1000.00,ünïcode\nOutput format is unaligned.\nField separator is \";\".\nid;label;amount;note\n1;alpha;1.50;\n2;multi\nline;-20.00;x|y\n3;;1000.00;ünïcode\n(3 rows)\nOutput format is aligned.\nNull display is \"(null)\".\nBorder style is 2.\n+----+-------+---------+---------+\n| id | label | amount  |  note   |\n+----+-------+---------+---------+\n|  1 | alpha |    1.50 | (null)  |\n|  2 | multi+|  -20.00 | x|y     |\n|    | line  |         |         |\n|  3 |       | 1000.00 | ünïcode |\n+----+-------+---------+---------+\n(3 rows)\n\nOutput format is html.\n<table border=\"2\">\n  <tr>\n    <th align=\"center\">id</th>\n    <th align=\"center\">label</th>\n  </tr>\n  <tr valign=\"top\">\n    <td align=\"right\">1</td>\n    <td align=\"left\">alpha</td>\n  </tr>\n</table>\n<p>(1 row)<br />\n</p>\nOutput format is aligned.\nBorder style is 1.\nNull display is \"\".\n label |  1   |   2    |    3    \n-------+------+--------+---------\n alpha | 1.50 |        |        \n multi+|      | -20.00 |        \n line  |      |        | \n       |      |        | 1000.00\n(3 rows)\n\n"
+   ],
+   "on_error_stop": [
+    1,
+    " ?column? \n----------\n        1\n(1 row)\n\nERROR:  division by zero\n"
+   ]
+  },
+  "psycopg": {
+   "auth_scram": [
+    "alice"
+   ],
+   "auth_md5": [
+    "bob"
+   ],
+   "auth_cleartext": [
+    "carol"
+   ],
+   "auth_wrong_password": "refused",
+   "connection_info": [
+    16,
+    "on",
+    "UTF8",
+    "on",
+    "utf-8",
+    "IDLE"
+   ],
+   "params_text": [
+    [
+     42,
+     "x'y",
+     null,
+     true
+    ]
+   ],
+   "types_roundtrip_text": [
+    -3,
+    70000,
+    1099511627776,
+    "float:1.25",
+    "float:-0.1",
+    "Decimal:1234.5678",
+    true,
+    "tëxt\\",
+    "short",
+    "bytes:00ff",
+    "date:2024-02-29",
+    "time:23:59:01.000500",
+    "datetime:2001-02-03 04:05:06.789000",
+    "datetime:2001-02-03 02:05:06+00:00",
+    "timedelta:3 days, 0:00:07.000008",
+    "UUID:12345678-1234-5678-1234-567812345678",
+    {
+     "a": [
+      1,
+      null
+     ]
+    },
+    {
+     "b": {
+      "c": "d"
+     }
+    },
+    [
+     1,
+     null,
+     3
+    ],
+    [
+     "x",
+     "y z"
+    ]
+   ],
+   "types_roundtrip_binary": [
+    -3,
+    70000,
+    1099511627776,
+    "float:1.25",
+    "float:-0.1",
+    "Decimal:1234.5678",
+    true,
+    "tëxt\\",
+    "short",
+    "bytes:00ff",
+    "date:2024-02-29",
+    "time:23:59:01.000500",
+    "datetime:2001-02-03 04:05:06.789000",
+    "datetime:2001-02-03 02:05:06+00:00",
+    "timedelta:3 days, 0:00:07.000008",
+    "UUID:12345678-1234-5678-1234-567812345678",
+    {
+     "a": [
+      1,
+      null
+     ]
+    },
+    {
+     "b": {
+      "c": "d"
+     }
+    },
+    [
+     1,
+     null,
+     3
+    ],
+    [
+     "x",
+     "y z"
+    ]
+   ],
+   "binary_results_expressions": [
+    "Decimal:4.5",
+    "Decimal:-0.000001",
+    "Decimal:99999999999999999999",
+    "Decimal:NaN",
+    "date:1999-12-31",
+    "timedelta:-28 days, 0:00:00",
+    [
+     [
+      1,
+      2
+     ],
+     [
+      3,
+      4
+     ]
+    ],
+    [],
+    {
+     "k": 1
+    }
+   ],
+   "dict_rows_and_description": [
+    {
+     "one": 1,
+     "three": "Decimal:3.50",
+     "two": "two"
+    },
+    [
+     [
+      "one",
+      23,
+      4,
+      null,
+      null
+     ],
+     [
+      "two",
+      1043,
+      null,
+      null,
+      null
+     ],
+     [
+      "three",
+      1700,
+      null,
+      6,
+      2
+     ]
+    ]
+   ],
+   "large_result": [
+    50000,
+    "c4ca4238a0b923820dcc509a6f75849b",
+    "1017bfd4673955ffee4641ad3d481b1c"
+   ],
+   "prepared_statements": [
+    [
+     "v0",
+     "v1",
+     "v2",
+     "v3",
+     "v4",
+     "v5",
+     "v6",
+     "v7"
+    ],
+    4
+   ],
+   "executemany_pipelined": [
+    500,
+    "c8b01e331ddd2170fe516904b6c2ff54"
+   ],
+   "executemany_returning": [
+    [
+     1,
+     "a"
+    ],
+    [
+     2,
+     "b"
+    ],
+    [
+     3,
+     "c"
+    ]
+   ],
+   "pipeline_mode": [
+    [
+     0,
+     1,
+     2,
+     3,
+     4
+    ],
+    "23505",
+    [
+     0,
+     1,
+     2,
+     3,
+     4
+    ]
+   ],
+   "copy_text_in_out": [
+    [
+     2000,
+     "2c5e2a76940d82474bebc38c17b76c34"
+    ],
+    [
+     [
+      "1999",
+      "tab\there,\"quote\" \\ 1999",
+      "2025-06-22",
+      "285.5714285714285714285714286"
+     ],
+     [
+      "1998",
+      null,
+      "2025-06-21",
+      "285.4285714285714285714285714"
+     ],
+     [
+      "1997",
+      "tab\there,\"quote\" \\ 1997",
+      "2025-06-20",
+      "285.2857142857142857142857143"
+     ]
+    ]
+   ],
+   "copy_binary_in_out": [
+    [
+     1000,
+     900,
+     "Decimal:166500.000000",
+     "2020-01-01 00:16:39+00"
+    ],
+    [
+     [
+      1,
+      "row 1",
+      "float:0.3333333333333333",
+      "datetime:2020-01-01 00:00:01+00:00",
+      {
+       "i": 1
+      }
+     ],
+     [
+      251,
+      "row 251",
+      "float:83.66666666666667",
+      "datetime:2020-01-01 00:04:11+00:00",
+      {
+       "i": 251
+      }
+     ],
+     [
+      501,
+      "row 501",
+      "float:167.0",
+      "datetime:2020-01-01 00:08:21+00:00",
+      {
+       "i": 501
+      }
+     ],
+     [
+      751,
+      "row 751",
+      "float:250.33333333333334",
+      "datetime:2020-01-01 00:12:31+00:00",
+      {
+       "i": 751
+      }
+     ]
+    ]
+   ],
+   "copy_csv_header_in": [
+    [
+     1,
+     "x,y"
+    ],
+    [
+     2,
+     null
+    ],
+    [
+     3,
+     "line\nbreak"
+    ]
+   ],
+   "transactions_and_savepoints": [
+    [
+     1,
+     3
+    ]
+   ],
+   "isolation_and_readonly": [
+    [
+     "repeatable read",
+     "on"
+    ],
+    "25006"
+   ],
+   "error_diagnostics": [
+    [
+     "UniqueViolation",
+     "23505",
+     "ERROR",
+     "pg_err",
+     "pg_err_pk",
+     false
+    ],
+    [
+     "CheckViolation",
+     "23514",
+     "ERROR",
+     "pg_err",
+     "v_pos",
+     false
+    ],
+    [
+     "UndefinedTable",
+     "42P01",
+     "ERROR",
+     null,
+     null,
+     true
+    ],
+    [
+     "SyntaxError",
+     "42601",
+     "ERROR",
+     null,
+     null,
+     true
+    ]
+   ],
+   "error_then_usable": [
+    "INERROR",
+    "ok"
+   ],
+   "server_side_cursor": [
+    [
+     [
+      1
+     ],
+     [
+      2
+     ],
+     [
+      3
+     ]
+    ],
+    997
+   ],
+   "scrollable_cursor": [
+    [
+     6
+    ],
+    [
+     1
+    ]
+   ],
+   "listen_notify": [
+    [
+     "pg3_chan",
+     "first",
+     true
+    ],
+    [
+     "pg3_chan",
+     "second",
+     true
+    ]
+   ],
+   "cancel_query": [
+    "QueryCanceled",
+    true,
+    1
+   ],
+   "statement_timeout": "57014",
+   "typeinfo_and_enum": [
+    1700,
+    1231,
+    [
+     "sad",
+     "ok",
+     "happy"
+    ],
+    [
+     [
+      "sad"
+     ],
+     [
+      "happy"
+     ]
+    ]
+   ],
+   "sql_composition_identifiers": [
+    [
+     5
+    ]
+   ]
+  },
+  "node": {
+   "simple_protocol_query": [
+    "SELECT",
+    1,
+    [
+     [
+      "x",
+      23
+     ],
+     [
+      "y",
+      25
+     ],
+     [
+      "z",
+      23
+     ]
+    ],
+    [
+     {
+      "x": 1,
+      "y": "a",
+      "z": null
+     }
+    ]
+   ],
+   "multi_statement_simple": [
+    [
+     "SELECT",
+     [
+      {
+       "a": 1
+      }
+     ]
+    ],
+    [
+     "SELECT",
+     [
+      {
+       "b": 2,
+       "c": 3
+      }
+     ]
+    ]
+   ],
+   "parameterized_unnamed": [
+    {
+     "n": true,
+     "s": 42,
+     "t": "it's"
+    }
+   ],
+   "named_prepared_reuse": [
+    "v0",
+    "v1",
+    "v2",
+    "v3",
+    "v4"
+   ],
+   "type_parsing": {
+    "ai": [
+     1,
+     2,
+     null
+    ],
+    "at": [
+     "x",
+     "y z"
+    ],
+    "b": true,
+    "by": "bytes:deadbeef",
+    "d": "date:2024-02-29T00:00:00.000Z",
+    "f": 2.5,
+    "i8": "9007199254740993",
+    "iv": {
+     "days": 1,
+     "hours": 2
+    },
+    "j": {
+     "a": [
+      1,
+      2
+     ]
+    },
+    "jb": {
+     "b": {
+      "c": null
+     }
+    },
+    "n": "1.10",
+    "ts": "date:2024-02-29T12:00:00.000Z",
+    "tz": "date:2024-02-29T10:00:00.000Z",
+    "u": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"
+   },
+   "row_mode_array": [
+    [
+     1,
+     2
+    ],
+    [
+     2,
+     4
+    ],
+    [
+     3,
+     6
+    ]
+   ],
+   "errors": [
+    [
+     "23505",
+     "ERROR",
+     "ne_t_pkey",
+     false
+    ],
+    [
+     "42P01",
+     "ERROR",
+     null,
+     true
+    ],
+    [
+     "22012",
+     "ERROR",
+     null,
+     false
+    ],
+    [
+     "42601",
+     "ERROR",
+     null,
+     true
+    ],
+    [
+     {
+      "still_ok": 1
+     }
+    ]
+   ],
+   "transactions": [
+    "ROLLBACK",
+    [
+     {
+      "a": [
+       1
+      ]
+     }
+    ]
+   ],
+   "listen_notify": [
+    [
+     "node_chan",
+     "one",
+     true
+    ],
+    [
+     "node_chan",
+     "two",
+     true
+    ]
+   ],
+   "scram_auth": [
+    {
+     "u": "alice"
+    }
+   ],
+   "md5_auth": [
+    {
+     "u": "bob"
+    }
+   ],
+   "pool_concurrency": [
+    0,
+    3,
+    6,
+    9,
+    12,
+    15,
+    18,
+    21,
+    24,
+    27,
+    30,
+    33,
+    36,
+    39,
+    42,
+    45,
+    48,
+    51,
+    54,
+    57,
+    60,
+    63,
+    66,
+    69,
+    72,
+    75,
+    78,
+    81,
+    84,
+    87,
+    90,
+    93,
+    96,
+    99,
+    102,
+    105,
+    108,
+    111,
+    114,
+    117
+   ]
+  },
+  "jdbc": {
+   "scram_auth": [
+    [
+     "alice"
+    ]
+   ],
+   "simple_statement": [
+    [
+     "1",
+     "x",
+     null
+    ]
+   ],
+   "server_prepared_binary": [
+    [
+     [
+      "6",
+      "v6",
+      "6.25",
+      "2024-01-07",
+      "2024-01-01 10:00:06"
+     ],
+     [
+      "7",
+      "v7",
+      "7.25",
+      "2024-01-08",
+      "2024-01-01 10:00:07"
+     ]
+    ],
+    [
+     [
+      "6",
+      "v6",
+      "6.25",
+      "2024-01-07",
+      "2024-01-01 10:00:06"
+     ],
+     [
+      "7",
+      "v7",
+      "7.25",
+      "2024-01-08",
+      "2024-01-01 10:00:07"
+     ]
+    ],
+    [
+     [
+      "6",
+      "v6",
+      "6.25",
+      "2024-01-07",
+      "2024-01-01 10:00:06"
+     ],
+     [
+      "7",
+      "v7",
+      "7.25",
+      "2024-01-08",
+      "2024-01-01 10:00:07"
+     ]
+    ],
+    [
+     [
+      "6",
+      "v6",
+      "6.25",
+      "2024-01-07",
+      "2024-01-01 10:00:06"
+     ],
+     [
+      "7",
+      "v7",
+      "7.25",
+      "2024-01-08",
+      "2024-01-01 10:00:07"
+     ]
+    ],
+    [
+     [
+      "6",
+      "v6",
+      "6.25",
+      "2024-01-07",
+      "2024-01-01 10:00:06"
+     ],
+     [
+      "7",
+      "v7",
+      "7.25",
+      "2024-01-08",
+      "2024-01-01 10:00:07"
+     ]
+    ],
+    [
+     [
+      "6",
+      "v6",
+      "6.25",
+      "2024-01-07",
+      "2024-01-01 10:00:06"
+     ],
+     [
+      "7",
+      "v7",
+      "7.25",
+      "2024-01-08",
+      "2024-01-01 10:00:07"
+     ]
+    ]
+   ],
+   "batch_insert": [
+    300,
+    300,
+    [
+     [
+      "300",
+      "r99"
+     ]
+    ]
+   ],
+   "batch_with_error": [
+    "23505",
+    [
+     [
+      "0"
+     ]
+    ]
+   ],
+   "typed_getters": [
+    2147483648,
+    "12.345",
+    0.5,
+    true,
+    "2024-02-29",
+    "[1, 2]",
+    [
+     1,
+     2,
+     3
+    ],
+    "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+    "13:14:15"
+   ],
+   "result_metadata": [
+    [
+     "id",
+     "int4",
+     10,
+     0,
+     0,
+     "jd_m"
+    ],
+    [
+     "amount",
+     "numeric",
+     10,
+     2,
+     1,
+     "jd_m"
+    ],
+    [
+     "name",
+     "varchar",
+     30,
+     0,
+     1,
+     "jd_m"
+    ],
+    [
+     "lit",
+     "int4",
+     10,
+     0,
+     2,
+     ""
+    ]
+   ],
+   "database_metadata_tables": [
+    [
+     "jd_meta_a",
+     "TABLE"
+    ],
+    [
+     "jd_meta_b",
+     "TABLE"
+    ],
+    [
+     "y",
+     "text"
+    ]
+   ],
+   "generated_keys": [
+    [
+     "2",
+     "b"
+    ]
+   ],
+   "transactions_savepoints": [
+    [
+     "1"
+    ],
+    [
+     "3"
+    ]
+   ],
+   "fetch_size_portal": [
+    50,
+    1275
+   ],
+   "sqlstate_errors": [
+    "22012",
+    "42P01",
+    "42601"
+   ],
+   "copy_manager": [
+    3,
+    3,
+    "1\tone\n2\tt,wo\n3\t\\N\n"
+   ],
+   "query_timeout_cancel": [
+    "57014",
+    true
+   ]
+  }
+ },
+ "dropped": []
+}
