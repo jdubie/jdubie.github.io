@@ -33,12 +33,20 @@ that case.
   models.
 - 2026-11-14: two filesystem traps were added, `cross_device` (tmpfs mounts whose inode numbers
   collide) and `bind_alias` (one directory bind-mounted in several places), making 23 cases. The
-  second sweep, `sweep15v2` (6 models, 3 repeats, 15 min each), finished 12 of its 18 runs. The
-  workstation lost power or hard-reset at 2:41pm PT, about 2.5 minutes into the third wave. Grading
-  waits for all runs to finish, so nothing in `sweep15v2` is graded.
+  workstation went down at 2:41pm PT during the second sweep (`sweep15v2`, 6 models × 3 repeats,
+  15 min); the six unfinished third repeats were re-run after it came back (unit
+  `dupfind-sweep15v2b`) and all 18 were graded together.
+- `sweep15v2` result: 17 of 18 runs delivered a finder and all 17 were correct on all 23 cases.
+  Mean reward: Opus 4.52, Sonnet 4.03, Sol 3.03, Terra 2.80, Gemini 2.46 (one run never wrote
+  `run.sh` and scored 0.01; the other two 2.82 and 4.55), Haiku 2.17.
+- On the 23-case set (`runs/_grade23`): naive 1.02, smart Python reference 1.14, sloppy 0.17
+  (13/23). The 11/13 solutions: Gemini fails `bind_alias` (5.00 → 3.65); the other five pass.
+- Write-up: `drafts/find-duplicates/index.html` on this branch.
 
 ## Not done
 
-- Grade the 12 finished runs of `sweep15v2` and re-run the third repeat (or the whole sweep).
+- `task/PROMPT.md.v1` is copied into every agent's workspace by `make_workspace`; remove the `.v1`
+  files from `task/` before the next sweep.
+- Several solutions trust a home-made 128-bit hash with no byte compare; no fixed trap can catch that.
 - Not checked in (see `.gitignore`): `runs/` (3 GB of agent transcripts and work dirs), the generated
   page in `site/`, `grader/expected/` and `ref/grades/`. `calibrate.sh` regenerates the last two.
