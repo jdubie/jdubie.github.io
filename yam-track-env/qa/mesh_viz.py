@@ -14,7 +14,7 @@ PRO = ROOT / "viz" / "yam_pro"
 PAIRS = {"link1": "link_1", "link2": "link_2", "link3": "link_3", "link4": "link_4", "link5": "link_5",
          "gripper": "link_6", "tip_left": "link_6", "tip_right": "link_6"}
 SKIP = {"tip_left_pad", "tip_right_pad"}
-ARM_RGBA, GRIP_RGBA = "0.78 0.79 0.81 1", "0.22 0.23 0.25 1"
+ARM_RGBA, GRIP_RGBA = "0.78 0.79 0.81 1", "0.16 0.17 0.19 1"
 
 
 def _pro_xml() -> str:
@@ -96,8 +96,12 @@ def mesh_model(task: mujoco.MjModel, nominal_xml: Path, offwidth: int, offheight
             i = x.index(j)
             e = x.index("/>", i) + 2
             x = x[:e] + "".join(gs) + x[e:]
-    x = x.replace('rgba="0.85 0.86 0.88 1"', 'rgba="0.52 0.53 0.55 1"')  # floor: mid grey, so the light arm and the dark gripper both read
+    # light floor and sky under strong ambient light, so the black gripper stands out against them
+    x = x.replace('rgba="0.85 0.86 0.88 1"', 'rgba="0.93 0.93 0.92 1"')
     vm = mujoco.MjModel.from_xml_string(x)
     for i in range(1, task.nbody):
         vm.body_pos[vm.body(task.body(i).name).id] = task.body_pos[i]
+    vm.vis.headlight.ambient[:] = 0.55
+    vm.vis.headlight.diffuse[:] = 0.5
+    vm.vis.rgba.haze[:] = (0.93, 0.94, 0.95, 1)
     return vm

@@ -3,7 +3,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="tags" content="agent evals">
-<title>Tracking a Hidden Arm</title>
+<title>Agents at Robot Control</title>
 <meta name="description" content="An agent benchmark where models get 8 minutes and a socket to a simulated YAM arm whose dynamics are hidden, and must make it follow 14 trajectories. Sol (gpt-6.1-sol) reached 0.10 mm, better than a controller that knows the true dynamics; the Claude models stopped early.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@600;700&family=Public+Sans:wght@400;500&family=JetBrains+Mono:wght@500&display=swap">
@@ -45,7 +45,7 @@ ul{margin:0;padding-left:20px;display:grid;gap:8px}
     <a class="back" href="/">← Jack Dubie</a>
     <div class="eyebrow">Draft · November 14, 2026</div>
     <div class="tags"><a href="/#agent-evals">agent evals</a></div>
-    <h1>Make a robot arm you can't see inside follow a path</h1>
+    <h1>How good are agents at robotic control?</h1>
   </header>
 
   <p class="draft">DRAFT, not published.</p>
@@ -54,7 +54,7 @@ ul{margin:0;padding-left:20px;display:grid;gap:8px}
 
   <figure>
     <video src="replay_recorded_0.mp4" poster="poster.jpg" controls muted loop playsinline></video>
-    <figcaption>8 s of a real YAM right arm's motion in production, replayed on the hidden arm. Left: PD control only (33.9 mm over the full 12 s). Right: Sol's best attempt (0.09 mm). Red is where the tool point should be, blue is where it is. The strip below plots each one's tool-point error as it happens, on a log scale: over the full 12 s Sol is about 370&times; closer.</figcaption>
+    <figcaption>8 s of a real YAM right arm's motion in production, replayed on the hidden arm. Left: PD control only (33.9 mm over the full 12 s). Right: Sol's best attempt (0.09 mm). The red ring is where the tool point should be, the blue disk is where it is. The strip below plots each one's tool-point error as it happens, on a log scale: over the full 12 s Sol is about 370&times; closer.</figcaption>
   </figure>
 
   <h2>The environment</h2>
