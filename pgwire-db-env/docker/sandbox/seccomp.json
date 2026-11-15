@@ -1,0 +1,21 @@
+{
+  "defaultAction": "SCMP_ACT_ALLOW",
+  "syscalls": [
+    {
+      "names": ["setxattr", "lsetxattr", "fsetxattr", "setxattrat", "removexattr", "lremovexattr", "fremovexattr",
+                "removexattrat", "symlink", "symlinkat", "mknod", "mknodat", "fallocate",
+                "io_uring_setup", "io_uring_enter", "io_uring_register",
+                "mount", "umount2", "fsopen", "fsmount", "open_tree", "move_mount", "pivot_root", "unshare", "setns",
+                "ptrace", "process_vm_writev", "process_vm_readv", "keyctl", "add_key", "request_key", "bpf",
+                "userfaultfd", "perf_event_open"],
+      "action": "SCMP_ACT_ERRNO",
+      "errnoRet": 1
+    },
+    {
+      "names": ["truncate", "ftruncate"],
+      "action": "SCMP_ACT_ERRNO",
+      "errnoRet": 1,
+      "args": [{"index": 1, "value": 0, "op": "SCMP_CMP_NE"}]
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+__pycache__/
+runs/
+site/
+logs/
+# Postgres 16 source, fetched at build time (44 MB)
+pgsrc/
+# Generated from real Postgres by make_reference.py (multi-MB, regenerable)
+ref/postgres/
+ref/grade-*/
+grader/expected/regress.json
+# Static binary built from supervise.c
+grader/crashpoint/supervise
