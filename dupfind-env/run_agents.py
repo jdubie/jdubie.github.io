@@ -11,6 +11,7 @@ never contend with agent sandboxes for CPU.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import shutil
@@ -39,7 +40,8 @@ OPENAI_MODELS = {"sol": "gpt-6.1-sol", "terra": "gpt-6.1-terra"}
 LAUNCH = "Read PROMPT.md in the current directory and do what it says."
 NUDGE = "You have about {m} minutes left. Keep working on the task in PROMPT.md."
 RESUME_MIN_S = 60
-SNAPSHOT_EVERY_S = 900
+SNAPSHOT_EVERY_S = 10  # poll /work this often; copy it whenever its contents changed
+MAX_GRADED_SNAPSHOTS = 5
 TOKEN_MARGIN_MIN = 5
 
 
@@ -58,8 +60,20 @@ def claude_token(minutes: int) -> str:
         time.sleep(20)
 
 
+def tree_digest(work: Path) -> str:
+    """Hash of every regular file's path and bytes under work; unreadable files hash as missing."""
+    h = hashlib.sha256()
+    for path in sorted(work.rglob("*")):
+        if path.is_file() and not path.is_symlink():
+            try:
+                h.update(str(path.relative_to(work)).encode() + b"\0" + path.read_bytes() + b"\0")
+            except OSError:
+                pass
+    return h.hexdigest()
+
+
 def make_workspace(work: Path, minutes: int) -> None:
-    shutil.copytree(TASK, work)
+    shutil.copytree(TASK, work, ignore=shutil.ignore_patterns("*.v1"))
     (work / "PROMPT.md").write_text((TASK / "PROMPT.md").read_text().replace("{minutes}", str(minutes)))
 
 
@@ -115,10 +129,15 @@ def run_agent(tag: str, model: str, rep: int, minutes: int) -> dict:
     stop = threading.Event()
 
     def snapshotter() -> None:
-        k = 1
-        while not stop.wait(max(0.0, t0 + k * SNAPSHOT_EVERY_S - time.time())):
-            subprocess.run(["cp", "-a", str(work), str(snaps / f"t{k * SNAPSHOT_EVERY_S // 60:03d}min")], capture_output=True)
-            k += 1
+        last, log = tree_digest(work), []
+        while not stop.wait(SNAPSHOT_EVERY_S):
+            digest = tree_digest(work)
+            if digest != last:
+                last = digest
+                dst = snaps / f"{len(log) + 1:03d}"
+                subprocess.run(["cp", "-a", str(work), str(dst)], capture_output=True)
+                log.append({"index": len(log) + 1, "t": round(time.time() - t0, 1)})
+                (run / "snapshots.json").write_text(json.dumps(log))
 
     threading.Thread(target=snapshotter, daemon=True).start()
     segments = []
@@ -163,9 +182,12 @@ def main() -> None:
     ap.add_argument("--concurrency", type=int, default=3)
     ap.add_argument("--tag", required=True)
     ap.add_argument("--grade-only", action="store_true")
+    ap.add_argument("--grade-snapshots", action="store_true")
     a = ap.parse_args()
     if a.grade_only:
         return grade_tag(a.tag)
+    if a.grade_snapshots:
+        return grade_snapshots(a.tag)
     jobs = [(a.tag, m, k, a.minutes) for k in range(a.reps) for m in a.models.split(",")]
     print(f"{len(jobs)} runs, concurrency {a.concurrency}", flush=True)
     gate = threading.Semaphore(a.concurrency)
@@ -180,6 +202,7 @@ def main() -> None:
     with ThreadPoolExecutor(a.concurrency) as ex:
         list(ex.map(guarded, jobs))
     grade_tag(a.tag)
+    grade_snapshots(a.tag)
 
 
 def grade_tag(tag: str) -> None:
@@ -196,6 +219,34 @@ def grade_tag(tag: str) -> None:
             meta = json.loads((r / "meta.json").read_text()) | json.loads(g.read_text())["summary"]
             (r / "meta.json").write_text(json.dumps(meta, indent=1))
             print(json.dumps({k: meta.get(k) for k in ("model", "rep", "reward", "correct", "cases", "failed")}), flush=True)
+
+
+def grade_snapshots(tag: str) -> None:
+    """Grade up to MAX_GRADED_SNAPSHOTS evenly spaced snapshots per run in one serial pass; write <run>/curve.json."""
+    picks: dict[str, tuple[Path, dict]] = {}
+    for r in sorted(p.parent for p in (ROOT / "runs" / tag).glob("*/meta.json")):
+        if (r / "curve.json").exists() or not (r / "snapshots.json").exists():
+            continue
+        log = json.loads((r / "snapshots.json").read_text())
+        n = len(log)
+        chosen = log if n <= MAX_GRADED_SNAPSHOTS else [log[round(i * (n - 1) / (MAX_GRADED_SNAPSHOTS - 1))] for i in range(MAX_GRADED_SNAPSHOTS)]
+        for s in chosen:
+            picks[f"{r.name}@{s['index']:03d}"] = (r, s)
+    if not picks:
+        return
+    out = ROOT / "runs" / tag / "_grade_snapshots"
+    subs = [f"{label}={r / 'snapshots' / ('%03d' % s['index'])}" for label, (r, s) in picks.items()]
+    subprocess.run([sys.executable, str(ROOT / "grader/grade.py"), str(out), *subs], timeout=12 * 3600)
+    curves: dict[Path, list[dict]] = {}
+    for label, (r, s) in picks.items():
+        g = out / label / "grade.json"
+        summary = json.loads(g.read_text())["summary"] if g.exists() else {"reward": None}
+        curves.setdefault(r, []).append({"t": s["t"], "index": s["index"]} | summary)
+    for r, pts in curves.items():
+        meta = json.loads((r / "meta.json").read_text())
+        pts.append({"t": meta["seconds"], "index": "final", **{k: meta.get(k) for k in ("reward", "correct", "cases", "failed")}})
+        (r / "curve.json").write_text(json.dumps(pts, indent=1))
+        print(json.dumps({"run": r.name, "curve": [(round(p["t"]), p.get("reward")) for p in pts]}), flush=True)
 
 
 if __name__ == "__main__":

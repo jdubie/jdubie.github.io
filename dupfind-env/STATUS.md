@@ -41,12 +41,15 @@ that case.
   `run.sh` and scored 0.01; the other two 2.82 and 4.55), Haiku 2.17.
 - On the 23-case set (`runs/_grade23`): naive 1.02, smart Python reference 1.14, sloppy 0.17
   (13/23). The 11/13 solutions: Gemini fails `bind_alias` (5.00 → 3.65); the other five pass.
+- 2026-11-15 sweep `sweep15v3` (same task; harness now snapshots /work every 10 s when it changes and
+  grades up to 5 snapshots per run into `curve.json`; `*.v1` no longer copied into workspaces).
+  Means: Gemini 4.06, Opus 3.50, Sonnet 3.43, Terra 2.75, Sol 2.60 (two runs time out on
+  `sparse_giant`), Haiku 2.11. Six-run means over both sweeps: Opus 4.01, Sonnet 3.73, Gemini 3.26,
+  Sol 2.81, Terra 2.77, Haiku 2.14.
 - Write-up: `drafts/find-duplicates/index.html` on this branch.
 
 ## Not done
 
-- `task/PROMPT.md.v1` is copied into every agent's workspace by `make_workspace`; remove the `.v1`
-  files from `task/` before the next sweep.
 - Several solutions trust a home-made 128-bit hash with no byte compare; no fixed trap can catch that.
 - Not checked in (see `.gitignore`): `runs/` (3 GB of agent transcripts and work dirs), the generated
   page in `site/`, `grader/expected/` and `ref/grades/`. `calibrate.sh` regenerates the last two.
