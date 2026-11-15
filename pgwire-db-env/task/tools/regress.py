@@ -57,6 +57,7 @@ EXCLUDE_UNIT_PATTERNS = [
     (re.compile(r"\b(pg_read_file|pg_read_binary_file|pg_ls_dir|pg_stat_file|lo_import|lo_export)\s*\(", re.I), "server filesystem"),
 ]
 UNIT_TIMEOUT_S = 20
+MAX_CONSEC_TIMEOUTS = 3  # a file with this many timeouts in a row scores its remaining units 0 and the run moves on
 TOTAL_BUDGET_S = 45 * 60
 MARK = "@@PGW"
 
@@ -428,7 +429,13 @@ def run_test(cli, box, test: str, deadline: float) -> dict:
     gs = groups(units)
     g = 0
     restarts = 0
+    timeouts = 0
     while g < len(gs):
+        if timeouts >= MAX_CONSEC_TIMEOUTS:
+            for gg in gs[g:]:
+                for k in gg:
+                    res[k] = ["<abandoned>", []]
+            break
         if time.time() > deadline:
             for gg in gs[g:]:
                 for k in gg:
@@ -445,12 +452,14 @@ def run_test(cli, box, test: str, deadline: float) -> dict:
             for k, v in got.items():
                 res[k] = [v[0], v[1]]
             if status == "ok":
+                timeouts = 0
                 g += 1
                 continue
             # timeout or psql exited before this group's last marker
             ended_by_quit = any(re.match(r"\\q(uit)?\b", units[k]["text"].strip()) for k in grp)
             missing = [k for k in grp if k not in res]
             if status == "timeout":
+                timeouts += 1
                 for k in missing[:1]:
                     res[k] = ["<timeout>", []]
                 for k in missing[1:]:
@@ -460,6 +469,8 @@ def run_test(cli, box, test: str, deadline: float) -> dict:
                 for k in missing:
                     res[k] = ["<quit>" if ended_by_quit else "<connection lost>", []]
                 ps.finish(2)
+            if status != "timeout":
+                timeouts = 0
             g += 1
             if ended_by_quit and status == "exited":
                 for gg in gs[g:]:

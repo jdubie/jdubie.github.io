@@ -82,7 +82,7 @@ rule is ever broken.
    collate.*, euc_kr, opr_sanity, type_sanity, misc_sanity, oidjoins. Only observable statements are scored
    (a bare `CREATE TABLE` tag earns nothing by itself; its effect is seen by later statements); an expected
    error earns credit only if the latest statement expected to succeed also passed. Server-side
-   `COPY t FROM 'file'` is sent as psql `\copy` instead. Each statement has 20 s; a server that dies is
+   `COPY t FROM 'file'` is sent as psql `\copy` instead. Each statement has 20 s, and after 3 timeouts in a row the rest of that file scores 0; a server that dies is
    restarted on the same data and the file continues in a new session. psql runs with
    `PGTZ=PST8PDT PGDATESTYLE='Postgres, MDY' PGAPPNAME=pg_regress/<test>`, as pg_regress does.
 4. **acid (0.25)**: half crash and isolation scenarios, half commit-window crash points.

@@ -19,9 +19,18 @@ Done:
   Plumbing checked by running it on v1's toy server inside pgw-sandbox (protocol, acid; clients slow but running).
 - Grader modules now append task/tools to sys.path, so the kit's dbbox shim cannot shadow grader/dbbox.py.
 
+- SQL early abort: after 3 consecutive unit timeouts a file's remaining units score 0 (`MAX_CONSEC_TIMEOUTS` in
+  grader/regress.py). PostgreSQL rechecked after the change: 26127/26127 (`ref/grade-postgres-sql`). Protocol was
+  left unbounded (worst case ~68 x 8 s; an abort there would couple independent tests).
+- Public kit checked end to end against real PostgreSQL through a TCP forwarder in pgw-sandbox: protocol 1.000,
+  clients 1.000 (all five groups), sql 1.000.
+
 In progress / not done:
-- Baseline grades: cheat (must be 0), mini, v1-haiku (unit pgw-cal).
-- One 20-minute Haiku 5.5 smoke run. No wider sweep without Jack's say-so.
+- Baseline grades: cheat (must be 0; acid alone already logged 22 content violations), mini, v1-haiku
+  (units pgw-cal-*). mini and v1-haiku were started before the early abort and grade SQL without it; cheat
+  was restarted with it.
+- The one 20-minute Haiku 5.5 smoke run (unit pgw-smoke, started 11:45pm PT in parallel with the baselines,
+  per Jack). Its workspace was copied before the abort sentence was added to PROMPT.md. No wider sweep.
 - Results page on :8941, memory file.
 
 Not checked in (see `.gitignore`): Postgres source in `pgsrc/`, generated reference outputs, logs,
