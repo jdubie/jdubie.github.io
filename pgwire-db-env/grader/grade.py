@@ -139,7 +139,7 @@ def comp_scale(factory, cli) -> dict:
         box.close()
 
 
-def run_all(factory, sup_factory, out: Path, jobs: int, only: list[str], sql_budget: float) -> dict:
+def run_all(factory, sup_factory, out: Path, jobs: int, only: list[str], sql_budget: float, keep: bool = False) -> dict:
     cli_a, cli_b = ClientBox(), ClientBox()
     comps = {
         "protocol": lambda: comp_protocol(factory),
@@ -168,6 +168,10 @@ def run_all(factory, sup_factory, out: Path, jobs: int, only: list[str], sql_bud
     finally:
         cli_a.close()
         cli_b.close()
+    if keep:  # regrading some components: reuse the saved results of the others
+        for k in WEIGHTS:
+            if k not in res and (out / f"{k}.json").exists():
+                res[k] = json.loads((out / f"{k}.json").read_text())
     scores = {k: res[k]["score"] if k in res else 0.0 for k in WEIGHTS}
     violations = [v for r in res.values() for v in r.get("violations", [])]
     raw = sum(WEIGHTS[k] * v for k, v in scores.items())
@@ -197,6 +201,7 @@ def main() -> None:
     ap.add_argument("--jobs", type=int, default=4)
     ap.add_argument("--only", default="protocol,clients,sql,acid,scale")
     ap.add_argument("--sql-budget", type=float, default=rg.TOTAL_BUDGET_S)
+    ap.add_argument("--keep", action="store_true", help="with --only: keep the other components' saved results in <out_dir>")
     a = ap.parse_args()
     out = Path(a.out)
     out.mkdir(parents=True, exist_ok=True)
@@ -212,7 +217,7 @@ def main() -> None:
         code = out / "code"
         factory = lambda: AgentBox(code)  # noqa: E731
         sup = lambda: AgentBox(code, supervise=True)  # noqa: E731
-    report = run_all(factory, sup, out, a.jobs, a.only.split(","), a.sql_budget)
+    report = run_all(factory, sup, out, a.jobs, a.only.split(","), a.sql_budget, a.keep)
     print(json.dumps(report["summary"]))
 
 

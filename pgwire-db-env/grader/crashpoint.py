@@ -273,6 +273,8 @@ def trial(box_factory, sc, n: int | None) -> dict:
                 th.start()
                 th.join(60)
                 if n is None:
+                    if not acked:  # otherwise a server that cannot run the window keeps "before" and passes every point
+                        raise Fail("the window's commit was not acknowledged without a crash")
                     time.sleep(SETTLE_S)
                     count = int(ctl.cmd("count"))
                 else:
