@@ -158,6 +158,7 @@ same data and the file continues in a new session.</p>
 <h2>Caveats</h2>
 <ul>
 <li>One smoke run of one model is a sanity check, not a measurement.</li>
+<li>The mini and v1-Haiku baselines were graded before the 3-timeout SQL abort existed, so their SQL numbers are what the old rule gives (the abort can only lower a hanging server's score). The cheat and the smoke run were graded with it.</li>
 <li>Throughput limits (500 / 100 tps) and restart limits were set from what PostgreSQL does in the same sandbox, not from an
 empty-files reference, so they may be generous or harsh for a metadata-only design.</li>
 <li>The public kit is the grader's own harness code, with a 25/68 protocol subset, 34 of 214 regression files, and other ACID seeds;

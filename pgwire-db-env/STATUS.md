@@ -25,13 +25,22 @@ Done:
 - Public kit checked end to end against real PostgreSQL through a TCP forwarder in pgw-sandbox: protocol 1.000,
   clients 1.000 (all five groups), sql 1.000.
 
-In progress / not done:
-- Baseline grades: cheat (must be 0; acid alone already logged 22 content violations), mini, v1-haiku
-  (units pgw-cal-*). mini and v1-haiku were started before the early abort and grade SQL without it; cheat
-  was restarted with it.
-- The one 20-minute Haiku 5.5 smoke run (unit pgw-smoke, started 11:45pm PT in parallel with the baselines,
-  per Jack). Its workspace was copied before the abort sentence was added to PROMPT.md. No wider sweep.
-- Results page on :8941, memory file.
+- Crash-point grader bug fixed (found by the v1-haiku baseline): a control trial must see the window's commit
+  acknowledged, or a server that cannot run the window (no COPY / no extended protocol) passed it vacuously.
+  `grade.py --only acid --keep` regraded the affected runs.
+- Baselines: cheat 0 (82 violations; raw 0.014), v1 toy 0.033, v1 Haiku server 0.215 (0.256 before the fix;
+  acid 0.65 is legit: its statement-log-in-file-names design survives crashes). mini and v1-haiku SQL were graded
+  before the 3-timeout abort.
+- Smoke run (the only model run): Haiku 5.5, 20 min, `runs/smoke/haiku__r0`: 0.143 (0.163 before the crash-point
+  fix), no violations. 1,450-line Python server, one empty file per row. Stopped doing work at minute 14
+  (134 one-turn "holding" resumes).
+- Kit: `run_public.py clients <group>` now runs just that group (Haiku assumed it did).
+- Results page `site/index.html` (`make_page.py` + `site/notes.json`), served by unit pgw-site on 0.0.0.0:8941.
+  Memory file `pgwire-db-env-site.md` + MEMORY.md line written.
+
+Not done:
+- Any sweep: Jack's call. Ideas on the page's next steps (stronger keep-going nudge, audit ACID for vacuous passes,
+  check scale limits against a metadata-only design).
 
 Not checked in (see `.gitignore`): Postgres source in `pgsrc/`, generated reference outputs, logs,
 runs, and the copy of the regress files in `task/public/regress/` (rebuild with `python3 build_task.py`).

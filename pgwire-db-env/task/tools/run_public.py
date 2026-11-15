@@ -4,6 +4,7 @@
   python3 tools/run_public.py protocol             # the public conformance tests
   python3 tools/run_public.py protocol copy -v     # those whose name contains "copy", with diffs
   python3 tools/run_public.py clients              # psql, pgbench, psycopg 3, node-postgres, pgJDBC scripts
+  python3 tools/run_public.py clients pgbench -v   # one client group (psql, pgbench, psycopg, node, jdbc)
   python3 tools/run_public.py sql                  # the public regression files, as one schedule
   python3 tools/run_public.py sql int4 -v          # only files whose name contains int4 (test_setup always runs first)
   python3 tools/run_public.py acid                 # the public ACID scenarios
@@ -70,10 +71,28 @@ def run_protocol(pattern: str, verbose: bool) -> tuple[float, list]:
     return passed / max(1, len(names)), sc.violations
 
 
-def run_clients(verbose: bool) -> tuple[float, list]:
+def run_clients(pattern: str, verbose: bool) -> tuple[float, list]:
     exp = json.loads((TOOLS / "clients/expected.json").read_text())["groups"]
-    got = cl.run_all(LocalBox, LocalCli())
+    groups = [g for g in cl.GROUPS if pattern in g] or cl.GROUPS
+    if groups == cl.GROUPS:
+        got = cl.run_all(LocalBox, LocalCli())
+    else:  # one or a few groups, each on a fresh server
+        got, fns = {"violations": []}, {"psql": cl.run_psql, "psycopg": cl.run_psycopg, "node": cl.run_node, "jdbc": cl.run_jdbc,
+                                        "pgbench": cl.run_pgbench}
+        for g in groups:
+            box = LocalBox()
+            try:
+                if not box.start():
+                    got[g] = {"_crashed": "server did not start"}
+                    continue
+                with Scanner(box) as sc:
+                    got[g] = fns[g](LocalCli(), box.host)
+                got["violations"] += sc.violations
+            finally:
+                box.close()
     s = cl.score(got, exp)
+    s["groups"] = {g: v for g, v in s["groups"].items() if g in groups}
+    s["score"] = sum(v["passed"] / max(1, v["total"]) for v in s["groups"].values()) / len(s["groups"])
     for g, v in s["groups"].items():
         say(f"clients {g}: {v['passed']}/{v['total']}" + (f"  failed: {', '.join(v['failed'])}" if v["failed"] else ""))
         if verbose and g == "pgbench":
@@ -162,7 +181,7 @@ def main() -> None:
         if c == "protocol":
             s, v = run_protocol(pattern, verbose)
         elif c == "clients":
-            s, v = run_clients(verbose)
+            s, v = run_clients(pattern, verbose)
         elif c == "sql":
             s, v = run_sql(pattern, verbose)
         elif c == "acid":
