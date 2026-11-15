@@ -1,0 +1,117 @@
+{
+ "flat_sizes": {
+  "seconds": 0.7529,
+  "groups": 20,
+  "paths": 40
+ },
+ "last_byte": {
+  "seconds": 2.4539,
+  "groups": 2,
+  "paths": 4
+ },
+ "nested_mix": {
+  "seconds": 1.1052,
+  "groups": 300,
+  "paths": 100000
+ },
+ "hardlinks": {
+  "seconds": 0.6836,
+  "groups": 8000,
+  "paths": 68208
+ },
+ "symlinks": {
+  "seconds": 0.0719,
+  "groups": 29,
+  "paths": 58
+ },
+ "weird_names": {
+  "seconds": 0.0675,
+  "groups": 3,
+  "paths": 52
+ },
+ "empty_files": {
+  "seconds": 0.4413,
+  "groups": 1,
+  "paths": 5
+ },
+ "first_byte": {
+  "seconds": 1.5376,
+  "groups": 1,
+  "paths": 2
+ },
+ "middle_byte": {
+  "seconds": 1.1849,
+  "groups": 1,
+  "paths": 4
+ },
+ "big_true_dups": {
+  "seconds": 1.1772,
+  "groups": 3,
+  "paths": 12
+ },
+ "many_tiny": {
+  "seconds": 1.5291,
+  "groups": 19938,
+  "paths": 182276
+ },
+ "huge_flat_dir": {
+  "seconds": 0.7032,
+  "groups": 13392,
+  "paths": 35152
+ },
+ "deep_pathmax": {
+  "seconds": 0.0925,
+  "groups": 2,
+  "paths": 51
+ },
+ "wide_tree": {
+  "seconds": 0.5971,
+  "groups": 2999,
+  "paths": 32767
+ },
+ "special_files": {
+  "seconds": 0.0689,
+  "groups": 1,
+  "paths": 25
+ },
+ "permissions": {
+  "seconds": 0.0683,
+  "groups": 2,
+  "paths": 4
+ },
+ "sparse_giant": {
+  "seconds": 3.7806,
+  "groups": 1,
+  "paths": 3
+ },
+ "crc_bait": {
+  "seconds": 0.1273,
+  "groups": 10,
+  "paths": 20
+ },
+ "one_giant_group": {
+  "seconds": 1.942,
+  "groups": 2,
+  "paths": 50000
+ },
+ "trivial": {
+  "seconds": 0.0676,
+  "groups": 0,
+  "paths": 0
+ },
+ "size_classes": {
+  "seconds": 0.5351,
+  "groups": 611,
+  "paths": 1222
+ },
+ "cross_device": {
+  "seconds": 0.0854,
+  "groups": 327,
+  "paths": 752
+ },
+ "bind_alias": {
+  "seconds": 0.0844,
+  "groups": 232,
+  "paths": 805
+ }
+}
