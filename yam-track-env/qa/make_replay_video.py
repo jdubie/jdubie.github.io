@@ -1,11 +1,10 @@
-"""Replay a v1 agent's first and last attempt at one reference on the true arm, one video each.
+"""PD-only baseline vs a v1 agent's best attempt at one reference, replayed on the true arm, in one video.
 
-  python qa/make_replay_video.py RUN_DIR REFERENCE [--no-video]
-  -> site/replay_<ref>_first.mp4, site/replay_<ref>_last.mp4
+  python qa/make_replay_video.py RUN_DIR REFERENCE [START_S DUR_S] [--no-video]  -> site/replay_<ref>.mp4
 
-RUN_DIR is a v1 run whose agent saved its commands as work/runs/<ref>_latest.npz (qcmd, vcmd, ff at max gains), as
-Sol's did. The first attempt is that agent's iteration 0: nominal inverse dynamics, recomputed exactly as its
-track.py does. The camera is fixed, facing the gripper; red is where the reference puts the tool point, blue is where it is.
+RUN_DIR is a v1 run whose agent saved its commands as work/runs/<ref>_best.npz (qcmd, vcmd, ff at max gains), as
+Sol's did. Two arm panels side by side (fixed camera facing the gripper; red = where the reference puts the tool point,
+blue = where it is) above a strip plotting each one's tool-point error live, log scale. START_S/DUR_S trim the clip.
 """
 import json
 import os
@@ -32,6 +31,8 @@ DT = 1 / 30
 TCP = core.POINT_NAMES.index("tcp")
 RED, BLUE = (230, 40, 40), (40, 110, 240)
 W, H = 960, 720
+PLOT_H = 300
+LINE = {0: (240, 130, 60), 1: (110, 180, 255)}
 
 
 def first_attempt(ref: dict) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
@@ -78,8 +79,36 @@ def project(scn: mujoco.MjvScene, pts: np.ndarray, w: int, h: int) -> np.ndarray
     return np.stack([u, v], 1)
 
 
-def render(mt: mujoco.MjModel, traj: np.ndarray, panels: dict[str, core.Trial], out: Path) -> None:
-    """One video, one panel per trial side by side; each panel shows the arm and the tool point's target and actual."""
+def strip(errs: dict[str, np.ndarray], t: np.ndarray, t0: float, t1: float, now: float, font) -> np.ndarray:
+    """Error-vs-time strip, (PLOT_H, 2W, 3): each curve drawn up to `now`, log mm axis."""
+    img = Image.new("RGB", (2 * W, PLOT_H), (22, 23, 25))
+    dr = ImageDraw.Draw(img)
+    L, R, T, B = 110, 2 * W - 40, 24, PLOT_H - 48
+    lo, hi = -2.0, 2.0  # log10 mm
+    X = lambda tt: L + (tt - t0) / (t1 - t0) * (R - L)  # noqa: E731
+    Y = lambda mm: B - (np.log10(np.clip(mm, 10**lo, 10**hi)) - lo) / (hi - lo) * (B - T)  # noqa: E731
+    for e in range(int(lo), int(hi) + 1):
+        y = Y(10.0**e)
+        dr.line([(L, y), (R, y)], fill=(50, 52, 56), width=1)
+        dr.text((L - 12, y), f"{10.0**e:g} mm", fill=(170, 170, 170), font=font, anchor="rm")
+    for tt in range(int(np.ceil(t0)), int(t1) + 1):
+        dr.text((X(tt), B + 10), f"{tt} s", fill=(170, 170, 170), font=font, anchor="mt")
+    sel = (t >= t0) & (t <= now)
+    for i, (lab, e) in enumerate(errs.items()):
+        if sel.sum() > 1:
+            pts = list(zip(X(t[sel]).tolist(), Y(e[sel]).tolist()))
+            dr.line(pts, fill=LINE[i], width=3)
+            x, y = pts[-1]
+            dr.ellipse([x - 6, y - 6, x + 6, y + 6], fill=LINE[i])
+        ly = Y(10**0.5) + (i - 0.5) * 30  # legend in the empty band between 1 and 10 mm
+        dr.line([(R - 260, ly), (R - 220, ly)], fill=LINE[i], width=4)
+        dr.text((R - 210, ly), lab, fill=LINE[i], font=font, anchor="lm")
+    dr.text((L + 10, T - 30), "tool point error, log scale", fill=(170, 170, 170), font=font)
+    return np.asarray(img)
+
+
+def render(mt: mujoco.MjModel, traj: np.ndarray, panels: dict[str, core.Trial], out: Path, t0: float, t1: float) -> None:
+    """Arm panels side by side, with the live error strip below."""
     vm = mesh_viz.mesh_model(mt, ROOT / "public" / "yam_nominal.xml", W, H)
     vd = mujoco.MjData(vm)
     r = mujoco.Renderer(vm, H, W)
@@ -87,11 +116,16 @@ def render(mt: mujoco.MjModel, traj: np.ndarray, panels: dict[str, core.Trial], 
     cam.azimuth, cam.elevation, cam.distance, cam.lookat[:] = 215, -12, 0.72, (0.13, 0.13, 0.22)
     tgt = core.eef_points(mt, traj[1:])[:, TCP]  # (N, 3)
     acts = {lab: core.eef_points(mt, t.true_q)[:, TCP] for lab, t in panels.items()}
+    errs = {lab: np.linalg.norm(a - tgt, axis=1) * 1000 for lab, a in acts.items()}  # (N,) mm at 1500 Hz
+    tt = np.arange(1, len(traj)) / core.PHYS_HZ
+    step = 5  # plot at 300 Hz
+    errs_s, tt_s = {k: v[::step] for k, v in errs.items()}, tt[::step]
     font, small = ImageFont.load_default(size=26), ImageFont.load_default(size=20)
     ff = subprocess.Popen(["ffmpeg", "-y", "-loglevel", "error", "-f", "rawvideo", "-pix_fmt", "rgb24", "-s",
-                           f"{W * len(panels)}x{H}", "-r", "30", "-i", "-", "-c:v", "libx264", "-pix_fmt", "yuv420p",
-                           "-crf", "20", "-movflags", "+faststart", str(out)], stdin=subprocess.PIPE)
-    for k in range(core.SUB - 1, len(traj) - 1, core.SUB):
+                           f"{W * len(panels)}x{H + PLOT_H}", "-r", "30", "-i", "-", "-c:v", "libx264", "-pix_fmt",
+                           "yuv420p", "-crf", "20", "-movflags", "+faststart", str(out)], stdin=subprocess.PIPE)
+    k0, k1 = int(round(t0 * core.PHYS_HZ)), min(int(round(t1 * core.PHYS_HZ)), len(traj) - 1)
+    for k in range(k0 + core.SUB - 1, k1, core.SUB):
         tiles = []
         for lab, t in panels.items():
             vd.qpos[:6] = t.true_q[k]
@@ -103,18 +137,18 @@ def render(mt: mujoco.MjModel, traj: np.ndarray, panels: dict[str, core.Trial], 
             (tu, tv), (au, av) = project(r.scene, np.stack([tgt[k], act]), W, H)
             for (u, v), col, rad in (((tu, tv), RED, 8), ((au, av), BLUE, 4)):  # blue on top: centred on red = on target
                 dr.ellipse([u - rad, v - rad, u + rad, v + rad], fill=col)
-            err = np.linalg.norm(tgt[k] - act) * 1000
-            dr.text((16, 12), f"{lab}: {t.result()['rms_mm']:.2f} mm RMS", fill=(255, 255, 255), font=font)
-            dr.text((16, 48), f"tool point error now {err:5.2f} mm    t = {(k + 1) / core.PHYS_HZ:4.1f} s",
+            dr.text((16, 12), f"{lab}: {t.result()['rms_mm']:.2f} mm RMS (whole 12 s)", fill=(255, 255, 255), font=font)
+            dr.text((16, 48), f"tool point error now {errs[lab][k]:5.2f} mm    t = {tt[k]:4.1f} s",
                     fill=(215, 215, 215), font=small)
             dr.ellipse([16, H - 60, 30, H - 46], fill=RED)
             dr.text((38, H - 64), "target", fill=(235, 235, 235), font=small)
             dr.ellipse([16, H - 32, 30, H - 18], fill=BLUE)
             dr.text((38, H - 36), "arm (actual)", fill=(235, 235, 235), font=small)
             tiles.append(np.asarray(img))
-        frame = np.hstack(tiles)
-        frame[:, W - 2 : W + 2] = 255
-        ff.stdin.write(frame.tobytes())
+        top = np.hstack(tiles)
+        top[:, W - 2 : W + 2] = 255
+        frame = np.vstack([top, strip(errs_s, tt_s, t0, t1, tt[k], small)])
+        ff.stdin.write(np.ascontiguousarray(frame).tobytes())
     ff.stdin.close()
     ff.wait()
 
@@ -131,7 +165,9 @@ def main() -> None:
     print(json.dumps({k: t.result()["rms_mm"] for k, t in panels.items()}))
     if "--no-video" in sys.argv:
         return
-    render(core.build_model(p), traj, panels, ROOT / "site" / f"replay_{name}.mp4")
+    args = [a for a in sys.argv[3:] if not a.startswith("--")]
+    t0, dur = (float(args[0]), float(args[1])) if len(args) == 2 else (0.0, 12.0)
+    render(core.build_model(p), traj, panels, ROOT / "site" / f"replay_{name}.mp4", t0, t0 + dur)
 
 
 if __name__ == "__main__":
