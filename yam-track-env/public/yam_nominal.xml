@@ -1,0 +1,66 @@
+<!--
+  NOMINAL model of the YAM 6-DOF arm for the tracking task.
+  Chain, inertials and joint ranges: teleop assets/yam.xml. The gripper is a rigid lump on link_6.
+  The real arm is built from this same chain, but its masses, centres of mass, inertias, link lengths,
+  rotor inertia (armature), joint friction and motor torque constants all differ from what is written here,
+  by unknown amounts. This file has no friction at all. Use it as a starting point, not as the truth.
+  Base at the origin; joint angles in rad. site "tcp" is the tool point.
+-->
+<mujoco model="yam_nominal">
+  <compiler angle="radian"/>
+  <option timestep="0.000666667" integrator="implicitfast" gravity="0 0 -9.81"/>
+  <default>
+    <joint armature="0.02" damping="0.0" frictionloss="0.0"/>
+    <geom contype="0" conaffinity="0" rgba="0.72 0.76 0.84 1"/>
+    <motor ctrllimited="true"/>
+  </default>
+  <worldbody>
+    <light pos="0.3 -0.6 1.4" dir="-0.2 0.5 -1"/>
+    <geom name="floor" type="plane" size="1 1 0.1" pos="0 0 0" rgba="0.85 0.86 0.88 1"/>
+    <geom name="base" type="cylinder" pos="0 0 0.03" size="0.05 0.03"/>
+    <body name="arm">
+      <body name="link_1" pos="0 0 0.0631" quat="1 0 0 1">
+        <inertial pos="-0.00192861 -0.00795735 0.0208176" quat="0.297851 0.642634 0.360045 0.607185" mass="0.11" diaginertia="0.000180620243456337 0.00013375993796762453 6.076650440464397e-05"/>
+        <joint name="joint1" range="-2.61799 3.05433" axis="0 0 1"/>
+        <geom type="cylinder" fromto="0 0 0 0 0 0.04" size="0.04"/>
+        <body name="link_2" pos="2.5e-05 -0.02 0.0409" quat="1 1 1 1">
+          <inertial pos="0.132008 2.10599e-06 0.000293073" quat="1 1 1 1" mass="1.44" diaginertia="0.015047452625488211 0.01497536428950287 0.0008434631563720527"/>
+          <joint name="joint2" range="0 3.66519" axis="0 0 1"/>
+          <geom type="capsule" fromto="0 0 0 0.264 0 0" size="0.035"/>
+          <body name="link_3" pos="0.264 0 0" quat="0 1 0 0">
+            <inertial pos="-0.121816 -0.054846 -0.000111108" quat="1 1 1 1" mass="1.03" diaginertia="0.007663710351904303 0.00762406284189491 0.0008633124828686491"/>
+            <joint name="joint3" range="0 3.66519" axis="0 0 1"/>
+            <geom type="capsule" fromto="0 0 0 -0.245 -0.06 0" size="0.03"/>
+            <body name="link_4" pos="-0.245 -0.06 0" quat="1 0 0 0">
+              <inertial pos="-0.0769778 -0.0527104 0.000154878" quat="0.667 0.667 -0.236 -0.236" mass="0.56" diaginertia="0.0007138134283760255 0.000671609506570502 0.00025441572691910225"/>
+              <joint name="joint4" range="-1.5708 1.5708" axis="0 0 1"/>
+              <geom type="capsule" fromto="0 0 0 -0.074 -0.0395 0" size="0.028"/>
+              <body name="link_5" pos="-0.074 -0.0395 2.5e-05" quat="1 -1 1 1">
+                <inertial pos="3.64861e-05 0.00025665 0.0353526" quat="1 0 0 0" mass="0.51" diaginertia="0.0001924852290288502 0.00014559088935819605 0.00016632976402720587"/>
+                <joint name="joint5" range="-1.5708 1.5708" axis="0 0 1"/>
+                <geom type="capsule" fromto="0 0 0 0 0.0353 0.0395" size="0.028"/>
+                <body name="link_6" pos="0 0.0353 0.0395" quat="1 -1 0 0">
+                  <inertial pos="-0.000217767 7.37059e-05 0.0270545" quat="1 1 0 0" mass="0.367476" diaginertia="0.000265958 0.000242686 0.000227409"/>
+                  <joint name="joint6" range="-2.0944 2.0944" axis="0 0 1"/>
+                  <body name="gripper" pos="0 0 0">
+                    <inertial pos="0 0 0.05" mass="0.42" diaginertia="0.0006 0.0006 0.0004"/>
+                    <geom type="box" pos="0 0 0.06" size="0.03 0.065 0.035" rgba="0.3 0.32 0.36 1"/>
+                    <site name="tcp" pos="0 0 0.115" size="0.004" rgba="1 0 0 1"/>
+                  </body>
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+  <actuator>
+    <motor name="m1" joint="joint1" ctrlrange="-28 28"/>
+    <motor name="m2" joint="joint2" ctrlrange="-28 28"/>
+    <motor name="m3" joint="joint3" ctrlrange="-28 28"/>
+    <motor name="m4" joint="joint4" ctrlrange="-10 10"/>
+    <motor name="m5" joint="joint5" ctrlrange="-10 10"/>
+    <motor name="m6" joint="joint6" ctrlrange="-10 10"/>
+  </actuator>
+</mujoco>
