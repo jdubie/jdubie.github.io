@@ -277,7 +277,14 @@ def sweep(tag1: str, tag2: str) -> str:
 category's references.</p>
 <h3>v1: score over the run</h3><p>The score as it would have stood at each moment: a reference with no finished trial counts as a
 limp arm, so a curve only drops below ~10 mm once every reference has been run. Solid = robot 100, dotted = 101.</p>
-<img src="v1_progress.png" alt="v1 progress">"""
+<img src="v1_progress.png" alt="v1 progress">
+<h3>v1 reward over the run</h3><p>reward = log<sub>10</sub>(PD-only error / score), per robot, mean of the two robots:
+0 is the PD-only baseline and each +1 is 10&times; more accurate. A reference never finished counts as the limp arm.</p>
+<img src="reward_v1.png" alt="v1 reward over the run">
+<h3>Baseline vs Sol's best, recorded_0 on robot 100</h3><p>Left: PD only, no feedforward (33.88 mm). Right: Sol's best
+attempt, replayed on the true arm from the commands it saved (0.09 mm, matching the server's log). Drawn with the real YAM Pro
+meshes. <b>Red</b> is where the reference puts the tool point, <b>blue</b> is where it actually is.</p>
+<video src="replay_recorded_0.mp4" controls muted loop playsinline></video>"""
 
 
 def main() -> None:
