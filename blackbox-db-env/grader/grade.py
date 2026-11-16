@@ -3,6 +3,7 @@
   python3 grader/grade.py --work <dir> <out>                 # a submission (start.sh, optional build.sh)
   python3 grader/grade.py --oracle-seed 7101 [--layers wire] <out>   # an oracle (calibration / ablation)
   python3 grader/grade.py --postgres <out>                   # stock PostgreSQL 16 on the same port
+BBX_ORACLE_VERSION=1 selects the oracle as the Opus run saw it (no discovery hints); default 2.
 
 reward = 0.45 sql + 0.25 protocol + 0.30 durability
   sql         mean over 60 SQL sessions of the per-message credit after login (0 for a session that never logs in)
@@ -30,7 +31,7 @@ sys.path.insert(0, str(HERE))
 sys.path.insert(0, str(ROOT / "oracle"))
 import durability  # noqa: E402
 import workloads as W  # noqa: E402
-from boxes import SANDBOX, CandBox, OracleBox, PgBox  # noqa: E402
+from boxes import ORACLE_VERSION, SANDBOX, CandBox, OracleBox, PgBox  # noqa: E402
 from variant import make_spec  # noqa: E402
 from wire import run_workload, workload_score  # noqa: E402
 
@@ -67,7 +68,7 @@ def build(work: Path, out: Path) -> dict:
 def oracle_transcripts(seed: int, wseed: int, rendered: list[dict]) -> list:
     """The oracle's answers to every workload, in order, on one fresh oracle. Cached per (seed, wseed)."""
     CACHE.mkdir(exist_ok=True)
-    path = CACHE / f"oracle-{seed}-{wseed}.json"
+    path = CACHE / f"oracle-v{ORACLE_VERSION}-{seed}-{wseed}.json"
     if path.exists():
         return json.loads(path.read_text())
     box = OracleBox(seed)
@@ -135,7 +136,7 @@ def main() -> None:
     out.mkdir(parents=True, exist_ok=True)
     spec = make_spec(a.seed)
     t0 = time.time()
-    meta: dict = {"seed": a.seed, "wseed": a.wseed}
+    meta: dict = {"seed": a.seed, "wseed": a.wseed, "oracle_version": ORACLE_VERSION}
     if a.work:
         b = build(Path(a.work), out)
         meta["build"] = b

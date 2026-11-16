@@ -18,11 +18,14 @@ from variant import PG_CANCEL, Codec, Dialect, Malformed, Semantics, make_spec
 PG_SOCK = os.environ.get("BBX_PG_SOCK", "/var/run/postgresql/.s.PGSQL.5432")
 USERS = {"admin": os.environ.get("BBX_ADMIN_PW", "opensesame"), "guest": None}
 MAX_MSG = 1 << 28
+# Oracle v2: errors carry HINTs naming the startup keys and the dialect's spelling of PostgreSQL words the
+# client used, so every renamed word is discoverable by probing. v1 (BBX_HINTS=0) had no discovery channel.
+HINTS = os.environ.get("BBX_HINTS", "1") == "1"
 
 
 class Fatal(Exception):
-    def __init__(self, code: str, msg: str):
-        self.code, self.msg = code, msg
+    def __init__(self, code: str, msg: str, hint: str | None = None):
+        self.code, self.msg, self.hint = code, msg, hint
 
 
 class Terminate(Exception):
@@ -70,8 +73,10 @@ class Proxy:
             out[c] = v
         return out
 
-    def fatal_bytes(self, code: str, msg: str, sev: str = "FATAL") -> bytes:
+    def fatal_bytes(self, code: str, msg: str, sev: str = "FATAL", hint: str | None = None) -> bytes:
         f = self.error_fields({"S": sev, "V": sev, "C": code, "M": msg}, None)
+        if hint and HINTS:
+            f["H"] = hint
         return self.V.encode("b:error", {"fields": f})
 
 
@@ -120,7 +125,7 @@ class Conn:
             await self.connect_pg(params)
             await self.session()
         except Fatal as f:
-            self.send(px.fatal_bytes(f.code, f.msg))
+            self.send(px.fatal_bytes(f.code, f.msg, hint=f.hint))
         except (ConnectionError, asyncio.IncompleteReadError, OSError):
             pass
         finally:
@@ -193,12 +198,15 @@ class Conn:
             except Malformed:
                 raise Fatal("08P01", "invalid startup packet layout: expected terminator as last byte") from None
             out = {}
+            sk = w["startup_keys"]
+            key_hint = (f'startup parameters are "{sk["user"]}" (user name), "{sk["database"]}" (database) '
+                        f'and "{sk["application_name"]}" (application name)')
             for k, v in params.items():
                 if k not in px.keys:
-                    raise Fatal("42704", f'unrecognized configuration parameter "{k}"')
+                    raise Fatal("42704", f'unrecognized configuration parameter "{k}"', key_hint)
                 out[px.keys[k]] = v
             if "user" not in out:
-                raise Fatal("28000", "no PostgreSQL user name specified in startup packet")
+                raise Fatal("28000", "no PostgreSQL user name specified in startup packet", key_hint)
             out.setdefault("database", out["user"])
             user = out["user"]
             if user not in USERS:
@@ -266,12 +274,12 @@ class Conn:
             out = b""
             if kind == "query":
                 sql, spans = px.dia.to_pg(m["sql"])
-                self.pending.append({"k": "query", "spans": spans})
+                self.pending.append({"k": "query", "spans": spans, "hints": px.dia.hints(m["sql"]) if HINTS else []})
                 out = P.encode("f:query", {"sql": sql})
             elif kind == "parse":
                 sql, spans = px.dia.to_pg(m["sql"])
                 self.stmt_spans[m["name"]] = spans
-                self.pending.append({"k": "parse", "spans": spans})
+                self.pending.append({"k": "parse", "spans": spans, "hints": px.dia.hints(m["sql"]) if HINTS else []})
                 out = P.encode("f:parse", {"name": m["name"], "sql": sql, "types": [px.oid_to_p(o) for o in m["types"]]})
             elif kind == "bind":
                 self.portal_stmt[m["portal"]] = m["stmt"]
@@ -383,6 +391,9 @@ class Conn:
             out = {"tag": dia.tag(sem.tag(m["tag"]))}
         elif kind in ("error", "notice"):
             out = {"fields": px.error_fields(m["fields"], head.get("spans") if head else None)}
+            hints = head.get("hints") if head else None
+            if kind == "error" and hints:
+                out["fields"]["H"] = "\n".join(([out["fields"]["H"]] if "H" in out["fields"] else []) + hints)
         elif kind == "paramdesc":
             out = {"types": [px.oid_to_v(o) for o in m["types"]]}
         else:

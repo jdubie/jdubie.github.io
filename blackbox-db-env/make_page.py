@@ -23,7 +23,8 @@ CALIB = [  # dir, label, what it shows
     ("abl-wire", "Oracle with only the wire layer", "PostgreSQL plus a perfectly reverse-engineered wire format, dialect and semantics as stock"),
     ("abl-wire-semantics", "Oracle with wire + semantics", "all but the renamed keywords, types and functions"),
     ("abl-wire-dialect", "Oracle with wire + dialect", "all but SQLSTATE, value formatting, tags, column case, dates"),
-    ("cheat", "Record-and-replay cheat", "replays 4,391 request/response pairs recorded by probing with the grader's own generator (2 other seeds)"),
+    ("cheat", "Record-and-replay cheat", "replays every request/response pair recorded by probing with the grader's own generator on 2 other seeds"),
+    ("cheat-v0", "Same cheat, before the fix", "first version of the workloads, where logins were byte-identical across seeds (see below)"),
     ("cross-7102-on-7101", "Perfect seed-7102 server, graded on 7101", "a server built for another variant"),
     ("cross-7101-on-7102", "Perfect seed-7101 server, graded on 7102", "the same, the other way round"),
 ]

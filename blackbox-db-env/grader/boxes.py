@@ -19,7 +19,10 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 NET = "bbx-grade"
 PORT = 7000
-SANDBOX, ORACLE, PG = "bbx-sandbox:1", "bbx-oracle:1", "postgres:16-bookworm"
+SANDBOX, PG = "bbx-sandbox:1", "postgres:16-bookworm"
+# oracle image version: 1 = as Opus saw it (no discovery hints), 2 = errors name startup keys and renamed words
+ORACLE_VERSION = int(os.environ.get("BBX_ORACLE_VERSION", "2"))
+ORACLE = f"bbx-oracle:{ORACLE_VERSION}"
 MEM = "6g"
 
 

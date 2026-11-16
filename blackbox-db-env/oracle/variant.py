@@ -678,6 +678,34 @@ class Dialect:
             pos += len(new)
         return "".join(out), spans
 
+    def hints(self, sql: str) -> list[str]:
+        """Oracle v2: how this dialect spells each PostgreSQL spelling the client used (keyword, type, function,
+        parameter marker), in order of first use. The proxy adds these to an error's HINT, so a client can
+        discover renamed words by trying the ones it knows."""
+        if not self.on:
+            return []
+        toks = list(scan(sql, self.prefix))
+        out: list[str] = []
+        for k, (kind, a, b) in enumerate(toks):
+            src = sql[a:b]
+            h = None
+            if kind == "ident":
+                lw = src.lower()
+                nxt = _next_sig(toks, k, sql)
+                if lw in self.kw_v2p or lw in self.type_v2p or (lw in self.fn_v2p and nxt == "("):
+                    continue
+                if lw in self.kw_p2v:
+                    h = f"{lw.upper()} is written {self.kw_p2v[lw].upper()} here"
+                elif lw in self.type_p2v:
+                    h = f"type {lw} is written {self.type_p2v[lw]} here"
+                elif lw in self.fn_p2v and nxt == "(":
+                    h = f"function {lw}() is written {self.fn_p2v[lw]}() here"
+            elif kind == "param" and src[0] != self.prefix:
+                h = f"parameters are written {self.prefix}1, {self.prefix}2, ... here"
+            if h and h not in out:
+                out.append(h)
+        return out
+
     @staticmethod
     def map_pos(spans: list, p: int) -> int:
         """PostgreSQL's 1-based character position in the rewritten text -> position in the client's text."""

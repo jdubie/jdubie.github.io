@@ -24,7 +24,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 TASK = ROOT / "task"
-IMAGE, ORACLE, EGRESS_IMAGE = "bbx-sandbox:1", "bbx-oracle:1", "python:3.12-slim"
+IMAGE, ORACLE, EGRESS_IMAGE = "bbx-sandbox:1", "bbx-oracle:2", "python:3.12-slim"  # the opus20 run used bbx-oracle:1
 CLAUDE_BIN = Path.home() / ".local/share/claude/versions/2.1.322"
 CLAUDE_MODELS = {"opus": "claude-opus-5-5", "sonnet": "claude-sonnet-5-5", "haiku": "claude-haiku-5-5"}
 LAUNCH = "Read PROMPT.md in the current directory and do what it says."
