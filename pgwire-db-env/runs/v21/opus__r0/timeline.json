@@ -1,0 +1,312 @@
+[
+ {
+  "label": "t002min",
+  "t_min": 2,
+  "same_as": null,
+  "protocol": 0.0,
+  "clients": 0.0,
+  "sql": 0.0,
+  "acid": 0.0,
+  "scale": 0.0,
+  "raw_reward": 0.0,
+  "violations": 0,
+  "reward": 0.0,
+  "protocol_tests": "0/68",
+  "sql_statements": "",
+  "acid_runs": "0/42",
+  "crash_points": "0/6",
+  "clients_groups": {
+   "psql": "0/8",
+   "pgbench": "0/6",
+   "psycopg": "0/29",
+   "node": "0/12",
+   "jdbc": "0/14"
+  },
+  "scale_items": {
+   "init": 0.0,
+   "restart": 0.0,
+   "select_tps": 0.0,
+   "tpcb_tps": 0.0,
+   "restart_after_writes": 0.0
+  }
+ },
+ {
+  "label": "t004min",
+  "t_min": 4,
+  "same_as": "t002min",
+  "protocol": 0.0,
+  "clients": 0.0,
+  "sql": 0.0,
+  "acid": 0.0,
+  "scale": 0.0,
+  "raw_reward": 0.0,
+  "violations": 0,
+  "reward": 0.0,
+  "protocol_tests": "0/68",
+  "sql_statements": "",
+  "acid_runs": "0/42",
+  "crash_points": "0/6",
+  "clients_groups": {
+   "psql": "0/8",
+   "pgbench": "0/6",
+   "psycopg": "0/29",
+   "node": "0/12",
+   "jdbc": "0/14"
+  },
+  "scale_items": {
+   "init": 0.0,
+   "restart": 0.0,
+   "select_tps": 0.0,
+   "tpcb_tps": 0.0,
+   "restart_after_writes": 0.0
+  }
+ },
+ {
+  "label": "t006min",
+  "t_min": 6,
+  "same_as": "t002min",
+  "protocol": 0.0,
+  "clients": 0.0,
+  "sql": 0.0,
+  "acid": 0.0,
+  "scale": 0.0,
+  "raw_reward": 0.0,
+  "violations": 0,
+  "reward": 0.0,
+  "protocol_tests": "0/68",
+  "sql_statements": "",
+  "acid_runs": "0/42",
+  "crash_points": "0/6",
+  "clients_groups": {
+   "psql": "0/8",
+   "pgbench": "0/6",
+   "psycopg": "0/29",
+   "node": "0/12",
+   "jdbc": "0/14"
+  },
+  "scale_items": {
+   "init": 0.0,
+   "restart": 0.0,
+   "select_tps": 0.0,
+   "tpcb_tps": 0.0,
+   "restart_after_writes": 0.0
+  }
+ },
+ {
+  "label": "t008min",
+  "t_min": 8,
+  "same_as": "t002min",
+  "protocol": 0.0,
+  "clients": 0.0,
+  "sql": 0.0,
+  "acid": 0.0,
+  "scale": 0.0,
+  "raw_reward": 0.0,
+  "violations": 0,
+  "reward": 0.0,
+  "protocol_tests": "0/68",
+  "sql_statements": "",
+  "acid_runs": "0/42",
+  "crash_points": "0/6",
+  "clients_groups": {
+   "psql": "0/8",
+   "pgbench": "0/6",
+   "psycopg": "0/29",
+   "node": "0/12",
+   "jdbc": "0/14"
+  },
+  "scale_items": {
+   "init": 0.0,
+   "restart": 0.0,
+   "select_tps": 0.0,
+   "tpcb_tps": 0.0,
+   "restart_after_writes": 0.0
+  }
+ },
+ {
+  "label": "t010min",
+  "t_min": 10,
+  "same_as": null,
+  "protocol": 0.5,
+  "clients": 0.7532,
+  "sql": 0.1985,
+  "acid": 0.9762,
+  "scale": 1.0,
+  "raw_reward": 0.6166,
+  "violations": 0,
+  "reward": 0.6166,
+  "protocol_tests": "34/68",
+  "sql_statements": "4969/26127",
+  "acid_runs": "40/42",
+  "crash_points": "126/126",
+  "clients_groups": {
+   "psql": "6/8",
+   "pgbench": "6/6",
+   "psycopg": "16/29",
+   "node": "9/12",
+   "jdbc": "10/14"
+  },
+  "scale_items": {
+   "init": 1.0,
+   "restart": 1.0,
+   "select_tps": 1.0,
+   "tpcb_tps": 1.0,
+   "restart_after_writes": 1.0
+  }
+ },
+ {
+  "label": "t012min",
+  "t_min": 12,
+  "same_as": null,
+  "protocol": 0.6029,
+  "clients": 0.7601,
+  "sql": 0.1985,
+  "acid": 0.9762,
+  "scale": 0.6,
+  "raw_reward": 0.5982,
+  "violations": 0,
+  "reward": 0.5982,
+  "protocol_tests": "41/68",
+  "sql_statements": "4969/26127",
+  "acid_runs": "40/42",
+  "crash_points": "126/126",
+  "clients_groups": {
+   "psql": "6/8",
+   "pgbench": "6/6",
+   "psycopg": "17/29",
+   "node": "9/12",
+   "jdbc": "10/14"
+  },
+  "scale_items": {
+   "init": 1.0,
+   "restart": 1.0,
+   "select_tps": 0.0,
+   "tpcb_tps": 0.0,
+   "restart_after_writes": 1.0
+  }
+ },
+ {
+  "label": "t014min",
+  "t_min": 14,
+  "same_as": null,
+  "protocol": 0.6324,
+  "clients": 0.8215,
+  "sql": 0.1987,
+  "acid": 0.9762,
+  "scale": 1.0,
+  "raw_reward": 0.6534,
+  "violations": 0,
+  "reward": 0.6534,
+  "protocol_tests": "43/68",
+  "sql_statements": "4982/26127",
+  "acid_runs": "40/42",
+  "crash_points": "126/126",
+  "clients_groups": {
+   "psql": "6/8",
+   "pgbench": "6/6",
+   "psycopg": "19/29",
+   "node": "11/12",
+   "jdbc": "11/14"
+  },
+  "scale_items": {
+   "init": 1.0,
+   "restart": 1.0,
+   "select_tps": 1.0,
+   "tpcb_tps": 1.0,
+   "restart_after_writes": 1.0
+  }
+ },
+ {
+  "label": "t016min",
+  "t_min": 16,
+  "same_as": "final",
+  "protocol": 0.6324,
+  "clients": 0.8353,
+  "sql": 0.1987,
+  "acid": 0.9762,
+  "scale": 1.0,
+  "raw_reward": 0.6554,
+  "violations": 0,
+  "reward": 0.6554,
+  "protocol_tests": "43/68",
+  "sql_statements": "4982/26127",
+  "acid_runs": "40/42",
+  "crash_points": "126/126",
+  "clients_groups": {
+   "psql": "6/8",
+   "pgbench": "6/6",
+   "psycopg": "21/29",
+   "node": "11/12",
+   "jdbc": "11/14"
+  },
+  "scale_items": {
+   "init": 1.0,
+   "restart": 1.0,
+   "select_tps": 1.0,
+   "tpcb_tps": 1.0,
+   "restart_after_writes": 1.0
+  }
+ },
+ {
+  "label": "t018min",
+  "t_min": 18,
+  "same_as": "final",
+  "protocol": 0.6324,
+  "clients": 0.8353,
+  "sql": 0.1987,
+  "acid": 0.9762,
+  "scale": 1.0,
+  "raw_reward": 0.6554,
+  "violations": 0,
+  "reward": 0.6554,
+  "protocol_tests": "43/68",
+  "sql_statements": "4982/26127",
+  "acid_runs": "40/42",
+  "crash_points": "126/126",
+  "clients_groups": {
+   "psql": "6/8",
+   "pgbench": "6/6",
+   "psycopg": "21/29",
+   "node": "11/12",
+   "jdbc": "11/14"
+  },
+  "scale_items": {
+   "init": 1.0,
+   "restart": 1.0,
+   "select_tps": 1.0,
+   "tpcb_tps": 1.0,
+   "restart_after_writes": 1.0
+  }
+ },
+ {
+  "label": "final",
+  "t_min": 19.08,
+  "same_as": null,
+  "protocol": 0.6324,
+  "clients": 0.8353,
+  "sql": 0.1987,
+  "acid": 0.9762,
+  "scale": 1.0,
+  "raw_reward": 0.6554,
+  "violations": 0,
+  "reward": 0.6554,
+  "protocol_tests": "43/68",
+  "sql_statements": "4982/26127",
+  "acid_runs": "40/42",
+  "crash_points": "126/126",
+  "clients_groups": {
+   "psql": "6/8",
+   "pgbench": "6/6",
+   "psycopg": "21/29",
+   "node": "11/12",
+   "jdbc": "11/14"
+  },
+  "scale_items": {
+   "init": 1.0,
+   "restart": 1.0,
+   "select_tps": 1.0,
+   "tpcb_tps": 1.0,
+   "restart_after_writes": 1.0
+  }
+ }
+]

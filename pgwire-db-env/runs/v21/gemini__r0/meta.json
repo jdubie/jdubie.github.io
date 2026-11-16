@@ -1,0 +1,41 @@
+{
+ "docs": true,
+ "model": "gemini",
+ "rep": 0,
+ "minutes": 20,
+ "seconds": 1200.2,
+ "segments": [
+  {
+   "segment": 0,
+   "start_s": 0.0,
+   "end_s": 1200.2,
+   "exit": 137
+  }
+ ],
+ "protocol": 0.0,
+ "clients": 0.0,
+ "sql": 0.0,
+ "acid": 0.0,
+ "scale": 0.0,
+ "raw_reward": 0.0,
+ "violations": 0,
+ "reward": 0.0,
+ "protocol_tests": "0/68",
+ "sql_statements": "",
+ "acid_runs": "0/42",
+ "crash_points": "0/6",
+ "clients_groups": {
+  "psql": "0/8",
+  "pgbench": "0/6",
+  "psycopg": "0/29",
+  "node": "0/12",
+  "jdbc": "0/14"
+ },
+ "scale_items": {
+  "init": 0.0,
+  "restart": 0.0,
+  "select_tps": 0.0,
+  "tpcb_tps": 0.0,
+  "restart_after_writes": 0.0
+ }
+}

@@ -1,0 +1,41 @@
+{
+ "docs": true,
+ "model": "terra",
+ "rep": 0,
+ "minutes": 20,
+ "seconds": 1174.1,
+ "segments": [
+  {
+   "segment": 0,
+   "start_s": 0.0,
+   "end_s": 1174.1,
+   "exit": 0
+  }
+ ],
+ "protocol": 0.5294,
+ "clients": 0.4925,
+ "sql": 0.0906,
+ "acid": 0.9167,
+ "scale": 0.6,
+ "raw_reward": 0.4961,
+ "violations": 0,
+ "reward": 0.4961,
+ "protocol_tests": "36/68",
+ "sql_statements": "2354/26127",
+ "acid_runs": "35/42",
+ "crash_points": "99/99",
+ "clients_groups": {
+  "psql": "2/8",
+  "pgbench": "2/6",
+  "psycopg": "11/29",
+  "node": "12/12",
+  "jdbc": "7/14"
+ },
+ "scale_items": {
+  "init": 1.0,
+  "restart": 1.0,
+  "select_tps": 1.0,
+  "tpcb_tps": 0.0,
+  "restart_after_writes": 0.0
+ }
+}

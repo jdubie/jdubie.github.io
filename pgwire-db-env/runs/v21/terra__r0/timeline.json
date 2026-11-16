@@ -1,0 +1,294 @@
+[
+ {
+  "label": "t002min",
+  "t_min": 2,
+  "same_as": null,
+  "reward": 0.0,
+  "raw_reward": 0.0,
+  "protocol": 0,
+  "clients": 0,
+  "sql": 0,
+  "acid": 0,
+  "scale": 0,
+  "build": "no start.sh"
+ },
+ {
+  "label": "t004min",
+  "t_min": 4,
+  "same_as": null,
+  "protocol": 0.3676,
+  "clients": 0.2835,
+  "sql": 0.0744,
+  "acid": 0.2143,
+  "scale": 0.0,
+  "raw_reward": 0.1919,
+  "violations": 0,
+  "reward": 0.1919,
+  "protocol_tests": "25/68",
+  "sql_statements": "1952/26127",
+  "acid_runs": "18/42",
+  "crash_points": "0/6",
+  "clients_groups": {
+   "psql": "2/8",
+   "pgbench": "0/6",
+   "psycopg": "9/29",
+   "node": "6/12",
+   "jdbc": "5/14"
+  },
+  "scale_items": {
+   "init": 0.0,
+   "restart": 0.0,
+   "select_tps": 0.0,
+   "tpcb_tps": 0.0,
+   "restart_after_writes": 0.0
+  }
+ },
+ {
+  "label": "t006min",
+  "t_min": 6,
+  "same_as": null,
+  "protocol": 0.4559,
+  "clients": 0.3144,
+  "sql": 0.0789,
+  "acid": 0.8095,
+  "scale": 0.0,
+  "raw_reward": 0.3644,
+  "violations": 0,
+  "reward": 0.3644,
+  "protocol_tests": "31/68",
+  "sql_statements": "2141/26127",
+  "acid_runs": "32/42",
+  "crash_points": "93/111",
+  "clients_groups": {
+   "psql": "2/8",
+   "pgbench": "0/6",
+   "psycopg": "9/29",
+   "node": "7/12",
+   "jdbc": "6/14"
+  },
+  "scale_items": {
+   "init": 0.0,
+   "restart": 0.0,
+   "select_tps": 0.0,
+   "tpcb_tps": 0.0,
+   "restart_after_writes": 0.0
+  }
+ },
+ {
+  "label": "t008min",
+  "t_min": 8,
+  "same_as": null,
+  "protocol": 0.4706,
+  "clients": 0.3213,
+  "sql": 0.0789,
+  "acid": 0.8095,
+  "scale": 0.0,
+  "raw_reward": 0.3684,
+  "violations": 0,
+  "reward": 0.3684,
+  "protocol_tests": "32/68",
+  "sql_statements": "2143/26127",
+  "acid_runs": "32/42",
+  "crash_points": "93/111",
+  "clients_groups": {
+   "psql": "2/8",
+   "pgbench": "0/6",
+   "psycopg": "10/29",
+   "node": "7/12",
+   "jdbc": "6/14"
+  },
+  "scale_items": {
+   "init": 0.0,
+   "restart": 0.0,
+   "select_tps": 0.0,
+   "tpcb_tps": 0.0,
+   "restart_after_writes": 0.0
+  }
+ },
+ {
+  "label": "t010min",
+  "t_min": 10,
+  "same_as": null,
+  "protocol": 0.5,
+  "clients": 0.3759,
+  "sql": 0.0729,
+  "acid": 0.8095,
+  "scale": 0.0,
+  "raw_reward": 0.3806,
+  "violations": 0,
+  "reward": 0.3806,
+  "protocol_tests": "34/68",
+  "sql_statements": "1859/26127",
+  "acid_runs": "32/42",
+  "crash_points": "93/111",
+  "clients_groups": {
+   "psql": "2/8",
+   "pgbench": "0/6",
+   "psycopg": "11/29",
+   "node": "9/12",
+   "jdbc": "7/14"
+  },
+  "scale_items": {
+   "init": 0.0,
+   "restart": 0.0,
+   "select_tps": 0.0,
+   "tpcb_tps": 0.0,
+   "restart_after_writes": 0.0
+  }
+ },
+ {
+  "label": "t012min",
+  "t_min": 12,
+  "same_as": null,
+  "protocol": 0.5294,
+  "clients": 0.4259,
+  "sql": 0.073,
+  "acid": 0.8095,
+  "scale": 0.0,
+  "raw_reward": 0.394,
+  "violations": 0,
+  "reward": 0.394,
+  "protocol_tests": "36/68",
+  "sql_statements": "1862/26127",
+  "acid_runs": "32/42",
+  "crash_points": "93/111",
+  "clients_groups": {
+   "psql": "2/8",
+   "pgbench": "0/6",
+   "psycopg": "11/29",
+   "node": "12/12",
+   "jdbc": "7/14"
+  },
+  "scale_items": {
+   "init": 0.0,
+   "restart": 0.0,
+   "select_tps": 0.0,
+   "tpcb_tps": 0.0,
+   "restart_after_writes": 0.0
+  }
+ },
+ {
+  "label": "t014min",
+  "t_min": 14,
+  "same_as": null,
+  "protocol": 0.5294,
+  "clients": 0.4259,
+  "sql": 0.073,
+  "acid": 0.8571,
+  "scale": 0.0,
+  "raw_reward": 0.4059,
+  "violations": 0,
+  "reward": 0.4059,
+  "protocol_tests": "36/68",
+  "sql_statements": "1862/26127",
+  "acid_runs": "36/42",
+  "crash_points": "93/111",
+  "clients_groups": {
+   "psql": "2/8",
+   "pgbench": "0/6",
+   "psycopg": "11/29",
+   "node": "12/12",
+   "jdbc": "7/14"
+  },
+  "scale_items": {
+   "init": 0.0,
+   "restart": 0.0,
+   "select_tps": 0.0,
+   "tpcb_tps": 0.0,
+   "restart_after_writes": 0.0
+  }
+ },
+ {
+  "label": "t016min",
+  "t_min": 16,
+  "same_as": null,
+  "protocol": 0.5294,
+  "clients": 0.4925,
+  "sql": 0.0848,
+  "acid": 0.8571,
+  "scale": 0.0,
+  "raw_reward": 0.4195,
+  "violations": 0,
+  "reward": 0.4195,
+  "protocol_tests": "36/68",
+  "sql_statements": "2195/26127",
+  "acid_runs": "36/42",
+  "crash_points": "93/111",
+  "clients_groups": {
+   "psql": "2/8",
+   "pgbench": "2/6",
+   "psycopg": "11/29",
+   "node": "12/12",
+   "jdbc": "7/14"
+  },
+  "scale_items": {
+   "init": 0.0,
+   "restart": 0.0,
+   "select_tps": 0.0,
+   "tpcb_tps": 0.0,
+   "restart_after_writes": 0.0
+  }
+ },
+ {
+  "label": "t018min",
+  "t_min": 18,
+  "same_as": null,
+  "protocol": 0.5294,
+  "clients": 0.4925,
+  "sql": 0.0971,
+  "acid": 0.9048,
+  "scale": 0.6,
+  "raw_reward": 0.4951,
+  "violations": 0,
+  "reward": 0.4951,
+  "protocol_tests": "36/68",
+  "sql_statements": "2588/26127",
+  "acid_runs": "34/42",
+  "crash_points": "99/99",
+  "clients_groups": {
+   "psql": "2/8",
+   "pgbench": "2/6",
+   "psycopg": "11/29",
+   "node": "12/12",
+   "jdbc": "7/14"
+  },
+  "scale_items": {
+   "init": 1.0,
+   "restart": 1.0,
+   "select_tps": 1.0,
+   "tpcb_tps": 0.0,
+   "restart_after_writes": 0.0
+  }
+ },
+ {
+  "label": "final",
+  "t_min": 19.57,
+  "same_as": null,
+  "protocol": 0.5294,
+  "clients": 0.4925,
+  "sql": 0.0906,
+  "acid": 0.9167,
+  "scale": 0.6,
+  "raw_reward": 0.4961,
+  "violations": 0,
+  "reward": 0.4961,
+  "protocol_tests": "36/68",
+  "sql_statements": "2354/26127",
+  "acid_runs": "35/42",
+  "crash_points": "99/99",
+  "clients_groups": {
+   "psql": "2/8",
+   "pgbench": "2/6",
+   "psycopg": "11/29",
+   "node": "12/12",
+   "jdbc": "7/14"
+  },
+  "scale_items": {
+   "init": 1.0,
+   "restart": 1.0,
+   "select_tps": 1.0,
+   "tpcb_tps": 0.0,
+   "restart_after_writes": 0.0
+  }
+ }
+]

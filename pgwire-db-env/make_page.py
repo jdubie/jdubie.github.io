@@ -19,6 +19,71 @@ sys.path.insert(0, str(ROOT / "grader"))
 import regress as rg  # noqa: E402
 
 COMPS = ["protocol", "clients", "sql", "acid", "scale"]
+MODEL_ORDER = ["opus", "sonnet", "haiku", "sol", "terra", "gemini"]
+NAMES = {"opus": "Opus 5.5", "sonnet": "Sonnet 5.5", "haiku": "Haiku 5.5", "sol": "GPT-6.1 Sol", "terra": "GPT-6.1 Terra",
+         "gemini": "Gemini 4 Argon"}
+COMP_COLOR = {"protocol": "var(--c-p)", "clients": "var(--c-c)", "sql": "var(--c-s)", "acid": "var(--c-a)", "scale": "var(--c-x)"}
+
+
+def _steps(pts, X, Y) -> str:
+    d = f"M{X(0):.1f},{Y(0):.1f}"
+    prev = 0.0
+    for t, v in pts:
+        d += f"H{X(t):.1f}V{Y(v):.1f}"
+        prev = v
+    return d + f"H{X(20):.1f}V{Y(prev):.1f}"
+
+
+def _series(run: Path, key: str) -> list[tuple[float, float]]:
+    tl = load(run / "timeline.json") or []
+    return [(min(20.0, x["t_min"]), float(x.get(key, 0) or 0)) for x in tl]
+
+
+def timeline_charts() -> str:
+    runs = {p.name.split("__")[0]: p for p in (ROOT / "runs/v21").glob("*__r0") if (p / "timeline.json").exists()}
+    if not runs:
+        return "<p>Not graded yet.</p>"
+    W, H, L, R, T, B = 640, 300, 34, 150, 14, 40
+    ymax = max(0.1, max(v for r in runs.values() for _, v in _series(r, "reward")))
+    ymax = min(1.0, (int(ymax * 10) + 1) / 10)
+    X = lambda t: L + (W - L - R) * t / 20  # noqa: E731
+    Y = lambda v: T + (H - T - B) * (1 - v / ymax)  # noqa: E731
+    g = ""
+    for i in range(int(round(ymax * 10)) + 1):
+        v = i / 10
+        g += f'<line x1="{L}" x2="{W - R}" y1="{Y(v):.1f}" y2="{Y(v):.1f}" stroke="var(--line)"/><text x="{L - 6}" y="{Y(v) + 4:.1f}" text-anchor="end">{v:.1f}</text>'
+    for t in range(0, 21, 4):
+        g += f'<text x="{X(t):.1f}" y="{H - B + 16}" text-anchor="middle">{t}</text>'
+    g += f'<text x="{L}" y="{H - 6}">minutes into the run</text>'
+    ends = []
+    for m in [m for m in MODEL_ORDER if m in runs]:
+        pts = _series(runs[m], "reward")
+        g += f'<path d="{_steps(pts, X, Y)}" fill="none" stroke="var(--m-{m})" stroke-width="2.2" stroke-linejoin="round"/>'
+        ends.append([Y(pts[-1][1] if pts else 0), m, pts[-1][1] if pts else 0])
+    ends.sort()
+    for i in range(1, len(ends)):  # keep end labels 14 px apart
+        ends[i][0] = max(ends[i][0], ends[i - 1][0] + 14)
+    for y, m, v in ends:
+        g += f'<text x="{W - R + 6}" y="{y + 4:.1f}" class=n style="fill:var(--m-{m})">{E(NAMES[m])} {v:.3f}</text>'
+    main = f'<div class=chart><svg viewBox="0 0 {W} {H}" role=img aria-label="Reward over 20 minutes per model">{g}</svg></div>'
+    # one small panel per model: reward (thick) and the five components (thin)
+    w, h, l, r, t, b = 300, 170, 30, 8, 22, 26
+    panels = ""
+    for m in [m for m in MODEL_ORDER if m in runs]:
+        x = lambda tt: l + (w - l - r) * tt / 20  # noqa: E731
+        y = lambda v: t + (h - t - b) * (1 - v)  # noqa: E731
+        p = f'<text x="{l}" y="14" class=n>{E(NAMES[m])}</text>'
+        for v in (0, 0.5, 1):
+            p += f'<line x1="{l}" x2="{w - r}" y1="{y(v):.1f}" y2="{y(v):.1f}" stroke="var(--line)"/><text x="{l - 4}" y="{y(v) + 4:.1f}" text-anchor="end">{v:g}</text>'
+        for tt in (0, 10, 20):
+            p += f'<text x="{x(tt):.1f}" y="{h - 8}" text-anchor="middle">{tt}</text>'
+        for c in COMPS:
+            p += f'<path d="{_steps(_series(runs[m], c), x, y)}" fill="none" stroke="{COMP_COLOR[c]}" stroke-width="1.2" opacity=".85"/>'
+        p += f'<path d="{_steps(_series(runs[m], "reward"), x, y)}" fill="none" stroke="var(--m-{m})" stroke-width="2.6"/>'
+        panels += f'<svg viewBox="0 0 {w} {h}" role=img aria-label="{E(NAMES[m])}: reward and components over time">{p}</svg>'
+    legend = " ".join(f'<span style="color:{COMP_COLOR[c]}">&#9644; {c}</span>' for c in COMPS)
+    return main + f'<p class=sub>Per model: reward (thick, model colour) and each component score (thin): {legend}</p><div class=panels>{panels}</div>'
+
 WEIGHTS = {"protocol": 0.20, "clients": 0.15, "sql": 0.30, "acid": 0.25, "scale": 0.10}
 E = html.escape
 
@@ -56,11 +121,17 @@ def main() -> None:
         if g:
             rows.append(row(label, g["summary"], note))
     runs = []
-    for meta in sorted(ROOT.glob("runs/*/*/meta.json")):
-        m = json.loads(meta.read_text())
-        g = load(meta.parent / "grade/grade.json") or {"summary": m}
-        runs.append(row(f"{meta.parent.parent.name}/{m['model']} r{m['rep']} ({m['minutes']} min, {len(m['segments'])} sessions)",
-                        g["summary"], "agent run"))
+    labels = {"v21": ("v2.1, with docs", "agent run"), "smoke": ("v2.0, no docs", "comparison: no /work/docs")}
+    for tag in ("v21", "smoke"):
+        ver, note = labels[tag]
+        for meta in sorted(ROOT.glob(f"runs/{tag}/*/meta.json"), key=lambda p: MODEL_ORDER.index(p.parent.name.split("__")[0])):
+            m = json.loads(meta.read_text())
+            g = load(meta.parent / "grade/grade.json")
+            if not g:
+                continue
+            runs.append(row(f"{ver}: {NAMES.get(m['model'], m['model'])} ({m['minutes']} min, {len(m['segments'])} sessions)",
+                            g["summary"], note))
+    chart = timeline_charts()
     pgsql = load(ROOT / "grader/expected/regress.json") or {"stats": {}}
     st = pgsql.get("stats", {})
     excl_tests = "".join(f"<li><code>{E(t)}</code>: {E(w)}</li>" for t, w in rg.EXCLUDED_TESTS.items())
@@ -83,18 +154,22 @@ def main() -> None:
     page = f"""<!doctype html><html lang=en><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1">
 <title>pgwire-db benchmark</title>
 <style>
-:root{{--bg:#fbfbf9;--fg:#1d1d1b;--mut:#6b6b66;--line:#dddcd6;--head:#f0efea;--bad:#b3261e;--accent:#1f5f8b}}
-@media (prefers-color-scheme:dark){{:root:not([data-theme=light]){{--bg:#161615;--fg:#e8e7e2;--mut:#9a9993;--line:#34332f;--head:#22211f;--bad:#ff8a80;--accent:#8cc4ec}}}}
-:root[data-theme=dark]{{--bg:#161615;--fg:#e8e7e2;--mut:#9a9993;--line:#34332f;--head:#22211f;--bad:#ff8a80;--accent:#8cc4ec}}
+:root{{--bg:#fbfbf9;--fg:#1d1d1b;--mut:#6b6b66;--line:#dddcd6;--head:#f0efea;--bad:#b3261e;--accent:#1f5f8b;
+--m-opus:#c2410c;--m-sonnet:#7c3aed;--m-haiku:#0f766e;--m-sol:#1d4ed8;--m-terra:#a16207;--m-gemini:#be185d;
+--c-p:#2563eb;--c-c:#9333ea;--c-s:#16a34a;--c-a:#dc2626;--c-x:#78716c}}
+@media (prefers-color-scheme:dark){{:root:not([data-theme=light]){{--bg:#161615;--fg:#e8e7e2;--mut:#9a9993;--line:#34332f;--head:#22211f;--bad:#ff8a80;--accent:#8cc4ec;--m-opus:#fb923c;--m-sonnet:#a78bfa;--m-haiku:#2dd4bf;--m-sol:#60a5fa;--m-terra:#facc15;--m-gemini:#f472b6;--c-p:#60a5fa;--c-c:#c084fc;--c-s:#4ade80;--c-a:#f87171;--c-x:#a8a29e}}}}
+:root[data-theme=dark]{{--bg:#161615;--fg:#e8e7e2;--mut:#9a9993;--line:#34332f;--head:#22211f;--bad:#ff8a80;--accent:#8cc4ec;--m-opus:#fb923c;--m-sonnet:#a78bfa;--m-haiku:#2dd4bf;--m-sol:#60a5fa;--m-terra:#facc15;--m-gemini:#f472b6;--c-p:#60a5fa;--c-c:#c084fc;--c-s:#4ade80;--c-a:#f87171;--c-x:#a8a29e}}
 body{{background:var(--bg);color:var(--fg);font:15px/1.55 system-ui,sans-serif;max-width:1150px;margin:2em auto;padding:0 16px}}
 h1{{font-size:26px;line-height:1.25}} h2{{margin-top:2.2em;font-size:20px}}
 .lead{{font-size:17px;border-left:4px solid var(--accent);padding:.2em 0 .2em 1em}}
 .wrap{{overflow-x:auto}} table{{border-collapse:collapse;margin:1em 0;font-size:13.5px}}
 td,th{{border:1px solid var(--line);padding:5px 8px;text-align:left;vertical-align:top}} th{{background:var(--head)}}
 td.n{{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}} .sub{{color:var(--mut);font-size:12px;font-weight:normal}}
+svg text{{font:11px system-ui,sans-serif;fill:var(--mut)}} svg text.n{{font-weight:600;font-size:12.5px;fill:var(--fg)}}
+.chart svg{{display:block;width:100%;max-width:720px}} .panels{{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px 16px}}
 code{{background:var(--head);padding:1px 4px;border-radius:3px}} a{{color:var(--accent)}} li{{margin:.25em 0}}
 </style>
-<h1>pgwire-db: a PostgreSQL 16 server, wire protocol and all, where every persisted file is empty</h1>
+<h1>pgwire-db v2.1: a PostgreSQL 16 server, wire protocol and all, where every persisted file is empty</h1>
 <p class=lead>{notes.get('conclusion', '')}</p>
 
 <h2>Calibration and runs</h2>
@@ -102,7 +177,13 @@ code{{background:var(--head);padding:1px 4px;border-radius:3px}} a{{color:var(--
 "raw" is the weighted sum before that rule.</p>
 <div class=wrap><table>{head}{''.join(rows)}{''.join(runs)}</table></div>
 
-<h2>Smoke runs (20 minutes each)</h2>
+<h2>Reward over time, v2.1 sweep (20 minutes each)</h2>
+<p>Every 2-minute snapshot of each agent's /work graded with the full hidden grader (identical snapshots share a grade);
+the last point is the final /work. A run is 0 until it has a server that starts.</p>
+{chart}
+{notes.get('sweep', '')}
+
+<h2>v2.0 smoke runs (no docs, 20 minutes each)</h2>
 {notes.get('smoke', '<p>Not run yet.</p>')}
 
 <h2>What is graded</h2>

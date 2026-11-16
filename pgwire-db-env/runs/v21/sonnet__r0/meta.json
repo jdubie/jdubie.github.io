@@ -1,0 +1,233 @@
+{
+ "docs": true,
+ "model": "sonnet",
+ "rep": 0,
+ "minutes": 20,
+ "seconds": 1142.1,
+ "segments": [
+  {
+   "segment": 0,
+   "start_s": 0.0,
+   "end_s": 137.0,
+   "exit": 0
+  },
+  {
+   "segment": 1,
+   "start_s": 137.0,
+   "end_s": 482.1,
+   "exit": 0
+  },
+  {
+   "segment": 2,
+   "start_s": 482.1,
+   "end_s": 745.0,
+   "exit": 0
+  },
+  {
+   "segment": 3,
+   "start_s": 745.0,
+   "end_s": 907.6,
+   "exit": 0
+  },
+  {
+   "segment": 4,
+   "start_s": 907.6,
+   "end_s": 915.8,
+   "exit": 0
+  },
+  {
+   "segment": 5,
+   "start_s": 915.8,
+   "end_s": 961.4,
+   "exit": 0
+  },
+  {
+   "segment": 6,
+   "start_s": 961.4,
+   "end_s": 981.3,
+   "exit": 0
+  },
+  {
+   "segment": 7,
+   "start_s": 981.3,
+   "end_s": 1045.6,
+   "exit": 0
+  },
+  {
+   "segment": 8,
+   "start_s": 1045.6,
+   "end_s": 1050.5,
+   "exit": 0
+  },
+  {
+   "segment": 9,
+   "start_s": 1050.5,
+   "end_s": 1055.2,
+   "exit": 0
+  },
+  {
+   "segment": 10,
+   "start_s": 1055.2,
+   "end_s": 1059.3,
+   "exit": 0
+  },
+  {
+   "segment": 11,
+   "start_s": 1059.3,
+   "end_s": 1063.6,
+   "exit": 0
+  },
+  {
+   "segment": 12,
+   "start_s": 1063.6,
+   "end_s": 1067.5,
+   "exit": 0
+  },
+  {
+   "segment": 13,
+   "start_s": 1067.5,
+   "end_s": 1071.3,
+   "exit": 0
+  },
+  {
+   "segment": 14,
+   "start_s": 1071.3,
+   "end_s": 1075.2,
+   "exit": 0
+  },
+  {
+   "segment": 15,
+   "start_s": 1075.2,
+   "end_s": 1078.9,
+   "exit": 0
+  },
+  {
+   "segment": 16,
+   "start_s": 1078.9,
+   "end_s": 1082.5,
+   "exit": 0
+  },
+  {
+   "segment": 17,
+   "start_s": 1082.5,
+   "end_s": 1086.1,
+   "exit": 0
+  },
+  {
+   "segment": 18,
+   "start_s": 1086.1,
+   "end_s": 1090.7,
+   "exit": 0
+  },
+  {
+   "segment": 19,
+   "start_s": 1090.7,
+   "end_s": 1094.5,
+   "exit": 0
+  },
+  {
+   "segment": 20,
+   "start_s": 1094.5,
+   "end_s": 1098.4,
+   "exit": 0
+  },
+  {
+   "segment": 21,
+   "start_s": 1098.4,
+   "end_s": 1102.1,
+   "exit": 0
+  },
+  {
+   "segment": 22,
+   "start_s": 1102.1,
+   "end_s": 1105.7,
+   "exit": 0
+  },
+  {
+   "segment": 23,
+   "start_s": 1105.7,
+   "end_s": 1109.4,
+   "exit": 0
+  },
+  {
+   "segment": 24,
+   "start_s": 1109.4,
+   "end_s": 1113.0,
+   "exit": 0
+  },
+  {
+   "segment": 25,
+   "start_s": 1113.0,
+   "end_s": 1116.6,
+   "exit": 0
+  },
+  {
+   "segment": 26,
+   "start_s": 1116.6,
+   "end_s": 1120.2,
+   "exit": 0
+  },
+  {
+   "segment": 27,
+   "start_s": 1120.2,
+   "end_s": 1123.9,
+   "exit": 0
+  },
+  {
+   "segment": 28,
+   "start_s": 1123.9,
+   "end_s": 1127.7,
+   "exit": 0
+  },
+  {
+   "segment": 29,
+   "start_s": 1127.7,
+   "end_s": 1131.3,
+   "exit": 0
+  },
+  {
+   "segment": 30,
+   "start_s": 1131.3,
+   "end_s": 1134.8,
+   "exit": 0
+  },
+  {
+   "segment": 31,
+   "start_s": 1134.8,
+   "end_s": 1138.5,
+   "exit": 0
+  },
+  {
+   "segment": 32,
+   "start_s": 1138.5,
+   "end_s": 1142.1,
+   "exit": 0
+  }
+ ],
+ "protocol": 0.3382,
+ "clients": 0.2264,
+ "sql": 0.117,
+ "acid": 0.8214,
+ "scale": 0.0,
+ "raw_reward": 0.3421,
+ "violations": 0,
+ "reward": 0.3421,
+ "protocol_tests": "23/68",
+ "sql_statements": "3584/26127",
+ "acid_runs": "27/42",
+ "crash_points": "126/126",
+ "clients_groups": {
+  "psql": "1/8",
+  "pgbench": "1/6",
+  "psycopg": "4/29",
+  "node": "5/12",
+  "jdbc": "4/14"
+ },
+ "scale_items": {
+  "init": 0.0,
+  "restart": 0.0,
+  "select_tps": 0.0,
+  "tpcb_tps": 0.0,
+  "restart_after_writes": 0.0
+ }
+}

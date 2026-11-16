@@ -1,0 +1,312 @@
+[
+ {
+  "label": "t002min",
+  "t_min": 2,
+  "same_as": null,
+  "protocol": 0.1912,
+  "clients": 0.1743,
+  "sql": 0.1173,
+  "acid": 0.4286,
+  "scale": 0.0,
+  "raw_reward": 0.2067,
+  "violations": 0,
+  "reward": 0.2067,
+  "protocol_tests": "13/68",
+  "sql_statements": "3561/26127",
+  "acid_runs": "7/42",
+  "crash_points": "47/66",
+  "clients_groups": {
+   "psql": "1/8",
+   "pgbench": "1/6",
+   "psycopg": "3/29",
+   "node": "4/12",
+   "jdbc": "2/14"
+  },
+  "scale_items": {
+   "init": 0.0,
+   "restart": 0.0,
+   "select_tps": 0.0,
+   "tpcb_tps": 0.0,
+   "restart_after_writes": 0.0
+  }
+ },
+ {
+  "label": "t004min",
+  "t_min": 4,
+  "same_as": null,
+  "protocol": 0.25,
+  "clients": 0.2264,
+  "sql": 0.112,
+  "acid": 0.5238,
+  "scale": 0.0,
+  "raw_reward": 0.2485,
+  "violations": 0,
+  "reward": 0.2485,
+  "protocol_tests": "17/68",
+  "sql_statements": "3542/26127",
+  "acid_runs": "15/42",
+  "crash_points": "87/106",
+  "clients_groups": {
+   "psql": "1/8",
+   "pgbench": "1/6",
+   "psycopg": "4/29",
+   "node": "5/12",
+   "jdbc": "4/14"
+  },
+  "scale_items": {
+   "init": 0.0,
+   "restart": 0.0,
+   "select_tps": 0.0,
+   "tpcb_tps": 0.0,
+   "restart_after_writes": 0.0
+  }
+ },
+ {
+  "label": "t006min",
+  "t_min": 6,
+  "same_as": null,
+  "protocol": 0.3088,
+  "clients": 0.2121,
+  "sql": 0.11,
+  "acid": 0.6905,
+  "scale": 0.0,
+  "raw_reward": 0.2992,
+  "violations": 0,
+  "reward": 0.2992,
+  "protocol_tests": "21/68",
+  "sql_statements": "3454/26127",
+  "acid_runs": "23/42",
+  "crash_points": "105/106",
+  "clients_groups": {
+   "psql": "1/8",
+   "pgbench": "1/6",
+   "psycopg": "4/29",
+   "node": "5/12",
+   "jdbc": "3/14"
+  },
+  "scale_items": {
+   "init": 0.0,
+   "restart": 0.0,
+   "select_tps": 0.0,
+   "tpcb_tps": 0.0,
+   "restart_after_writes": 0.0
+  }
+ },
+ {
+  "label": "t008min",
+  "t_min": 8,
+  "same_as": null,
+  "protocol": 0.3382,
+  "clients": 0.1931,
+  "sql": 0.1169,
+  "acid": 0.8214,
+  "scale": 0.0,
+  "raw_reward": 0.337,
+  "violations": 0,
+  "reward": 0.337,
+  "protocol_tests": "23/68",
+  "sql_statements": "3580/26127",
+  "acid_runs": "27/42",
+  "crash_points": "126/126",
+  "clients_groups": {
+   "psql": "1/8",
+   "pgbench": "0/6",
+   "psycopg": "4/29",
+   "node": "5/12",
+   "jdbc": "4/14"
+  },
+  "scale_items": {
+   "init": 0.0,
+   "restart": 0.0,
+   "select_tps": 0.0,
+   "tpcb_tps": 0.0,
+   "restart_after_writes": 0.0
+  }
+ },
+ {
+  "label": "t010min",
+  "t_min": 10,
+  "same_as": null,
+  "protocol": 0.3382,
+  "clients": 0.2264,
+  "sql": 0.117,
+  "acid": 0.8214,
+  "scale": 0.0,
+  "raw_reward": 0.3421,
+  "violations": 0,
+  "reward": 0.3421,
+  "protocol_tests": "23/68",
+  "sql_statements": "3582/26127",
+  "acid_runs": "27/42",
+  "crash_points": "126/126",
+  "clients_groups": {
+   "psql": "1/8",
+   "pgbench": "1/6",
+   "psycopg": "4/29",
+   "node": "5/12",
+   "jdbc": "4/14"
+  },
+  "scale_items": {
+   "init": 0.0,
+   "restart": 0.0,
+   "select_tps": 0.0,
+   "tpcb_tps": 0.0,
+   "restart_after_writes": 0.0
+  }
+ },
+ {
+  "label": "t012min",
+  "t_min": 12,
+  "same_as": null,
+  "protocol": 0.3382,
+  "clients": 0.2264,
+  "sql": 0.117,
+  "acid": 0.8214,
+  "scale": 0.0,
+  "raw_reward": 0.3421,
+  "violations": 0,
+  "reward": 0.3421,
+  "protocol_tests": "23/68",
+  "sql_statements": "3584/26127",
+  "acid_runs": "27/42",
+  "crash_points": "126/126",
+  "clients_groups": {
+   "psql": "1/8",
+   "pgbench": "1/6",
+   "psycopg": "4/29",
+   "node": "5/12",
+   "jdbc": "4/14"
+  },
+  "scale_items": {
+   "init": 0.0,
+   "restart": 0.0,
+   "select_tps": 0.0,
+   "tpcb_tps": 0.0,
+   "restart_after_writes": 0.0
+  }
+ },
+ {
+  "label": "t014min",
+  "t_min": 14,
+  "same_as": null,
+  "protocol": 0.3382,
+  "clients": 0.2264,
+  "sql": 0.117,
+  "acid": 0.8214,
+  "scale": 0.0,
+  "raw_reward": 0.3421,
+  "violations": 0,
+  "reward": 0.3421,
+  "protocol_tests": "23/68",
+  "sql_statements": "3584/26127",
+  "acid_runs": "27/42",
+  "crash_points": "126/126",
+  "clients_groups": {
+   "psql": "1/8",
+   "pgbench": "1/6",
+   "psycopg": "4/29",
+   "node": "5/12",
+   "jdbc": "4/14"
+  },
+  "scale_items": {
+   "init": 0.0,
+   "restart": 0.0,
+   "select_tps": 0.0,
+   "tpcb_tps": 0.0,
+   "restart_after_writes": 0.0
+  }
+ },
+ {
+  "label": "t016min",
+  "t_min": 16,
+  "same_as": null,
+  "protocol": 0.3382,
+  "clients": 0.2264,
+  "sql": 0.117,
+  "acid": 0.8214,
+  "scale": 0.0,
+  "raw_reward": 0.3421,
+  "violations": 0,
+  "reward": 0.3421,
+  "protocol_tests": "23/68",
+  "sql_statements": "3584/26127",
+  "acid_runs": "27/42",
+  "crash_points": "126/126",
+  "clients_groups": {
+   "psql": "1/8",
+   "pgbench": "1/6",
+   "psycopg": "4/29",
+   "node": "5/12",
+   "jdbc": "4/14"
+  },
+  "scale_items": {
+   "init": 0.0,
+   "restart": 0.0,
+   "select_tps": 0.0,
+   "tpcb_tps": 0.0,
+   "restart_after_writes": 0.0
+  }
+ },
+ {
+  "label": "t018min",
+  "t_min": 18,
+  "same_as": "final",
+  "protocol": 0.3382,
+  "clients": 0.2264,
+  "sql": 0.117,
+  "acid": 0.8214,
+  "scale": 0.0,
+  "raw_reward": 0.3421,
+  "violations": 0,
+  "reward": 0.3421,
+  "protocol_tests": "23/68",
+  "sql_statements": "3584/26127",
+  "acid_runs": "27/42",
+  "crash_points": "126/126",
+  "clients_groups": {
+   "psql": "1/8",
+   "pgbench": "1/6",
+   "psycopg": "4/29",
+   "node": "5/12",
+   "jdbc": "4/14"
+  },
+  "scale_items": {
+   "init": 0.0,
+   "restart": 0.0,
+   "select_tps": 0.0,
+   "tpcb_tps": 0.0,
+   "restart_after_writes": 0.0
+  }
+ },
+ {
+  "label": "final",
+  "t_min": 19.04,
+  "same_as": null,
+  "protocol": 0.3382,
+  "clients": 0.2264,
+  "sql": 0.117,
+  "acid": 0.8214,
+  "scale": 0.0,
+  "raw_reward": 0.3421,
+  "violations": 0,
+  "reward": 0.3421,
+  "protocol_tests": "23/68",
+  "sql_statements": "3584/26127",
+  "acid_runs": "27/42",
+  "crash_points": "126/126",
+  "clients_groups": {
+   "psql": "1/8",
+   "pgbench": "1/6",
+   "psycopg": "4/29",
+   "node": "5/12",
+   "jdbc": "4/14"
+  },
+  "scale_items": {
+   "init": 0.0,
+   "restart": 0.0,
+   "select_tps": 0.0,
+   "tpcb_tps": 0.0,
+   "restart_after_writes": 0.0
+  }
+ }
+]

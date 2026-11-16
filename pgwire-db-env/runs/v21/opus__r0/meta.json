@@ -1,0 +1,191 @@
+{
+ "docs": true,
+ "model": "opus",
+ "rep": 0,
+ "minutes": 20,
+ "seconds": 1144.7,
+ "segments": [
+  {
+   "segment": 0,
+   "start_s": 0.0,
+   "end_s": 698.0,
+   "exit": 0
+  },
+  {
+   "segment": 1,
+   "start_s": 698.0,
+   "end_s": 813.1,
+   "exit": 0
+  },
+  {
+   "segment": 2,
+   "start_s": 813.1,
+   "end_s": 859.1,
+   "exit": 0
+  },
+  {
+   "segment": 3,
+   "start_s": 859.1,
+   "end_s": 909.7,
+   "exit": 0
+  },
+  {
+   "segment": 4,
+   "start_s": 909.7,
+   "end_s": 975.1,
+   "exit": 0
+  },
+  {
+   "segment": 5,
+   "start_s": 975.1,
+   "end_s": 1027.5,
+   "exit": 0
+  },
+  {
+   "segment": 6,
+   "start_s": 1027.5,
+   "end_s": 1036.8,
+   "exit": 0
+  },
+  {
+   "segment": 7,
+   "start_s": 1036.8,
+   "end_s": 1043.4,
+   "exit": 0
+  },
+  {
+   "segment": 8,
+   "start_s": 1043.4,
+   "end_s": 1051.3,
+   "exit": 0
+  },
+  {
+   "segment": 9,
+   "start_s": 1051.3,
+   "end_s": 1056.0,
+   "exit": 0
+  },
+  {
+   "segment": 10,
+   "start_s": 1056.0,
+   "end_s": 1061.0,
+   "exit": 0
+  },
+  {
+   "segment": 11,
+   "start_s": 1061.0,
+   "end_s": 1065.8,
+   "exit": 0
+  },
+  {
+   "segment": 12,
+   "start_s": 1065.8,
+   "end_s": 1070.7,
+   "exit": 0
+  },
+  {
+   "segment": 13,
+   "start_s": 1070.7,
+   "end_s": 1076.9,
+   "exit": 0
+  },
+  {
+   "segment": 14,
+   "start_s": 1076.9,
+   "end_s": 1081.3,
+   "exit": 0
+  },
+  {
+   "segment": 15,
+   "start_s": 1081.3,
+   "end_s": 1087.7,
+   "exit": 0
+  },
+  {
+   "segment": 16,
+   "start_s": 1087.7,
+   "end_s": 1095.5,
+   "exit": 0
+  },
+  {
+   "segment": 17,
+   "start_s": 1095.5,
+   "end_s": 1100.2,
+   "exit": 0
+  },
+  {
+   "segment": 18,
+   "start_s": 1100.2,
+   "end_s": 1104.8,
+   "exit": 0
+  },
+  {
+   "segment": 19,
+   "start_s": 1104.8,
+   "end_s": 1111.3,
+   "exit": 0
+  },
+  {
+   "segment": 20,
+   "start_s": 1111.3,
+   "end_s": 1116.4,
+   "exit": 0
+  },
+  {
+   "segment": 21,
+   "start_s": 1116.4,
+   "end_s": 1121.1,
+   "exit": 0
+  },
+  {
+   "segment": 22,
+   "start_s": 1121.1,
+   "end_s": 1126.6,
+   "exit": 0
+  },
+  {
+   "segment": 23,
+   "start_s": 1126.6,
+   "end_s": 1131.1,
+   "exit": 0
+  },
+  {
+   "segment": 24,
+   "start_s": 1131.1,
+   "end_s": 1137.2,
+   "exit": 0
+  },
+  {
+   "segment": 25,
+   "start_s": 1137.2,
+   "end_s": 1144.7,
+   "exit": 0
+  }
+ ],
+ "protocol": 0.6324,
+ "clients": 0.8353,
+ "sql": 0.1987,
+ "acid": 0.9762,
+ "scale": 1.0,
+ "raw_reward": 0.6554,
+ "violations": 0,
+ "reward": 0.6554,
+ "protocol_tests": "43/68",
+ "sql_statements": "4982/26127",
+ "acid_runs": "40/42",
+ "crash_points": "126/126",
+ "clients_groups": {
+  "psql": "6/8",
+  "pgbench": "6/6",
+  "psycopg": "21/29",
+  "node": "11/12",
+  "jdbc": "11/14"
+ },
+ "scale_items": {
+  "init": 1.0,
+  "restart": 1.0,
+  "select_tps": 1.0,
+  "tpcb_tps": 1.0,
+  "restart_after_writes": 1.0
+ }
+}

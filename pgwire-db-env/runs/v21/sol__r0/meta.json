@@ -1,0 +1,41 @@
+{
+ "docs": true,
+ "model": "sol",
+ "rep": 0,
+ "minutes": 20,
+ "seconds": 1149.8,
+ "segments": [
+  {
+   "segment": 0,
+   "start_s": 0.0,
+   "end_s": 1149.8,
+   "exit": 0
+  }
+ ],
+ "protocol": 0.7353,
+ "clients": 0.9145,
+ "sql": 0.2226,
+ "acid": 0.9524,
+ "scale": 0.6,
+ "raw_reward": 0.6491,
+ "violations": 0,
+ "reward": 0.6491,
+ "protocol_tests": "50/68",
+ "sql_statements": "5732/26127",
+ "acid_runs": "38/42",
+ "crash_points": "102/102",
+ "clients_groups": {
+  "psql": "6/8",
+  "pgbench": "6/6",
+  "psycopg": "28/29",
+  "node": "12/12",
+  "jdbc": "12/14"
+ },
+ "scale_items": {
+  "init": 1.0,
+  "restart": 1.0,
+  "select_tps": 0.0,
+  "tpcb_tps": 0.0,
+  "restart_after_writes": 1.0
+ }
+}
