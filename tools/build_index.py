@@ -11,7 +11,9 @@ LABELS = [  # (slug used in ?tag=, display name), in display order
     ("robot-deployment", "Robot deployment"),
     ("llm-post-training", "LLM post-training"),
     ("agent-evals", "Agent evals"),
+    ("independent-research", "Independent research"),
 ]
+INDEPENDENT = ['block-stacking-benchmark', 'yam-track-env', 'terrain-bench', 'cad-finger-benchmark', 'test-speedup-env', 'find-duplicates', 'trolley-bench', 'gemma-letters', 'gemma-puzzles', 'gemma-self-correction', 'gemma-wordle', 'remote-toy-cleanup']
 POST_LABELS = {
     "led-tracking-accuracy": ["robot-data-collection"],
     "pi0-zero-robot-data": ["robot-data-collection", "robot-policy-training"],
@@ -53,6 +55,7 @@ def fmt(dt):
     d = date.fromisoformat(dt); return d.strftime("%B ") + str(d.day) + d.strftime(", %Y")
 
 NAME = dict(LABELS)
+for _s in INDEPENDENT: POST_LABELS[_s] = POST_LABELS[_s] + ['independent-research']
 
 def item(slug, pre):
     title, desc = meta(slug); dt = DATES[slug]; base = f"posts/{slug}"
