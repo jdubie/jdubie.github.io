@@ -126,7 +126,7 @@ Please write a corrected version of the complete function in a ```python code bl
 Please write a corrected version of the complete function in a ```python code block.</pre></div><div class="turn assistant"><b>Gemma 3 1B · try 4</b><p class="same">[the same code as try 1, character for character]</p><pre>The provided solution is correct.  I apologize for the repeated error. It’s a simple, elegant solution to the problem.</pre></div><div class="turn user"><b>Harness</b><pre>I ran the tests. 1 of 2 failed:
 - repeat_word(&#x27;hi&#x27;, 3) returned &#x27;hihihi&#x27;, but expected &#x27;hi hi hi&#x27;
 
-Please write a corrected version of the complete function in a ```python code block.</pre></div></div>
+Please write a corrected version of the complete function in a ```python code block.</pre></div></div><p>Its explanation contradicts itself: it agrees the test fails, then says the code produces exactly the expected output. The model isn’t misreading the feedback; it’s defending its previous answer.</p>
 
   <h2>It’s its own code it won’t fix</h2>
   <p>The model isn’t failing to understand the feedback. Shown <i>someone else’s</i> buggy function with the same kind of failing-test message, it fixed it 60% of the time. Shown its own failed attempt, 1%. It treats its previous turn as settled and copies it forward.</p>
