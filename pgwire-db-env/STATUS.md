@@ -46,8 +46,14 @@ Done:
   (pgbench -i -s 10 timed out at 10 min). 2,600-line Python; WAL directory of empty files renamed x<id> -> c<id> as
   the commit point, then applied to one-name-per-row table dirs. Worked one 17-minute session, then 13 no-op resumes.
 
+- v2.1 (2026-11-15/16): PostgreSQL manual mounted read-only at /work/docs (build_task.py -> docs-build/, gitignored);
+  snapshots every 120 s; grade_runs.py grades finals + distinct snapshots, 4 systemd units at once (45 trees, 4h20m).
+  Sweep tag v21, 20 min each: Opus 0.655, Sol 0.649, Terra 0.496 (SQL budget-limited), Haiku 0.371, Sonnet 0.342,
+  Gemini 0 (no main.py). No storage violations. Only Gemini opened the docs. Page shows reward-over-time charts;
+  v2.0 smoke runs kept as "v2.0, no docs" rows.
+
 Not done:
-- Any further runs: Jack's call. Ideas on the page's next steps (stronger keep-going nudge, audit ACID for vacuous passes,
+- Any further runs: Jack's call. Next-step ideas are on the page (reps, 60-minute runs, cheaper snapshot grading). Ideas on the page's next steps (stronger keep-going nudge, audit ACID for vacuous passes,
   check scale limits against a metadata-only design).
 
 Not checked in (see `.gitignore`): Postgres source in `pgsrc/`, generated reference outputs, logs,
