@@ -24,6 +24,13 @@ DATES = {"trolley-bench": "2026-11-13", "pi-api-beta": "2026-10-13", "real2sim-c
          "terrain-bench": "2026-11-13", "test-speedup-env": "2026-10-12", "yam-track-env": "2026-11-14",
          "gemma-letters": "2026-11-15", "gemma-puzzles": "2026-11-15", "gemma-self-correction": "2026-11-16", "gemma-wordle": "2026-11-16"}
 FEATURED_ORDER = ["robotics", "evals", "post-training"]
+# Home page and track pages are sorted best -> worst by this list (user's ranking, 2026-11-16).
+RANKING = ["eight-robots", "gemma-wordle", "block-stacking-benchmark", "gemma-self-correction",
+           "pi0-zero-robot-data", "gemma-letters", "terrain-bench",
+           "led-tracking-accuracy", "yam-track-env", "gemma-puzzles",
+           "pi-api-beta", "cad-finger-benchmark", "realtime-action-chunking", "dsrl-libero",
+           "test-speedup-env", "remote-toy-cleanup", "find-duplicates", "real2sim-case-packing-cell",
+           "trolley-bench"]
 
 def meta(slug):
     s = open(f"posts/{slug}/index.html").read()
@@ -74,39 +81,27 @@ def page(title, pre, header_extra, sections):
 </html>
 '''
 
-# ---- home
-featured = set()
-secs = ""
-for key in FEATURED_ORDER:
-    t = next(x for x in TRACKS if x[0] == key); featured.update(t[3])
-    n = len(t[3]) + len(t[4])
-    secs += f'''  <section>
-    <h2>{t[1]}</h2>
+# ---- home: one list, best -> worst, with links to the track pages under the name
+all_posts = {x for t in TRACKS for x in t[3] + t[4]}
+assert set(RANKING) == all_posts, (all_posts - set(RANKING), set(RANKING) - all_posts)
+trackrow = '    <nav class="links trackrow">' + '<span>·</span>'.join(f'<a href="{t[0]}/">{t[1]}</a>' for t in TRACKS) + '</nav>\n'
+secs = f'''  <section>
     <ul>
-{chr(10).join(item(s, "") for s in t[3])}
-    </ul>
-    <a class="more" href="{t[0]}/">See all {n} {t[1].lower()} posts →</a>
-  </section>
-'''
-rest = sorted({s for t in TRACKS for s in t[3] + t[4]} - featured, key=lambda s: DATES[s], reverse=True)
-secs += f'''  <section>
-    <h2>Archive</h2>
-    <ul>
-{chr(10).join(item(s, "") for s in rest)}
+{chr(10).join(item(x, "") for x in RANKING)}
     </ul>
   </section>'''
-open("index.html", "w").write(page("Jack Dubie", "", "    <h1>Jack Dubie</h1>\n", secs))
+open("index.html", "w").write(page("Jack Dubie", "", "    <h1>Jack Dubie</h1>\n" + trackrow, secs))
 
 # ---- track pages
 for key, name, desc, feat, others in TRACKS:
-    others_sorted = sorted(others, key=lambda s: DATES[s], reverse=True)
+    ranked = sorted(feat + others, key=RANKING.index)
     extra = ""
     if key == "post-training":
         extra = '\n    <p class="lede">Also: the <a href="../posts/gemma-1b/">Teaching Gemma 1B</a> series index.</p>'
     secs = f'''  <section>
     <p class="lede">{html.escape(desc)}</p>{extra}
     <ul>
-{chr(10).join(item(s, "../") for s in feat + others_sorted)}
+{chr(10).join(item(s, "../") for s in ranked)}
     </ul>
   </section>'''
     os.makedirs(key, exist_ok=True)
