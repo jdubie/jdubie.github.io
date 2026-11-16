@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Teaching Gemma 1B Countdown with RL</title>
+<meta name="description" content="Reinforcement learning takes Gemma 3 1B from 5% to 58% on new Countdown puzzles.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@600;700&family=Public+Sans:wght@400;500&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+:root{--bg:#f3f4f5;--surface:#fff;--ink:#1b1f23;--muted:#5d6670;--rule:#d9dde1;--accent:#a3271b;
+  --s-base:#86b6ef;--s-sft:#2a78d6;--s-rl:#104281;
+  --display:"Archivo Narrow","Arial Narrow",Arial,sans-serif;--body:"Public Sans",system-ui,sans-serif;--mono:"JetBrains Mono",ui-monospace,monospace}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#15181b;--surface:#1d2125;--ink:#e7eaed;--muted:#9aa4ae;--rule:#2f353b;--accent:#e2614f;
+  --s-base:#3a5f8f;--s-sft:#5598e7;--s-rl:#b7d3f6;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#15181b;--surface:#1d2125;--ink:#e7eaed;--muted:#9aa4ae;--rule:#2f353b;--accent:#e2614f;
+  --s-base:#3a5f8f;--s-sft:#5598e7;--s-rl:#b7d3f6;color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font:400 16px/1.65 var(--body);margin:0;padding-block:28px 64px;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+main{max-width:720px;margin:0 auto;display:grid;gap:28px}
+.back{font:500 13px/1 var(--mono);color:var(--muted);text-decoration:none}.back:hover{color:var(--accent)}
+.eyebrow{font:500 12px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+header{display:grid;gap:14px}
+h1{font:700 clamp(30px,5vw,44px)/1.1 var(--display);margin:0;text-wrap:balance}
+h2{font:700 24px/1.2 var(--display);margin:0}
+p{margin:0}
+a{color:var(--accent)}
+.lede{font-size:19px;line-height:1.5}
+.dek{font-size:19px;line-height:1.45;color:var(--muted)}
+ul.plain,ol.plain{margin:0;padding-left:20px;display:grid;gap:8px}
+code{font:500 14px var(--mono)}
+figure{margin:0;display:grid;gap:8px;background:var(--surface);border-radius:6px;padding:14px 16px}
+figcaption{font-size:13px;color:var(--muted)}
+.chart{width:100%;height:auto;display:block}
+.chart .grid{stroke:var(--rule);stroke-width:1}
+.chart .tick{font:500 11px var(--mono);fill:var(--muted)}
+.chart .rowlabel{font:500 13px var(--body);fill:var(--ink)}
+.chart .val{font:500 11px var(--mono);fill:var(--muted)}
+.chart .hit{fill:transparent}
+.chart .mark.on rect:first-child{stroke:var(--ink);stroke-width:1}
+.s-base{fill:var(--s-base);background:var(--s-base)}.s-sft{fill:var(--s-sft);background:var(--s-sft)}.s-rl{fill:var(--s-rl);background:var(--s-rl)}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.legend .sw{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+#tip{position:fixed;z-index:10;max-width:280px;background:var(--ink);color:var(--bg);font:500 12px/1.4 var(--body);padding:6px 9px;border-radius:4px;pointer-events:none}
+.tablewrap{overflow-x:auto;background:var(--surface);border-radius:6px}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--rule);white-space:nowrap}
+th{font:500 12px var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.ci{font:500 11px var(--mono);color:var(--muted);margin-left:4px}
+details{background:var(--surface);border-radius:6px;padding:10px 14px}summary{cursor:pointer;font-weight:500}
+details pre{white-space:pre-wrap;font:12.5px/1.5 var(--mono);margin:6px 0 0}
+.turn{margin-top:12px;border-left:3px solid var(--rule);padding-left:10px}
+.turn.assistant{border-left-color:var(--s-sft)}
+.turn b{font:500 12px var(--mono);color:var(--muted);text-transform:uppercase}
+.trace{background:var(--surface);border-radius:6px;padding:12px 14px;font:13px/1.5 var(--mono);margin:0;white-space:pre-wrap}
+
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:12px}.pair>div{background:var(--surface);border-radius:6px;padding:10px 12px;min-width:0}
+.pair pre{white-space:pre-wrap;font:12.5px/1.5 var(--mono);margin:6px 0 0;max-height:420px;overflow:auto}.pair b{font:500 12px var(--mono);color:var(--muted);text-transform:uppercase}
+.small{font-size:13px;color:var(--muted)}
+.chart .curve{fill:none;stroke:var(--s-rl);stroke-width:2}
+.chart .dot{fill:var(--s-rl);stroke:var(--surface);stroke-width:2}
+.chart .baseline{stroke:var(--muted);stroke-width:1.5;stroke-dasharray:4 4}
+.legend .sw.dash{background:none;border-top:2px dashed var(--muted);height:0;width:14px;vertical-align:3px}
+@media (max-width:560px){.pair{grid-template-columns:1fr}}
+
+</style>
+<main>
+  <header>
+    <a class="back" href="/">← Jack Dubie</a>
+    <div class="eyebrow">Experiment · November 15, 2026</div>
+    <h1>Teaching Gemma 1B Countdown with reinforcement learning</h1>
+    <p class="dek">No demonstrations, no teacher model: just puzzles, a checker, and 300 steps of reinforcement learning on one GPU.</p>
+  </header>
+  <p class="series" style="background:var(--surface);border-radius:6px;padding:12px 16px;font-size:14px">Part of <a href="../gemma-1b/">Teaching Gemma 1B</a>, a series of small post-training experiments on one 1B model.</p>
+
+
+  <p class="lede"><b>Base Gemma 3 1B solved 5% of new Countdown puzzles. After two hours of reinforcement learning, it solves 58%.</b> The model never saw a worked solution. It only learned which of its own attempts the checker accepted.</p>
+
+  <figure><div class="legend"><span><i class="sw s-rl"></i>Gemma 3 1B during RL</span><span><i class="sw dash"></i>Base model</span></div><svg viewBox="0 0 600 260" class="chart" role="img" aria-label="Dev accuracy during RL"><line x1="50" x2="580" y1="226.0" y2="226.0" class="grid"/><text x="42" y="230.0" class="tick" text-anchor="end">0%</text><line x1="50" x2="580" y1="172.5" y2="172.5" class="grid"/><text x="42" y="176.5" class="tick" text-anchor="end">20%</text><line x1="50" x2="580" y1="119.0" y2="119.0" class="grid"/><text x="42" y="123.0" class="tick" text-anchor="end">40%</text><line x1="50" x2="580" y1="65.5" y2="65.5" class="grid"/><text x="42" y="69.5" class="tick" text-anchor="end">60%</text><line x1="50" x2="580" y1="12.0" y2="12.0" class="grid"/><text x="42" y="16.0" class="tick" text-anchor="end">80%</text><text x="50.0" y="248" class="tick" text-anchor="middle">0</text><text x="156.0" y="248" class="tick" text-anchor="middle">200</text><text x="262.0" y="248" class="tick" text-anchor="middle">400</text><text x="368.0" y="248" class="tick" text-anchor="middle">600</text><text x="474.0" y="248" class="tick" text-anchor="middle">800</text><text x="580.0" y="248" class="tick" text-anchor="middle">1000</text><text x="315.0" y="260" class="tick" text-anchor="middle">RL step</text><line x1="50" x2="580" y1="214.6" y2="214.6" class="baseline"/><text x="578" y="208.6" class="tick" text-anchor="end">base 4%</text><polyline points="50.0,214.6 60.6,160.5 71.2,90.2 81.8,77.5 92.4,90.2 103.0,84.2 113.6,120.3 124.2,130.4 134.8,117.0 145.4,110.3 156.0,97.6 166.6,94.3 177.2,72.2 187.8,94.3 198.4,82.9 209.0,56.1 219.6,66.8 230.2,72.2 240.8,72.9 251.4,226.0 262.0,226.0 272.6,226.0 283.2,226.0 293.8,226.0 304.4,226.0 315.0,226.0 325.6,226.0 336.2,226.0 346.8,226.0 357.4,226.0 368.0,226.0 378.6,226.0 389.2,226.0 399.8,226.0 410.4,226.0 421.0,226.0 431.6,226.0 442.2,226.0 452.8,226.0 463.4,226.0 474.0,226.0 484.6,226.0 495.2,226.0 505.8,226.0 516.4,226.0 527.0,226.0 537.6,226.0 548.2,226.0 558.8,226.0 569.4,226.0 580.0,226.0" class="curve"/><g class="mark" data-tip="Step 0: 4% of dev puzzles solved"><circle cx="50.0" cy="214.6" r="4" class="dot"/><circle cx="50.0" cy="214.6" r="12" class="hit"/></g><g class="mark" data-tip="Step 20: 24% of dev puzzles solved"><circle cx="60.6" cy="160.5" r="4" class="dot"/><circle cx="60.6" cy="160.5" r="12" class="hit"/></g><g class="mark" data-tip="Step 40: 51% of dev puzzles solved"><circle cx="71.2" cy="90.2" r="4" class="dot"/><circle cx="71.2" cy="90.2" r="12" class="hit"/></g><g class="mark" data-tip="Step 60: 56% of dev puzzles solved"><circle cx="81.8" cy="77.5" r="4" class="dot"/><circle cx="81.8" cy="77.5" r="12" class="hit"/></g><g class="mark" data-tip="Step 80: 51% of dev puzzles solved"><circle cx="92.4" cy="90.2" r="4" class="dot"/><circle cx="92.4" cy="90.2" r="12" class="hit"/></g><g class="mark" data-tip="Step 100: 53% of dev puzzles solved"><circle cx="103.0" cy="84.2" r="4" class="dot"/><circle cx="103.0" cy="84.2" r="12" class="hit"/></g><g class="mark" data-tip="Step 120: 40% of dev puzzles solved"><circle cx="113.6" cy="120.3" r="4" class="dot"/><circle cx="113.6" cy="120.3" r="12" class="hit"/></g><g class="mark" data-tip="Step 140: 36% of dev puzzles solved"><circle cx="124.2" cy="130.4" r="4" class="dot"/><circle cx="124.2" cy="130.4" r="12" class="hit"/></g><g class="mark" data-tip="Step 160: 41% of dev puzzles solved"><circle cx="134.8" cy="117.0" r="4" class="dot"/><circle cx="134.8" cy="117.0" r="12" class="hit"/></g><g class="mark" data-tip="Step 180: 43% of dev puzzles solved"><circle cx="145.4" cy="110.3" r="4" class="dot"/><circle cx="145.4" cy="110.3" r="12" class="hit"/></g><g class="mark" data-tip="Step 200: 48% of dev puzzles solved"><circle cx="156.0" cy="97.6" r="4" class="dot"/><circle cx="156.0" cy="97.6" r="12" class="hit"/></g><g class="mark" data-tip="Step 220: 49% of dev puzzles solved"><circle cx="166.6" cy="94.3" r="4" class="dot"/><circle cx="166.6" cy="94.3" r="12" class="hit"/></g><g class="mark" data-tip="Step 240: 57% of dev puzzles solved"><circle cx="177.2" cy="72.2" r="4" class="dot"/><circle cx="177.2" cy="72.2" r="12" class="hit"/></g><g class="mark" data-tip="Step 260: 49% of dev puzzles solved"><circle cx="187.8" cy="94.3" r="4" class="dot"/><circle cx="187.8" cy="94.3" r="12" class="hit"/></g><g class="mark" data-tip="Step 280: 54% of dev puzzles solved"><circle cx="198.4" cy="82.9" r="4" class="dot"/><circle cx="198.4" cy="82.9" r="12" class="hit"/></g><g class="mark" data-tip="Step 300: 64% of dev puzzles solved"><circle cx="209.0" cy="56.1" r="4" class="dot"/><circle cx="209.0" cy="56.1" r="12" class="hit"/></g><g class="mark" data-tip="Step 320: 60% of dev puzzles solved"><circle cx="219.6" cy="66.8" r="4" class="dot"/><circle cx="219.6" cy="66.8" r="12" class="hit"/></g><g class="mark" data-tip="Step 340: 57% of dev puzzles solved"><circle cx="230.2" cy="72.2" r="4" class="dot"/><circle cx="230.2" cy="72.2" r="12" class="hit"/></g><g class="mark" data-tip="Step 360: 57% of dev puzzles solved"><circle cx="240.8" cy="72.9" r="4" class="dot"/><circle cx="240.8" cy="72.9" r="12" class="hit"/></g><g class="mark" data-tip="Step 380: 0% of dev puzzles solved"><circle cx="251.4" cy="226.0" r="4" class="dot"/><circle cx="251.4" cy="226.0" r="12" class="hit"/></g><g class="mark" data-tip="Step 400: 0% of dev puzzles solved"><circle cx="262.0" cy="226.0" r="4" class="dot"/><circle cx="262.0" cy="226.0" r="12" class="hit"/></g><g class="mark" data-tip="Step 420: 0% of dev puzzles solved"><circle cx="272.6" cy="226.0" r="4" class="dot"/><circle cx="272.6" cy="226.0" r="12" class="hit"/></g><g class="mark" data-tip="Step 440: 0% of dev puzzles solved"><circle cx="283.2" cy="226.0" r="4" class="dot"/><circle cx="283.2" cy="226.0" r="12" class="hit"/></g><g class="mark" data-tip="Step 460: 0% of dev puzzles solved"><circle cx="293.8" cy="226.0" r="4" class="dot"/><circle cx="293.8" cy="226.0" r="12" class="hit"/></g><g class="mark" data-tip="Step 480: 0% of dev puzzles solved"><circle cx="304.4" cy="226.0" r="4" class="dot"/><circle cx="304.4" cy="226.0" r="12" class="hit"/></g><g class="mark" data-tip="Step 500: 0% of dev puzzles solved"><circle cx="315.0" cy="226.0" r="4" class="dot"/><circle cx="315.0" cy="226.0" r="12" class="hit"/></g><g class="mark" data-tip="Step 520: 0% of dev puzzles solved"><circle cx="325.6" cy="226.0" r="4" class="dot"/><circle cx="325.6" cy="226.0" r="12" class="hit"/></g><g class="mark" data-tip="Step 540: 0% of dev puzzles solved"><circle cx="336.2" cy="226.0" r="4" class="dot"/><circle cx="336.2" cy="226.0" r="12" class="hit"/></g><g class="mark" data-tip="Step 560: 0% of dev puzzles solved"><circle cx="346.8" cy="226.0" r="4" class="dot"/><circle cx="346.8" cy="226.0" r="12" class="hit"/></g><g class="mark" data-tip="Step 580: 0% of dev puzzles solved"><circle cx="357.4" cy="226.0" r="4" class="dot"/><circle cx="357.4" cy="226.0" r="12" class="hit"/></g><g class="mark" data-tip="Step 600: 0% of dev puzzles solved"><circle cx="368.0" cy="226.0" r="4" class="dot"/><circle cx="368.0" cy="226.0" r="12" class="hit"/></g><g class="mark" data-tip="Step 620: 0% of dev puzzles solved"><circle cx="378.6" cy="226.0" r="4" class="dot"/><circle cx="378.6" cy="226.0" r="12" class="hit"/></g><g class="mark" data-tip="Step 640: 0% of dev puzzles solved"><circle cx="389.2" cy="226.0" r="4" class="dot"/><circle cx="389.2" cy="226.0" r="12" class="hit"/></g><g class="mark" data-tip="Step 660: 0% of dev puzzles solved"><circle cx="399.8" cy="226.0" r="4" class="dot"/><circle cx="399.8" cy="226.0" r="12" class="hit"/></g><g class="mark" data-tip="Step 680: 0% of dev puzzles solved"><circle cx="410.4" cy="226.0" r="4" class="dot"/><circle cx="410.4" cy="226.0" r="12" class="hit"/></g><g class="mark" data-tip="Step 700: 0% of dev puzzles solved"><circle cx="421.0" cy="226.0" r="4" class="dot"/><circle cx="421.0" cy="226.0" r="12" class="hit"/></g><g class="mark" data-tip="Step 720: 0% of dev puzzles solved"><circle cx="431.6" cy="226.0" r="4" class="dot"/><circle cx="431.6" cy="226.0" r="12" class="hit"/></g><g class="mark" data-tip="Step 740: 0% of dev puzzles solved"><circle cx="442.2" cy="226.0" r="4" class="dot"/><circle cx="442.2" cy="226.0" r="12" class="hit"/></g><g class="mark" data-tip="Step 760: 0% of dev puzzles solved"><circle cx="452.8" cy="226.0" r="4" class="dot"/><circle cx="452.8" cy="226.0" r="12" class="hit"/></g><g class="mark" data-tip="Step 780: 0% of dev puzzles solved"><circle cx="463.4" cy="226.0" r="4" class="dot"/><circle cx="463.4" cy="226.0" r="12" class="hit"/></g><g class="mark" data-tip="Step 800: 0% of dev puzzles solved"><circle cx="474.0" cy="226.0" r="4" class="dot"/><circle cx="474.0" cy="226.0" r="12" class="hit"/></g><g class="mark" data-tip="Step 820: 0% of dev puzzles solved"><circle cx="484.6" cy="226.0" r="4" class="dot"/><circle cx="484.6" cy="226.0" r="12" class="hit"/></g><g class="mark" data-tip="Step 840: 0% of dev puzzles solved"><circle cx="495.2" cy="226.0" r="4" class="dot"/><circle cx="495.2" cy="226.0" r="12" class="hit"/></g><g class="mark" data-tip="Step 860: 0% of dev puzzles solved"><circle cx="505.8" cy="226.0" r="4" class="dot"/><circle cx="505.8" cy="226.0" r="12" class="hit"/></g><g class="mark" data-tip="Step 880: 0% of dev puzzles solved"><circle cx="516.4" cy="226.0" r="4" class="dot"/><circle cx="516.4" cy="226.0" r="12" class="hit"/></g><g class="mark" data-tip="Step 900: 0% of dev puzzles solved"><circle cx="527.0" cy="226.0" r="4" class="dot"/><circle cx="527.0" cy="226.0" r="12" class="hit"/></g><g class="mark" data-tip="Step 920: 0% of dev puzzles solved"><circle cx="537.6" cy="226.0" r="4" class="dot"/><circle cx="537.6" cy="226.0" r="12" class="hit"/></g><g class="mark" data-tip="Step 940: 0% of dev puzzles solved"><circle cx="548.2" cy="226.0" r="4" class="dot"/><circle cx="548.2" cy="226.0" r="12" class="hit"/></g><g class="mark" data-tip="Step 960: 0% of dev puzzles solved"><circle cx="558.8" cy="226.0" r="4" class="dot"/><circle cx="558.8" cy="226.0" r="12" class="hit"/></g><g class="mark" data-tip="Step 980: 0% of dev puzzles solved"><circle cx="569.4" cy="226.0" r="4" class="dot"/><circle cx="569.4" cy="226.0" r="12" class="hit"/></g><g class="mark" data-tip="Step 1000: 0% of dev puzzles solved"><circle cx="580.0" cy="226.0" r="4" class="dot"/><circle cx="580.0" cy="226.0" r="12" class="hit"/></g></svg><figcaption>Share of 100 fixed dev puzzles solved (4 samples each) as RL training progresses. Hover a point for its value.</figcaption></figure>
+
+  <h2>The game</h2>
+  <p>Each puzzle gives three numbers and a target: “Using 6, 10 and 17, each exactly once, and +, −, ×, ÷, make 112.” The answer is an expression, and checking it takes a few lines of Python: it must use each number exactly once, contain only arithmetic, and equal the target. Puzzles are generated at random, so there is an endless supply and no answer key to memorise.</p>
+  <p>Base Gemma is bad at this. It writes expressions that don't equal the target, uses numbers twice, or invents new ones, then declares success: “6 + 10 × 17 − 1 = 112”.</p>
+
+  <h2>Why this task suits RL</h2>
+  <p>Reinforcement learning can only reinforce successes the model already produces sometimes. Before training I measured that directly: given eight tries, base Gemma solved 19% of puzzles at least once, but only 5% on a single try. That gap is the room RL has to work with. It doesn't need to teach the model anything new, only to make its occasional successes reliable.</p>
+  <p>I measured five candidate tasks this way. Countdown had the biggest gap between best-of-eight and single-try, so it got the RL run.</p>
+
+  <h2>Setup</h2>
+  <ul class="plain">
+    <li><b>Algorithm:</b> GRPO-style policy gradient. Each step draws 32 fresh puzzles and samples 8 answers to each. The reward is 1 if the checker accepts the answer and 0 otherwise. Each answer's advantage is its reward minus the average for its puzzle, so the model is pushed toward the answers that beat their siblings.</li>
+    <li><b>Model:</b> Gemma 3 1B instruct with a LoRA adapter (rank 32, all linear layers), learning rate 2e-5, loss averaged per answer. A single L4 GPU does both the sampling (vLLM, with the new adapter hot-loaded after every step) and the training.</li>
+    <li><b>Scale:</b> 300 steps, 76,800 sampled answers, about two hours.</li>
+    <li><b>Measurement:</b> a fixed set of dev puzzles scored every 20 steps, and a separate set of new test puzzles for the final numbers. Training puzzles are drawn fresh at every step.</li>
+  </ul>
+
+  <h2>Results</h2>
+  <p>On new test puzzles, single-try accuracy went from 5% (95% interval 3%–7%) to 58% (52%–64%). Best-of-8 went from 19% to 66%.</p>
+  <figure><div class="legend"><span><i class="sw s-base"></i>Base Gemma 3 1B</span><span><i class="sw s-rl"></i>After RL</span></div><svg viewBox="0 0 560 130" class="chart" role="img" aria-label="Test results"><line x1="120.0" x2="120.0" y1="0" y2="108" class="grid"/><text x="120.0" y="124" class="tick" text-anchor="middle">0%</text><line x1="218.5" x2="218.5" y1="0" y2="108" class="grid"/><text x="218.5" y="124" class="tick" text-anchor="middle">25%</text><line x1="317.0" x2="317.0" y1="0" y2="108" class="grid"/><text x="317.0" y="124" class="tick" text-anchor="middle">50%</text><line x1="415.5" x2="415.5" y1="0" y2="108" class="grid"/><text x="415.5" y="124" class="tick" text-anchor="middle">75%</text><line x1="514.0" x2="514.0" y1="0" y2="108" class="grid"/><text x="514.0" y="124" class="tick" text-anchor="middle">100%</text><text x="110" y="19" class="rowlabel" text-anchor="end">Single try</text><g class="mark" data-tip="Base, single try: 5% (95% CI 3%–7%)"><rect x="120" y="4" width="18.7" height="12" rx="2" class="s-base"/><rect x="120" y="2" width="394" height="16" class="hit"/></g><text x="143.7" y="15" class="val">5%</text><g class="mark" data-tip="After RL, single try: 58% (95% CI 52%–64%)"><rect x="120" y="19" width="229.0" height="12" rx="2" class="s-rl"/><rect x="120" y="17" width="394" height="16" class="hit"/></g><text x="354.0" y="30" class="val">58%</text><text x="110" y="69" class="rowlabel" text-anchor="end">Best of 8</text><g class="mark" data-tip="Base, best of 8: 19%"><rect x="120" y="54" width="74.9" height="12" rx="2" class="s-base"/><rect x="120" y="52" width="394" height="16" class="hit"/></g><text x="199.9" y="65" class="val">19%</text><g class="mark" data-tip="After RL, best of 8: 66%"><rect x="120" y="69" width="258.1" height="12" rx="2" class="s-rl"/><rect x="120" y="67" width="394" height="16" class="hit"/></g><text x="383.1" y="80" class="val">66%</text></svg><figcaption>200 new test puzzles, 8 samples each at temperature 1.0.</figcaption></figure>
+  <h2>What RL taught it</h2><p>The base model writes one expression and declares victory, whether or not it's right. After RL the model searches: it writes a candidate, works it out, says “This is not 25”, tries another, and answers only when the arithmetic checks out. Nobody showed it that procedure. Answers that happened to check their work were rewarded more often, so checking became the habit.</p><p>Its remaining failures are mostly searches that loop over the same few candidates until they hit the 384-token reply limit.</p><h2>And then it collapsed</h2><p>The run did not end well. I paused training at step 320 to free the GPU for another experiment, then resumed from the saved adapter with a fresh optimizer. Within 50 steps the gradient norm spiked from about 1 to 15, and by step 370 the model never solved a puzzle again. With every answer scoring 0, there is no difference between good and bad samples, so no gradient to recover with. The dev curve above shows the cliff. The checkpoints kept every 20 steps made this harmless: the result below uses the step-300 checkpoint, picked by dev-set score before looking at the test set. Next time I'd save the optimizer state with the adapter, and add a KL penalty or lower the learning rate late in training.</p>
+  <p class="small">Puzzle: Using 8, 7, 6, make 5.</p><div class="pair"><div><b>Base</b><pre>Here&#x27;s the solution:
+
+8 - 7 * 6 + 9 = 5
+
+Answer: 8 - 7 * 6 + 9</pre></div><div><b>After RL</b><pre>8 + 7 + 6 = 21, which is not 5. 8 - 7 + 6 = 1 + 6 = 7, which is not 5. 8 * 7 - 6 = 56 - 6 = 50, which is not 5. 8 * 6 + 7 = 48 + 7 = 55, which is not 5. 8 + 7 - 6 = 15 - 6 = 9, which is not 5. 7 - 8 + 6 = 7 - 8 + 6 = -1 + 6 = 5.
+
+Answer: 7 - 8 + 6.</pre></div></div>
+
+  <h2>What I took away</h2>
+  <ul class="plain">
+    <li><b>Measure best-of-k before running RL.</b> RL turns occasional successes into reliable ones. A task where the base model never succeeds gives it nothing to work with; a task with a wide gap between best-of-8 and single-try is where it pays off.</li>
+    <li><b>Checkable tasks make RL cheap.</b> No labels and no teacher: a random puzzle generator and a ten-line checker were the whole dataset.</li>
+    <li><b>Normalise the loss per answer.</b> In an earlier, failed run on a harder coding task, summing the loss over tokens let long failed answers dominate the update and the model degraded. Averaging per answer kept this run stable for its first 300 steps; the later collapse came after a restart that reset the optimizer.</li>
+  </ul>
+  <p class="small">Sampling at temperature 1.0 throughout. Dev and test puzzles come from separate random seeds and never appear in training.</p>
+
+</main>
+<div id="tip" role="tooltip" hidden></div>
+<script>
+const tip = document.getElementById("tip");
+document.querySelectorAll(".mark").forEach(g => {
+  const show = e => { tip.textContent = g.dataset.tip; tip.hidden = false;
+    tip.style.left = Math.min(e.clientX + 12, window.innerWidth - tip.offsetWidth - 8) + "px"; tip.style.top = (e.clientY + 14) + "px"; g.classList.add("on"); };
+  g.addEventListener("mousemove", show);
+  g.addEventListener("mouseleave", () => { tip.hidden = true; g.classList.remove("on"); });
+});
+</script>
+</html>

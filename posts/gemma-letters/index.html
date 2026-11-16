@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Teaching Gemma 1B to count letters</title>
+<meta name="description" content="Fine-tuning Gemma 3 1B on synthetic examples takes letter counting from 20% to 90%.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@600;700&family=Public+Sans:wght@400;500&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+:root{--bg:#f3f4f5;--surface:#fff;--ink:#1b1f23;--muted:#5d6670;--rule:#d9dde1;--accent:#a3271b;
+  --s-base:#86b6ef;--s-sft:#2a78d6;--s-rl:#104281;
+  --display:"Archivo Narrow","Arial Narrow",Arial,sans-serif;--body:"Public Sans",system-ui,sans-serif;--mono:"JetBrains Mono",ui-monospace,monospace}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#15181b;--surface:#1d2125;--ink:#e7eaed;--muted:#9aa4ae;--rule:#2f353b;--accent:#e2614f;
+  --s-base:#3a5f8f;--s-sft:#5598e7;--s-rl:#b7d3f6;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#15181b;--surface:#1d2125;--ink:#e7eaed;--muted:#9aa4ae;--rule:#2f353b;--accent:#e2614f;
+  --s-base:#3a5f8f;--s-sft:#5598e7;--s-rl:#b7d3f6;color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font:400 16px/1.65 var(--body);margin:0;padding-block:28px 64px;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+main{max-width:720px;margin:0 auto;display:grid;gap:28px}
+.back{font:500 13px/1 var(--mono);color:var(--muted);text-decoration:none}.back:hover{color:var(--accent)}
+.eyebrow{font:500 12px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+header{display:grid;gap:14px}
+h1{font:700 clamp(30px,5vw,44px)/1.1 var(--display);margin:0;text-wrap:balance}
+h2{font:700 24px/1.2 var(--display);margin:0}
+p{margin:0}
+a{color:var(--accent)}
+.lede{font-size:19px;line-height:1.5}
+.dek{font-size:19px;line-height:1.45;color:var(--muted)}
+ul.plain,ol.plain{margin:0;padding-left:20px;display:grid;gap:8px}
+code{font:500 14px var(--mono)}
+figure{margin:0;display:grid;gap:8px;background:var(--surface);border-radius:6px;padding:14px 16px}
+figcaption{font-size:13px;color:var(--muted)}
+.chart{width:100%;height:auto;display:block}
+.chart .grid{stroke:var(--rule);stroke-width:1}
+.chart .tick{font:500 11px var(--mono);fill:var(--muted)}
+.chart .rowlabel{font:500 13px var(--body);fill:var(--ink)}
+.chart .val{font:500 11px var(--mono);fill:var(--muted)}
+.chart .hit{fill:transparent}
+.chart .mark.on rect:first-child{stroke:var(--ink);stroke-width:1}
+.s-base{fill:var(--s-base);background:var(--s-base)}.s-sft{fill:var(--s-sft);background:var(--s-sft)}.s-rl{fill:var(--s-rl);background:var(--s-rl)}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.legend .sw{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+#tip{position:fixed;z-index:10;max-width:280px;background:var(--ink);color:var(--bg);font:500 12px/1.4 var(--body);padding:6px 9px;border-radius:4px;pointer-events:none}
+.tablewrap{overflow-x:auto;background:var(--surface);border-radius:6px}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--rule);white-space:nowrap}
+th{font:500 12px var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.ci{font:500 11px var(--mono);color:var(--muted);margin-left:4px}
+details{background:var(--surface);border-radius:6px;padding:10px 14px}summary{cursor:pointer;font-weight:500}
+details pre{white-space:pre-wrap;font:12.5px/1.5 var(--mono);margin:6px 0 0}
+.turn{margin-top:12px;border-left:3px solid var(--rule);padding-left:10px}
+.turn.assistant{border-left-color:var(--s-sft)}
+.turn b{font:500 12px var(--mono);color:var(--muted);text-transform:uppercase}
+.trace{background:var(--surface);border-radius:6px;padding:12px 14px;font:13px/1.5 var(--mono);margin:0;white-space:pre-wrap}
+
+:root{--l1:#86b6ef;--l2:#3987e5;--l3:#1c5cab;--l4:#0d366b}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--l1:#3a5f8f;--l2:#3987e5;--l3:#86b6ef;--l4:#cde2fb}}
+:root[data-theme="dark"]{--l1:#3a5f8f;--l2:#3987e5;--l3:#86b6ef;--l4:#cde2fb}
+.s-l1{fill:var(--l1);background:var(--l1)}.s-l2{fill:var(--l2);background:var(--l2)}.s-l3{fill:var(--l3);background:var(--l3)}.s-l4{fill:var(--l4);background:var(--l4)}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:12px}.pair>div{background:var(--surface);border-radius:6px;padding:10px 12px;min-width:0}
+.pair pre{white-space:pre-wrap;font:12.5px/1.5 var(--mono);margin:6px 0 0}.pair b{font:500 12px var(--mono);color:var(--muted);text-transform:uppercase}
+.small{font-size:13px;color:var(--muted)}
+@media (max-width:560px){.pair{grid-template-columns:1fr}}
+
+</style>
+<main>
+  <header>
+    <a class="back" href="/">← Jack Dubie</a>
+    <div class="eyebrow">Experiment · November 15, 2026</div>
+    <h1>Teaching Gemma 1B to count letters</h1>
+    <p class="dek">“How many r's are in strawberry?” is the classic question small language models get wrong. Four thousand synthetic examples and a few minutes of fine-tuning take Google's smallest Gemma from 20% to 90% on words it has never seen, strawberry included.</p>
+  </header>
+  <p class="series" style="background:var(--surface);border-radius:6px;padding:12px 16px;font-size:14px">Part of <a href="../gemma-1b/">Teaching Gemma 1B</a>, a series of small post-training experiments on one 1B model.</p>
+
+
+  <p class="lede"><b>Base Gemma 3 1B counted letters correctly 20% of the time. After supervised fine-tuning on examples that spell each word out letter by letter, it gets 84% right on words it never saw in training, and 90% after adding spelling practice.</b> Training on the same questions with only the final number gets 49%. The model didn't need new knowledge, just a procedure it can follow.</p>
+
+  <figure><div class="legend"><span><i class="sw s-l1"></i>Base Gemma 3 1B</span><span><i class="sw s-l2"></i>SFT, answer only</span><span><i class="sw s-l3"></i>SFT, spelled out</span><span><i class="sw s-l4"></i>SFT, spelled out + spelling practice</span></div><svg viewBox="0 0 560 97" role="img" aria-label="Letter-counting accuracy" class="chart"><line x1="150.0" x2="150.0" y1="0" y2="75" class="grid"/><text x="150.0" y="91" class="tick" text-anchor="middle">0%</text><line x1="241.0" x2="241.0" y1="0" y2="75" class="grid"/><text x="241.0" y="91" class="tick" text-anchor="middle">25%</text><line x1="332.0" x2="332.0" y1="0" y2="75" class="grid"/><text x="332.0" y="91" class="tick" text-anchor="middle">50%</text><line x1="423.0" x2="423.0" y1="0" y2="75" class="grid"/><text x="423.0" y="91" class="tick" text-anchor="middle">75%</text><line x1="514.0" x2="514.0" y1="0" y2="75" class="grid"/><text x="514.0" y="91" class="tick" text-anchor="middle">100%</text><text x="140" y="32.5" class="rowlabel" text-anchor="end">Letter counting</text><g class="mark" data-tip="Letter counting · Base Gemma 3 1B: 20% (95% CI 15%–25%), 200 words × 8 samples"><rect x="150" y="4" width="72.8" height="10" rx="2" class="s-l1"/><rect x="150" y="2" width="364" height="14" class="hit"/></g><text x="227.8" y="13" class="val">20%</text><g class="mark" data-tip="Letter counting · SFT, answer only: 49% (95% CI 45%–53%), 200 words × 8 samples"><rect x="150" y="17" width="178.8" height="10" rx="2" class="s-l2"/><rect x="150" y="15" width="364" height="14" class="hit"/></g><text x="333.8" y="26" class="val">49%</text><g class="mark" data-tip="Letter counting · SFT, spelled out: 84% (95% CI 80%–88%), 200 words × 8 samples"><rect x="150" y="30" width="305.8" height="10" rx="2" class="s-l3"/><rect x="150" y="28" width="364" height="14" class="hit"/></g><text x="460.8" y="39" class="val">84%</text><g class="mark" data-tip="Letter counting · SFT, spelled out + spelling practice: 90% (95% CI 86%–93%), 200 words × 8 samples"><rect x="150" y="43" width="326.5" height="10" rx="2" class="s-l4"/><rect x="150" y="41" width="364" height="14" class="hit"/></g><text x="481.5" y="52" class="val">90%</text></svg><figcaption>Accuracy on 200 held-out questions, 8 samples each at temperature 1.0. Hover for 95% intervals.</figcaption></figure>
+
+  <h2>Why a 1B model can't count letters</h2>
+  <p>Language models read tokens, not letters. To Gemma, “wellness” is one or two tokens, so “how many e's?” asks about something it never directly sees. Asked that question, base Gemma answered “The letter ‘e’ appears 3 times in the word ‘wellness’.” The answer is 2.</p>
+  <p>It can't reliably spell, either. Asked to spell 100 held-out words one letter at a time, base Gemma got 22% of attempts exactly right: “children” came back as <code>ch-i-r-o-n-s</code>, “maintenance” as <code>en-ti-fee</code>. So fine-tuning has to teach two things: write the word out letter by letter, then count along the way. Once the letters are on the page, counting is easy.</p>
+
+  <h2>The data costs nothing</h2>
+  <p>Every training example is generated by a few lines of Python. I took 7,048 common English words, held out every fifth one for testing (1,762 words the model never trains on), and for each example picked a word and a letter so that the answers 0, 1, 2 and 3 are equally common. That balance matters: in my first version most answers were 1, and a model that always said “1” would have scored 60%. With balanced answers, always guessing the same number scores 25%. The target response spells the word out, marks each match, and states the count:</p>
+  <pre class="trace">Spelling out 'gmbh' letter by letter:
+1. g
+2. m
+3. b
+4. h &lt;- 'h' #1
+The letter 'h' appears 1 time.
+Answer: 1</pre>
+  <p>As a control, I trained a second model on the same 4,000 questions with the target being only <code>Answer: 1</code>. Both runs use LoRA (rank 64, all linear layers) on Gemma 3 1B instruct, two epochs, learning rate 1e-4, on one L4 GPU.</p>
+
+  <h2>Results</h2>
+  <p>On 200 held-out questions (50 for each answer from 0 to 3) with 8 samples each, accuracy went from 20% (95% interval 15%–25%) to 84% (80%–88%) with spelled-out training, and to 49% with answer-only training. Training on answers alone more than doubles accuracy, but look at how: given eight tries, the answer-only model gets 95% of questions right at least once, yet only 49% on a single try. It has learned which counts are plausible and guesses among them. The spelled-out model gets 84% on the first try.</p>
+  <figure><div class="legend"><span><i class="sw s-l1"></i>Base Gemma 3 1B</span><span><i class="sw s-l2"></i>SFT, answer only</span><span><i class="sw s-l3"></i>SFT, spelled out</span><span><i class="sw s-l4"></i>SFT, spelled out + spelling practice</span></div><svg viewBox="0 0 560 298" role="img" aria-label="Accuracy by word length" class="chart"><line x1="150.0" x2="150.0" y1="0" y2="276" class="grid"/><text x="150.0" y="292" class="tick" text-anchor="middle">0%</text><line x1="241.0" x2="241.0" y1="0" y2="276" class="grid"/><text x="241.0" y="292" class="tick" text-anchor="middle">25%</text><line x1="332.0" x2="332.0" y1="0" y2="276" class="grid"/><text x="332.0" y="292" class="tick" text-anchor="middle">50%</text><line x1="423.0" x2="423.0" y1="0" y2="276" class="grid"/><text x="423.0" y="292" class="tick" text-anchor="middle">75%</text><line x1="514.0" x2="514.0" y1="0" y2="276" class="grid"/><text x="514.0" y="292" class="tick" text-anchor="middle">100%</text><text x="140" y="32.5" class="rowlabel" text-anchor="end">4–5 letters</text><g class="mark" data-tip="4–5 letters · Base Gemma 3 1B: 5%, 34 words"><rect x="150" y="4" width="18.7" height="10" rx="2" class="s-l1"/><rect x="150" y="2" width="364" height="14" class="hit"/></g><text x="173.7" y="13" class="val">5%</text><g class="mark" data-tip="4–5 letters · SFT, answer only: 62%, 34 words"><rect x="150" y="17" width="226.2" height="10" rx="2" class="s-l2"/><rect x="150" y="15" width="364" height="14" class="hit"/></g><text x="381.2" y="26" class="val">62%</text><g class="mark" data-tip="4–5 letters · SFT, spelled out: 94%, 34 words"><rect x="150" y="30" width="343.9" height="10" rx="2" class="s-l3"/><rect x="150" y="28" width="364" height="14" class="hit"/></g><text x="498.9" y="39" class="val">94%</text><g class="mark" data-tip="4–5 letters · SFT, spelled out + spelling practice: 100%, 34 words"><rect x="150" y="43" width="364.0" height="10" rx="2" class="s-l4"/><rect x="150" y="41" width="364" height="14" class="hit"/></g><text x="519.0" y="52" class="val">100%</text><text x="140" y="99.5" class="rowlabel" text-anchor="end">6–7 letters</text><g class="mark" data-tip="6–7 letters · Base Gemma 3 1B: 13%, 51 words"><rect x="150" y="71" width="48.2" height="10" rx="2" class="s-l1"/><rect x="150" y="69" width="364" height="14" class="hit"/></g><text x="203.2" y="80" class="val">13%</text><g class="mark" data-tip="6–7 letters · SFT, answer only: 47%, 51 words"><rect x="150" y="84" width="171.3" height="10" rx="2" class="s-l2"/><rect x="150" y="82" width="364" height="14" class="hit"/></g><text x="326.3" y="93" class="val">47%</text><g class="mark" data-tip="6–7 letters · SFT, spelled out: 86%, 51 words"><rect x="150" y="97" width="314.0" height="10" rx="2" class="s-l3"/><rect x="150" y="95" width="364" height="14" class="hit"/></g><text x="469.0" y="106" class="val">86%</text><g class="mark" data-tip="6–7 letters · SFT, spelled out + spelling practice: 92%, 51 words"><rect x="150" y="110" width="334.6" height="10" rx="2" class="s-l4"/><rect x="150" y="108" width="364" height="14" class="hit"/></g><text x="489.6" y="119" class="val">92%</text><text x="140" y="166.5" class="rowlabel" text-anchor="end">8–9 letters</text><g class="mark" data-tip="8–9 letters · Base Gemma 3 1B: 25%, 53 words"><rect x="150" y="138" width="91.9" height="10" rx="2" class="s-l1"/><rect x="150" y="136" width="364" height="14" class="hit"/></g><text x="246.9" y="147" class="val">25%</text><g class="mark" data-tip="8–9 letters · SFT, answer only: 43%, 53 words"><rect x="150" y="151" width="158.0" height="10" rx="2" class="s-l2"/><rect x="150" y="149" width="364" height="14" class="hit"/></g><text x="313.0" y="160" class="val">43%</text><g class="mark" data-tip="8–9 letters · SFT, spelled out: 79%, 53 words"><rect x="150" y="164" width="285.9" height="10" rx="2" class="s-l3"/><rect x="150" y="162" width="364" height="14" class="hit"/></g><text x="440.9" y="173" class="val">79%</text><g class="mark" data-tip="8–9 letters · SFT, spelled out + spelling practice: 84%, 53 words"><rect x="150" y="177" width="306.5" height="10" rx="2" class="s-l4"/><rect x="150" y="175" width="364" height="14" class="hit"/></g><text x="461.5" y="186" class="val">84%</text><text x="140" y="233.5" class="rowlabel" text-anchor="end">10+ letters</text><g class="mark" data-tip="10+ letters · Base Gemma 3 1B: 29%, 62 words"><rect x="150" y="205" width="106.4" height="10" rx="2" class="s-l1"/><rect x="150" y="203" width="364" height="14" class="hit"/></g><text x="261.4" y="214" class="val">29%</text><g class="mark" data-tip="10+ letters · SFT, answer only: 49%, 62 words"><rect x="150" y="218" width="176.9" height="10" rx="2" class="s-l2"/><rect x="150" y="216" width="364" height="14" class="hit"/></g><text x="331.9" y="227" class="val">49%</text><g class="mark" data-tip="10+ letters · SFT, spelled out: 81%, 62 words"><rect x="150" y="231" width="295.0" height="10" rx="2" class="s-l3"/><rect x="150" y="229" width="364" height="14" class="hit"/></g><text x="450.0" y="240" class="val">81%</text><g class="mark" data-tip="10+ letters · SFT, spelled out + spelling practice: 87%, 62 words"><rect x="150" y="244" width="316.3" height="10" rx="2" class="s-l4"/><rect x="150" y="242" width="364" height="14" class="hit"/></g><text x="471.3" y="253" class="val">87%</text></svg><figcaption>Accuracy by word length. The fine-tuned model is weakest on long words, where its spelling slips.</figcaption></figure>
+  <div class="pair"><div><b>Base</b><pre>The letter &#x27;s&#x27; appears 5 times in the word &#x27;surfaces&#x27;.
+
+Answer: 5</pre></div><div><b>After SFT (spelled out)</b><pre>Spelling out &#x27;surfaces&#x27; letter by letter:
+1. s &lt;- &#x27;s&#x27; #1
+2. u
+3. r
+4. f
+5. a
+6. c
+7. e
+8. s &lt;- &#x27;s&#x27; #2
+The letter &#x27;s&#x27; appears 2 times.
+Answer: 2</pre></div></div><p class="small">Question: How many times does the letter &#x27;s&#x27; appear in the word &#x27;surfaces&#x27;? Correct answer: 2.</p>
+  <h2>The strawberry problem</h2><p>The famous question is a different story. Asked “How many r's are in strawberry?” 16 times, base Gemma answered 3 16 of 16 times. It has almost certainly seen this exact question in training. The fine-tuned model got it right 0 of 16 times. It spells <code>s-t-r-a-w-b-e-r</code> and stops, dropping the final “ry” and with it the third r.</p><p>That points at the fine-tuned model's real weakness: spelling long words. On test words of eight letters or more it spells the whole word exactly right only about 40% of the time. It still counts correctly about 80% of the time, because most spelling slips miss the letter being counted. Strawberry is unlucky: the slip lands on an r.</p><h2>Fixing the spelling</h2><p>So I trained one more model aimed at that weakness: 8,000 counting examples with word lengths spread evenly from 4 to 12+ letters, plus 4,000 pure spelling examples (“Spell the word X”), all on training words. It counts letters correctly 90% of the time on the held-out words (95% interval 86%–93%), and it gets strawberry right 16 of 16 times. It now writes out all three r's, though it still drops the final y.</p>
+
+  <h2>What this shows</h2>
+  <ul class="plain">
+    <li><b>SFT teaches procedures, not just answers.</b> The answer-only model saw exactly the same questions and correct counts. Without the intermediate steps it had nothing to imitate except a guess.</li>
+    <li><b>Small models fail at things their representation hides.</b> Counting letters isn't hard; seeing letters is. Training the model to write the letters out first turns the question into one it can answer.</li>
+    <li><b>The procedure generalises, even when the spelling is shaky.</b> Every test word was held out of training. The fine-tuned model spells many of them imperfectly, but it still counts correctly most of the time on words it was never taught.</li>
+    <li><b>Synthetic data is enough when the answer is checkable.</b> No human labels and no teacher model: a 20-line generator produced every example and the grader for the test.</li>
+  </ul>
+  <p class="small">Sampling at temperature 1.0 throughout. Test words are disjoint from training words. Code and data generators are about 150 lines of Python.</p>
+
+</main>
+<div id="tip" role="tooltip" hidden></div>
+<script>
+const tip = document.getElementById("tip");
+document.querySelectorAll(".mark").forEach(g => {
+  const show = e => { tip.textContent = g.dataset.tip; tip.hidden = false;
+    tip.style.left = Math.min(e.clientX + 12, window.innerWidth - tip.offsetWidth - 8) + "px"; tip.style.top = (e.clientY + 14) + "px"; g.classList.add("on"); };
+  g.addEventListener("mousemove", show);
+  g.addEventListener("mouseleave", () => { tip.hidden = true; g.classList.remove("on"); });
+});
+</script>
+</html>

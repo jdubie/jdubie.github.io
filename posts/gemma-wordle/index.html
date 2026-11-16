@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Teaching Gemma 1B Wordle</title>
+<meta name="description" content="Pretrained Gemma 3 1B goes from 0% to 57% at Wordle with SFT; RL in progress.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@600;700&family=Public+Sans:wght@400;500&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+:root{--bg:#f3f4f5;--surface:#fff;--ink:#1b1f23;--muted:#5d6670;--rule:#d9dde1;--accent:#a3271b;
+  --s-base:#86b6ef;--s-sft:#2a78d6;--s-rl:#104281;
+  --display:"Archivo Narrow","Arial Narrow",Arial,sans-serif;--body:"Public Sans",system-ui,sans-serif;--mono:"JetBrains Mono",ui-monospace,monospace}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#15181b;--surface:#1d2125;--ink:#e7eaed;--muted:#9aa4ae;--rule:#2f353b;--accent:#e2614f;
+  --s-base:#3a5f8f;--s-sft:#5598e7;--s-rl:#b7d3f6;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#15181b;--surface:#1d2125;--ink:#e7eaed;--muted:#9aa4ae;--rule:#2f353b;--accent:#e2614f;
+  --s-base:#3a5f8f;--s-sft:#5598e7;--s-rl:#b7d3f6;color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font:400 16px/1.65 var(--body);margin:0;padding-block:28px 64px;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+main{max-width:720px;margin:0 auto;display:grid;gap:28px}
+.back{font:500 13px/1 var(--mono);color:var(--muted);text-decoration:none}.back:hover{color:var(--accent)}
+.eyebrow{font:500 12px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+header{display:grid;gap:14px}
+h1{font:700 clamp(30px,5vw,44px)/1.1 var(--display);margin:0;text-wrap:balance}
+h2{font:700 24px/1.2 var(--display);margin:0}
+p{margin:0}
+a{color:var(--accent)}
+.lede{font-size:19px;line-height:1.5}
+.dek{font-size:19px;line-height:1.45;color:var(--muted)}
+ul.plain,ol.plain{margin:0;padding-left:20px;display:grid;gap:8px}
+code{font:500 14px var(--mono)}
+figure{margin:0;display:grid;gap:8px;background:var(--surface);border-radius:6px;padding:14px 16px}
+figcaption{font-size:13px;color:var(--muted)}
+.chart{width:100%;height:auto;display:block}
+.chart .grid{stroke:var(--rule);stroke-width:1}
+.chart .tick{font:500 11px var(--mono);fill:var(--muted)}
+.chart .rowlabel{font:500 13px var(--body);fill:var(--ink)}
+.chart .val{font:500 11px var(--mono);fill:var(--muted)}
+.chart .hit{fill:transparent}
+.chart .mark.on rect:first-child{stroke:var(--ink);stroke-width:1}
+.s-base{fill:var(--s-base);background:var(--s-base)}.s-sft{fill:var(--s-sft);background:var(--s-sft)}.s-rl{fill:var(--s-rl);background:var(--s-rl)}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.legend .sw{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+#tip{position:fixed;z-index:10;max-width:280px;background:var(--ink);color:var(--bg);font:500 12px/1.4 var(--body);padding:6px 9px;border-radius:4px;pointer-events:none}
+.tablewrap{overflow-x:auto;background:var(--surface);border-radius:6px}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--rule);white-space:nowrap}
+th{font:500 12px var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.ci{font:500 11px var(--mono);color:var(--muted);margin-left:4px}
+details{background:var(--surface);border-radius:6px;padding:10px 14px}summary{cursor:pointer;font-weight:500}
+details pre{white-space:pre-wrap;font:12.5px/1.5 var(--mono);margin:6px 0 0}
+.turn{margin-top:12px;border-left:3px solid var(--rule);padding-left:10px}
+.turn.assistant{border-left-color:var(--s-sft)}
+.turn b{font:500 12px var(--mono);color:var(--muted);text-transform:uppercase}
+.trace{background:var(--surface);border-radius:6px;padding:12px 14px;font:13px/1.5 var(--mono);margin:0;white-space:pre-wrap}
+
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:12px}.pair>div{background:var(--surface);border-radius:6px;padding:10px 12px;min-width:0}
+.pair pre{white-space:pre-wrap;font:12.5px/1.5 var(--mono);margin:6px 0 0;max-height:420px;overflow:auto}.pair b{font:500 12px var(--mono);color:var(--muted);text-transform:uppercase}
+.small{font-size:13px;color:var(--muted)}
+.chart .curve{fill:none;stroke:var(--s-rl);stroke-width:2}
+.chart .dot{fill:var(--s-rl);stroke:var(--surface);stroke-width:2}
+.chart .baseline{stroke:var(--muted);stroke-width:1.5;stroke-dasharray:4 4}
+.legend .sw.dash{background:none;border-top:2px dashed var(--muted);height:0;width:14px;vertical-align:3px}
+@media (max-width:560px){.pair{grid-template-columns:1fr}}
+
+.series{background:var(--surface);border-radius:6px;padding:12px 16px;font-size:14px}.series a{font-weight:500}
+.card{display:grid;gap:6px;background:var(--surface);border-radius:6px;padding:16px 18px;text-decoration:none;color:var(--ink)}.card:hover h3{color:var(--accent)}
+.card h3{font:700 21px/1.2 var(--display);margin:0}.card .stat{font:500 13px var(--mono);color:var(--accent)}
+.tag{font:500 11px var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+td.num,th.num{text-align:right}
+</style>
+<main>
+
+  <header>
+    <a class="back" href="../gemma-1b/">← Teaching Gemma 1B</a>
+    <div class="eyebrow">Work in progress · November 16, 2026</div>
+    <h1>Teaching Gemma 1B Wordle: SFT for the rules, RL for the strategy</h1>
+    <p class="dek">Starting from the raw pretrained checkpoint, which has never been taught to follow instructions.</p>
+  </header>
+  <p class="series">Part of <a href="../gemma-1b/">Teaching Gemma 1B</a>, a series of small post-training experiments on one 1B model.</p>
+  <p class="lede"><b>The pretrained Gemma 3 1B won 1 of 500 Wordle games. After supervised fine-tuning on 16,000 games where each move first writes out what is known so far, it wins 57%.</b> Reinforcement learning on top of that is running now.</p>
+
+  <figure><div class="legend"><span><i class="sw s-sft"></i>Win rate on 500 held-out answer words</span></div><svg viewBox="0 0 600 140" class="chart" role="img"><line x1="190.0" x2="190.0" y1="0" y2="118" class="grid"/><text x="190.0" y="134" class="tick" text-anchor="middle">0%</text><line x1="280.0" x2="280.0" y1="0" y2="118" class="grid"/><text x="280.0" y="134" class="tick" text-anchor="middle">25%</text><line x1="370.0" x2="370.0" y1="0" y2="118" class="grid"/><text x="370.0" y="134" class="tick" text-anchor="middle">50%</text><line x1="460.0" x2="460.0" y1="0" y2="118" class="grid"/><text x="460.0" y="134" class="tick" text-anchor="middle">75%</text><line x1="550.0" x2="550.0" y1="0" y2="118" class="grid"/><text x="550.0" y="134" class="tick" text-anchor="middle">100%</text><text x="180" y="15.0" class="rowlabel" text-anchor="end">Base, 3 example games</text><g class="mark" data-tip="Base, 3 example games · Win rate: 0.2%"><rect x="190" y="4" width="1.0" height="12" class="s-sft"/><text x="195.7" y="14" class="val">0.2%</text><rect x="0" y="2" width="600" height="16" class="hit"/></g><text x="180" y="43.0" class="rowlabel" text-anchor="end">SFT, guess only, 4k</text><g class="mark" data-tip="SFT, guess only, 4k · Win rate: 16%"><rect x="190" y="32" width="57.6" height="12" class="s-sft"/><text x="252.6" y="42" class="val">16%</text><rect x="0" y="30" width="600" height="16" class="hit"/></g><text x="180" y="71.0" class="rowlabel" text-anchor="end">SFT, state tracking, 4k</text><g class="mark" data-tip="SFT, state tracking, 4k · Win rate: 33.2%"><rect x="190" y="60" width="119.5" height="12" class="s-sft"/><text x="314.5" y="70" class="val">33.2%</text><rect x="0" y="58" width="600" height="16" class="hit"/></g><text x="180" y="99.0" class="rowlabel" text-anchor="end">SFT, state tracking, 16k</text><g class="mark" data-tip="SFT, state tracking, 16k · Win rate: 56.8%"><rect x="190" y="88" width="204.5" height="12" class="s-sft"/><text x="399.5" y="98" class="val">56.8%</text><rect x="0" y="86" width="600" height="16" class="hit"/></g></svg>
+  <figcaption>Each game allows six guesses. Answer words used for testing never appear in training.</figcaption></figure>
+
+  <h2>The plan</h2>
+  <p>Wordle splits neatly into two skills. The <b>rules</b>: reply in the right format, guess real five-letter words, and only guess words that fit the colored feedback so far. The <b>strategy</b>: choose guesses that narrow the field fastest. Imitation is a good fit for the rules, since there is one right way to read the feedback. Reinforcement learning is a better fit for strategy, since the model can discover what works from its own games.</p>
+  <p>So SFT imitates a simple solver that guesses a random word consistent with everything seen so far. That solver plays correctly but not cleverly. SFT stops once the model wins roughly half its games, so that RL sees a mix of wins and losses to learn from.</p>
+
+  <h2>Writing out the state helps a lot</h2>
+  <p>Two SFT targets were compared. One is just the guess. The other first writes the current state, then the guess:</p>
+  <pre class="trace">Pattern: _ A R _ _
+Must include: A (not spot 3), R (not spot 2)
+Ruled out: C E M T Y
+Guess: PARKA</pre>
+  <p>With the same 4,000 training games, the state-tracking version won twice as often (33% vs 16%). A 1B model has trouble keeping track of the feedback from earlier turns when it has to do so silently; writing it down makes each guess a much easier step.</p>
+  <div class="tablewrap"><table>
+    <tr><th>Model</th><th class="num">Win rate</th><th class="num">Guesses per win</th><th class="num">Valid words</th><th class="num">Guesses fit feedback</th></tr>
+    <tr><td>Base, 3 example games</td><td class=num>0.2%</td><td class=num>–</td><td class=num>100%</td><td class=num>17%</td></tr><tr><td>SFT, guess only, 4k games</td><td class=num>16.0%</td><td class=num>4.03</td><td class=num>96%</td><td class=num>40%</td></tr><tr><td>SFT, state tracking, 4k games</td><td class=num>33.2%</td><td class=num>3.89</td><td class=num>88%</td><td class=num>50%</td></tr><tr><td>SFT, state tracking, 16k games</td><td class=num>56.8%</td><td class=num>4.07</td><td class=num>95%</td><td class=num>67%</td></tr>
+  </table></div>
+  <p>More data keeps helping: 1k games 15% (dev), 4k 33%, 16k 57%. A 64k-game run is training now to see where it levels off.</p>
+
+  <h2>RL: in progress</h2>
+  <p>GRPO starts from the 16k SFT checkpoint: 32 answer words per step, 8 games each, reward for winning in fewer guesses, a small KL penalty to the SFT model. After 22 steps, win rate on training games has risen from about 70% to 82%, but held-out dev win rate has not moved (57.5% at step 0, 54.5% at step 20). That is too early to call; the run goes to 200 steps.</p>
+  <p class="small">Budget for the whole project is under $100; about $15 spent so far.</p>
+
+</main>
+<div id="tip" role="tooltip" hidden></div>
+<script>
+const tip = document.getElementById("tip");
+document.querySelectorAll(".mark").forEach(g => {
+  const show = e => { tip.textContent = g.dataset.tip; tip.hidden = false;
+    tip.style.left = Math.min(e.clientX + 12, window.innerWidth - tip.offsetWidth - 8) + "px"; tip.style.top = (e.clientY + 14) + "px"; g.classList.add("on"); };
+  g.addEventListener("mousemove", show);
+  g.addEventListener("mouseleave", () => { tip.hidden = true; g.classList.remove("on"); });
+});
+</script>
+</html>
