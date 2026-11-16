@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Gemma 1B won’t fix its own code</title>
+<meta name="description" content="Gemma 3 1B resubmits the same failing code 95% of the time, yet fixes someone else’s buggy code 60% of the time.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@600;700&family=Public+Sans:wght@400;500&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+:root{--bg:#f3f4f5;--surface:#fff;--ink:#1b1f23;--muted:#5d6670;--rule:#d9dde1;--accent:#a3271b;
+  --s-base:#86b6ef;--s-sft:#2a78d6;--s-rl:#104281;
+  --display:"Archivo Narrow","Arial Narrow",Arial,sans-serif;--body:"Public Sans",system-ui,sans-serif;--mono:"JetBrains Mono",ui-monospace,monospace}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#15181b;--surface:#1d2125;--ink:#e7eaed;--muted:#9aa4ae;--rule:#2f353b;--accent:#e2614f;
+  --s-base:#3a5f8f;--s-sft:#5598e7;--s-rl:#b7d3f6;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#15181b;--surface:#1d2125;--ink:#e7eaed;--muted:#9aa4ae;--rule:#2f353b;--accent:#e2614f;
+  --s-base:#3a5f8f;--s-sft:#5598e7;--s-rl:#b7d3f6;color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font:400 16px/1.65 var(--body);margin:0;padding-block:28px 64px;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+main{max-width:720px;margin:0 auto;display:grid;gap:28px}
+.back{font:500 13px/1 var(--mono);color:var(--muted);text-decoration:none}.back:hover{color:var(--accent)}
+.eyebrow{font:500 12px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+header{display:grid;gap:14px}
+h1{font:700 clamp(30px,5vw,44px)/1.1 var(--display);margin:0;text-wrap:balance}
+h2{font:700 24px/1.2 var(--display);margin:0}
+p{margin:0}
+a{color:var(--accent)}
+.lede{font-size:19px;line-height:1.5}
+.dek{font-size:19px;line-height:1.45;color:var(--muted)}
+ul.plain,ol.plain{margin:0;padding-left:20px;display:grid;gap:8px}
+code{font:500 14px var(--mono)}
+figure{margin:0;display:grid;gap:8px;background:var(--surface);border-radius:6px;padding:14px 16px}
+figcaption{font-size:13px;color:var(--muted)}
+.chart{width:100%;height:auto;display:block}
+.chart .grid{stroke:var(--rule);stroke-width:1}
+.chart .tick{font:500 11px var(--mono);fill:var(--muted)}
+.chart .rowlabel{font:500 13px var(--body);fill:var(--ink)}
+.chart .val{font:500 11px var(--mono);fill:var(--muted)}
+.chart .hit{fill:transparent}
+.chart .mark.on rect:first-child{stroke:var(--ink);stroke-width:1}
+.s-base{fill:var(--s-base);background:var(--s-base)}.s-sft{fill:var(--s-sft);background:var(--s-sft)}.s-rl{fill:var(--s-rl);background:var(--s-rl)}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.legend .sw{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+#tip{position:fixed;z-index:10;max-width:280px;background:var(--ink);color:var(--bg);font:500 12px/1.4 var(--body);padding:6px 9px;border-radius:4px;pointer-events:none}
+.tablewrap{overflow-x:auto;background:var(--surface);border-radius:6px}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--rule);white-space:nowrap}
+th{font:500 12px var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.ci{font:500 11px var(--mono);color:var(--muted);margin-left:4px}
+details{background:var(--surface);border-radius:6px;padding:10px 14px}summary{cursor:pointer;font-weight:500}
+details pre{white-space:pre-wrap;font:12.5px/1.5 var(--mono);margin:6px 0 0}
+.turn{margin-top:12px;border-left:3px solid var(--rule);padding-left:10px}
+.turn.assistant{border-left-color:var(--s-sft)}
+.turn b{font:500 12px var(--mono);color:var(--muted);text-transform:uppercase}
+.trace{background:var(--surface);border-radius:6px;padding:12px 14px;font:13px/1.5 var(--mono);margin:0;white-space:pre-wrap}
+
+:root{--l1:#86b6ef;--l2:#3987e5;--l3:#1c5cab;--l4:#0d366b}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--l1:#3a5f8f;--l2:#3987e5;--l3:#86b6ef;--l4:#cde2fb}}
+:root[data-theme="dark"]{--l1:#3a5f8f;--l2:#3987e5;--l3:#86b6ef;--l4:#cde2fb}
+.s-l1{fill:var(--l1);background:var(--l1)}.s-l2{fill:var(--l2);background:var(--l2)}.s-l3{fill:var(--l3);background:var(--l3)}.s-l4{fill:var(--l4);background:var(--l4)}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:12px}.pair>div{background:var(--surface);border-radius:6px;padding:10px 12px;min-width:0}
+.pair pre{white-space:pre-wrap;font:12.5px/1.5 var(--mono);margin:6px 0 0}.pair b{font:500 12px var(--mono);color:var(--muted);text-transform:uppercase}
+.small{font-size:13px;color:var(--muted)}
+@media (max-width:560px){.pair{grid-template-columns:1fr}}
+
+.trio{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.trio>div{background:var(--surface);border-radius:6px;padding:10px 12px;min-width:0}
+.trio pre{white-space:pre-wrap;font:12px/1.5 var(--mono);margin:6px 0 0}.trio b,.pair b{font:500 12px var(--mono);color:var(--muted);text-transform:uppercase;display:block}
+.score{display:inline-block;margin-top:4px;font:500 12px var(--mono);padding:1px 7px;border-radius:999px}
+.score.ok{background:color-mix(in srgb,#1f8a4c 16%,transparent);color:#1f7a44}.score.bad{background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--accent)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .score.ok{color:#5fd08f}}:root[data-theme="dark"] .score.ok{color:#5fd08f}
+.qline{margin-bottom:-14px}
+@media (max-width:640px){.trio{grid-template-columns:1fr}}
+.series{background:var(--surface);border-radius:6px;padding:12px 16px;font-size:14px}.series a{font-weight:500}
+.card{display:grid;gap:6px;background:var(--surface);border-radius:6px;padding:16px 18px;text-decoration:none;color:var(--ink)}.card:hover h3{color:var(--accent)}
+.card h3{font:700 21px/1.2 var(--display);margin:0}.card .stat{font:500 13px var(--mono);color:var(--accent)}
+.tag{font:500 11px var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+td.num,th.num{text-align:right}
+.turn{margin-top:12px;border-left:3px solid var(--rule);padding-left:10px}.turn.assistant{border-left-color:var(--s-sft)}
+.turn b{font:500 12px var(--mono);color:var(--muted);text-transform:uppercase}.turn pre{white-space:pre-wrap;font:12.5px/1.5 var(--mono);margin:4px 0 0}
+.transcript{background:var(--surface);border-radius:6px;padding:4px 16px 14px}.same{font:500 13px var(--mono);color:var(--accent)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.stats>div{background:var(--surface);border-radius:6px;padding:12px 14px}
+.stats .n{font:700 30px/1 var(--display);color:var(--accent)}.stats p{font-size:13px;color:var(--muted);margin-top:6px}
+@media (max-width:560px){.stats{grid-template-columns:1fr}}
+</style>
+<main>
+
+  <header>
+    <a class="back" href="../gemma-1b/">← Teaching Gemma 1B</a>
+    <div class="eyebrow">Experiment · November 16, 2026</div>
+    <h1>Gemma 1B won’t fix its own code</h1>
+    <p class="dek">Given a failing test and the exact error, Google’s smallest Gemma sends back the same code. Given someone else’s code with the same error, it usually fixes it.</p>
+  </header>
+  <p class="series">Part of <a href="../gemma-1b/">Teaching Gemma 1B</a>, a series of small post-training experiments on one 1B model.</p>
+  <p class="lede"><b>Gemma 3 1B can write code: it solved 88% of simple write-a-function problems on the first try. But when its code failed a test and I told it exactly what went wrong, it resubmitted the identical code 95% of the time and fixed only 1% of its failures.</b></p>
+
+  <h2>What it looks like</h2>
+  <p>Every retry looks like this. The model sees which inputs failed, what it returned and what was expected, and replies with the same code:</p>
+  <div class="transcript">
+<div class="turn user"><b>Harness</b><pre>Write a Python function `csv_line(values)` that turns a list of values into one line of a CSV file.
+
+I will run some tests on it and tell you if any fail. Reply with the complete function in a ```python code block.</pre></div>
+<div class="turn assistant"><b>Gemma 3 1B</b><pre>```python
+import csv
+
+def csv_line(values):
+    &quot;&quot;&quot;Turns a list of values into one line of a CSV file.
+
+    Args:
+        values: A list of values to be written to the CSV file.
+
+    Returns:
+        A string representing the CSV file content.
+    &quot;&quot;&quot;
+    try:
+        with open(&#x27;output.csv&#x27;, &#x27;w&#x27;, newline=&#x27;&#x27;) as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerow(values)
+        return &#x27;Successfully wrote to output.csv&#x27;
+    except Exception as e:
+        return f&quot;Error writing to CSV: {e}&quot;
+```</pre></div>
+<div class="turn user"><b>Harness</b><pre>I ran the tests. 2 of 2 failed:
+- csv_line([&#x27;a&#x27;, &#x27;b&#x27;, &#x27;c&#x27;]) returned &#x27;Successfully wrote to output.csv&#x27;, but expected &#x27;a,b,c&#x27;
+- csv_line([1, 2.5, &#x27;x&#x27;]) returned &#x27;Successfully wrote to output.csv&#x27;, but expected &#x27;1,2.5,x&#x27;
+
+Please write a corrected version of the complete code in a ```python code block.</pre></div>
+<div class="turn assistant"><b>Gemma 3 1B</b><p class="same">The same code again, character for character.</p></div>
+</div>
+
+  <h2>It’s its own code it won’t fix</h2>
+  <p>The model isn’t failing to understand the feedback. Shown <i>someone else’s</i> buggy function with the same kind of failing-test message, it fixed it 60% of the time. Shown its own failed attempt, 1%. It treats its previous turn as settled and copies it forward.</p>
+  <figure><svg viewBox="0 0 600 84" class="chart" role="img"><line x1="190.0" x2="190.0" y1="0" y2="62" class="grid"/><text x="190.0" y="78" class="tick" text-anchor="middle">0%</text><line x1="280.0" x2="280.0" y1="0" y2="62" class="grid"/><text x="280.0" y="78" class="tick" text-anchor="middle">25%</text><line x1="370.0" x2="370.0" y1="0" y2="62" class="grid"/><text x="370.0" y="78" class="tick" text-anchor="middle">50%</text><line x1="460.0" x2="460.0" y1="0" y2="62" class="grid"/><text x="460.0" y="78" class="tick" text-anchor="middle">75%</text><line x1="550.0" x2="550.0" y1="0" y2="62" class="grid"/><text x="550.0" y="78" class="tick" text-anchor="middle">100%</text><text x="180" y="15.0" class="rowlabel" text-anchor="end">Someone else’s buggy code</text><g class="mark" data-tip="Someone else’s buggy code · Fixed: 60%"><rect x="190" y="4" width="216.0" height="12" class="s-sft"/><text x="411.0" y="14" class="val">60%</text><rect x="0" y="2" width="600" height="16" class="hit"/></g><text x="180" y="43.0" class="rowlabel" text-anchor="end">Its own failed attempt</text><g class="mark" data-tip="Its own failed attempt · Fixed: 1%"><rect x="190" y="32" width="3.6" height="12" class="s-sft"/><text x="198.6" y="42" class="val">1%</text><rect x="0" y="30" width="600" height="16" class="hit"/></g></svg><figcaption>Share of failing functions the model fixed after seeing the test feedback, base Gemma 3 1B.</figcaption></figure>
+
+  <h2>Fine-tuning breaks the habit, mostly</h2>
+  <p>I fine-tuned it on 652 conversations where the 1B model made an attempt, it failed, and a model about four times larger (Gemma 4 E4B) continued from the test feedback until the tests passed. The 1B model was trained only on the larger model’s turns, never on its own wrong attempt.</p>
+  <figure><svg viewBox="0 0 600 84" class="chart" role="img"><line x1="190.0" x2="190.0" y1="0" y2="62" class="grid"/><text x="190.0" y="78" class="tick" text-anchor="middle">0%</text><line x1="280.0" x2="280.0" y1="0" y2="62" class="grid"/><text x="280.0" y="78" class="tick" text-anchor="middle">25%</text><line x1="370.0" x2="370.0" y1="0" y2="62" class="grid"/><text x="370.0" y="78" class="tick" text-anchor="middle">50%</text><line x1="460.0" x2="460.0" y1="0" y2="62" class="grid"/><text x="460.0" y="78" class="tick" text-anchor="middle">75%</text><line x1="550.0" x2="550.0" y1="0" y2="62" class="grid"/><text x="550.0" y="78" class="tick" text-anchor="middle">100%</text><text x="180" y="15.0" class="rowlabel" text-anchor="end">Base Gemma 3 1B</text><g class="mark" data-tip="Base Gemma 3 1B · Identical resubmissions: 95%"><rect x="190" y="4" width="342.0" height="12" class="s-sft"/><text x="537.0" y="14" class="val">95%</text><rect x="0" y="2" width="600" height="16" class="hit"/></g><text x="180" y="43.0" class="rowlabel" text-anchor="end">After fine-tuning</text><g class="mark" data-tip="After fine-tuning · Identical resubmissions: 5%"><rect x="190" y="32" width="18.0" height="12" class="s-sft"/><text x="213.0" y="42" class="val">5%</text><rect x="0" y="30" width="600" height="16" class="hit"/></g></svg><figcaption>Share of retries where the model resubmitted exactly the code it had just been told was wrong.</figcaption></figure>
+  <div class="stats">
+    <div><div class="n">4–10×</div><p>more failures fixed after feedback, on every eval, including HumanEval+ and MBPP+, which it never trained on</p></div>
+    <div><div class="n">7%</div><p>of failures fixed on the main eval, up from 1%. The larger model fixes 87%.</p></div>
+    <div><div class="n">3×</div><p>longer replies: it copied the teacher’s explanations too, which cost first-try accuracy</p></div>
+  </div>
+  <p>So the habit of repeating itself went away almost completely, but the skill of actually fixing the bug barely arrived, and because first tries got worse, overall success hardly moved. A short reinforcement learning run on top made recovery worse, not better (7% → 3%).</p>
+
+  <h2>What I took away</h2>
+  <ul class="plain">
+    <li><b>For a small model, acting on feedback is the bottleneck, not writing code.</b></li>
+    <li><b>Models defend their own previous turn.</b> The same feedback works on someone else’s code and not on its own.</li>
+    <li><b>Fine-tuning changes behaviour quickly, including the behaviour you didn’t want.</b> 652 examples stopped the repetition, and also tripled the reply length.</li>
+  </ul>
+  <p class="small">All sampling at temperature 1.0. Up to four tries per problem, with hidden tests so hard-coding the visible answers doesn’t count. The full write-up, with the evals, training details and the RL run, is <a href="../gemma-agent/">Gemma 1B can write code. It can’t take feedback</a>.</p>
+
+</main>
+<div id="tip" role="tooltip" hidden></div>
+<script>
+const tip = document.getElementById("tip");
+document.querySelectorAll(".mark").forEach(g => {
+  const show = e => { tip.textContent = g.dataset.tip; tip.hidden = false;
+    tip.style.left = Math.min(e.clientX + 12, window.innerWidth - tip.offsetWidth - 8) + "px"; tip.style.top = (e.clientY + 14) + "px"; g.classList.add("on"); };
+  g.addEventListener("mousemove", show);
+  g.addEventListener("mouseleave", () => { tip.hidden = true; g.classList.remove("on"); });
+});
+</script>
+</html>
