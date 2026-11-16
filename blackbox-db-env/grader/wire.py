@@ -12,6 +12,7 @@ Steps may also open a side connection that sends a cancel request for this sessi
 from __future__ import annotations
 
 import difflib
+import os
 import socket
 import sys
 import threading
@@ -158,9 +159,11 @@ def run_workload(host: str, port: int, spec: dict, wl: dict, oracle: list | None
     c = Conn(host, port, codec, timeout)
     out = []
     silent = 0
+    cap = float(os.environ.get("BBX_WORKLOAD_CAP_S", "0"))  # wall-clock cap per candidate workload; 0 = none
+    t_start = time.time()
     try:
         for i, st in enumerate(wl["steps"]):
-            if oracle is not None and silent >= 2:
+            if oracle is not None and (silent >= 2 or (cap and time.time() - t_start > cap)):
                 out.append({"msgs": [], "closed": c.closed, "timeout": True, "junk": None, "skipped": True})
                 continue
             canceller = None

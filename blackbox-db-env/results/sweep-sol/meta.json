@@ -1,0 +1,21 @@
+{
+ "model": "sol",
+ "rep": 0,
+ "minutes": 20,
+ "seed": "private",
+ "seconds": 1163.4,
+ "segments": [
+  {
+   "segment": 0,
+   "start_s": 0.0,
+   "end_s": 86.7,
+   "exit": 1
+  },
+  {
+   "segment": 1,
+   "start_s": 86.7,
+   "end_s": 1162.9,
+   "exit": 0
+  }
+ ]
+}

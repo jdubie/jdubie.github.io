@@ -1,0 +1,15 @@
+{
+ "model": "gemini",
+ "rep": 0,
+ "minutes": 20,
+ "seed": "private",
+ "seconds": 1200.5,
+ "segments": [
+  {
+   "segment": 0,
+   "start_s": 0.0,
+   "end_s": 1200.1,
+   "exit": 137
+  }
+ ]
+}

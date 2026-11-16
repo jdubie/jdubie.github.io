@@ -1,0 +1,122 @@
+[
+ {
+  "snapshot": "final",
+  "t_min": 19.0,
+  "sql": 0.403,
+  "protocol": 0.6001,
+  "durability": 0.8571,
+  "reward": 0.5885,
+  "sql_perfect": "0/60",
+  "protocol_perfect": "2/50",
+  "durability_runs": "12/14",
+  "oracle_version": 2
+ },
+ {
+  "snapshot": "t002min",
+  "t_min": 2,
+  "sql": 0.0,
+  "protocol": 0.0,
+  "durability": 0.0,
+  "reward": 0.0,
+  "sql_perfect": "0/60",
+  "protocol_perfect": "0/50",
+  "durability_runs": "0/14",
+  "oracle_version": 2
+ },
+ {
+  "snapshot": "t004min",
+  "t_min": 4,
+  "sql": 0.0,
+  "protocol": 0.2621,
+  "durability": 0.0,
+  "reward": 0.0655,
+  "sql_perfect": "0/60",
+  "protocol_perfect": "2/50",
+  "durability_runs": "0/14",
+  "oracle_version": 2
+ },
+ {
+  "snapshot": "t006min",
+  "t_min": 6,
+  "sql": 0.2021,
+  "protocol": 0.5557,
+  "durability": 0.0,
+  "reward": 0.2299,
+  "sql_perfect": "0/60",
+  "protocol_perfect": "2/50",
+  "durability_runs": "0/14",
+  "oracle_version": 2
+ },
+ {
+  "snapshot": "t008min",
+  "t_min": 8,
+  "sql": 0.2966,
+  "protocol": 0.5695,
+  "durability": 1.0,
+  "reward": 0.5758,
+  "sql_perfect": "0/60",
+  "protocol_perfect": "2/50",
+  "durability_runs": "14/14",
+  "oracle_version": 2
+ },
+ {
+  "snapshot": "t010min",
+  "t_min": 10,
+  "sql": 0.3544,
+  "protocol": 0.5739,
+  "durability": 0.8571,
+  "reward": 0.5601,
+  "sql_perfect": "0/60",
+  "protocol_perfect": "2/50",
+  "durability_runs": "12/14",
+  "oracle_version": 2
+ },
+ {
+  "snapshot": "t012min",
+  "t_min": 12,
+  "sql": 0.2954,
+  "protocol": 0.6001,
+  "durability": 0.5714,
+  "reward": 0.4544,
+  "sql_perfect": "0/60",
+  "protocol_perfect": "2/50",
+  "durability_runs": "8/14",
+  "oracle_version": 2
+ },
+ {
+  "snapshot": "t014min",
+  "t_min": 14,
+  "sql": 0.4031,
+  "protocol": 0.6001,
+  "durability": 0.8571,
+  "reward": 0.5886,
+  "sql_perfect": "0/60",
+  "protocol_perfect": "2/50",
+  "durability_runs": "12/14",
+  "oracle_version": 2
+ },
+ {
+  "snapshot": "t016min",
+  "t_min": 16,
+  "sql": 0.403,
+  "protocol": 0.6001,
+  "durability": 0.8571,
+  "reward": 0.5885,
+  "sql_perfect": "0/60",
+  "protocol_perfect": "2/50",
+  "durability_runs": "12/14",
+  "oracle_version": 2
+ },
+ {
+  "snapshot": "t018min",
+  "t_min": 18,
+  "sql": 0.403,
+  "protocol": 0.6001,
+  "durability": 0.8571,
+  "reward": 0.5885,
+  "sql_perfect": "0/60",
+  "protocol_perfect": "2/50",
+  "durability_runs": "12/14",
+  "oracle_version": 2
+ }
+]

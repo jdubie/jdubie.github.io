@@ -1,0 +1,21 @@
+{
+ "model": "terra",
+ "rep": 0,
+ "minutes": 20,
+ "seed": "private",
+ "seconds": 1181.4,
+ "segments": [
+  {
+   "segment": 0,
+   "start_s": 0.0,
+   "end_s": 1128.4,
+   "exit": 0
+  },
+  {
+   "segment": 1,
+   "start_s": 1128.4,
+   "end_s": 1181.0,
+   "exit": 0
+  }
+ ]
+}
