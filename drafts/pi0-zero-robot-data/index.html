@@ -79,8 +79,8 @@ h2{font:600 24px/1.15 var(--display);margin:8px 0 0}
   <p>To benefit from that pretraining, our data has to look like it. π's pretraining mix pairs joint-encoder observations with PD position-command actions, which is what teleoperation produces. Our human demonstrations gave us only the 6-DoF pose of the hand, UMI-style. Fed in that form, they would be far outside anything π had seen. Converted into YAM joint observations and commands, they look like ordinary teleop data.</p>
   <p>The second reason is smoothness. These policies output actions in chunks, and there is a seam each time one chunk hands over to the next. A YAM tracks position far less precisely than a stiff, high-reduction arm like a UR5, so when the policy predicted target positions, its tracking error showed up at the seams as jerks about five times a second. Training on the commands that actually produce the motion, rather than on the positions we want, removes those jerks at rollout.</p>
 
-  <h2>Two problems</h2>
-  <p>Turning a person's demonstration into robot training data meant solving two problems.</p>
+  <h2>Steps</h2>
+  <p>Turning a person's demonstration into data π0 can be fine-tuned on took four steps.</p>
   <ol class="probs">
     <li><strong>Exoskeleton pose → YAM joint targets.</strong> This one is straightforward. Forward kinematics turns the exoskeleton's encoder readings into a 6-DoF pose of the hand, and inverse kinematics turns that pose into YAM joint targets, given a choice of how the exoskeleton's base maps onto the YAM's. The forward kinematics needed calibration: fitting link lengths and encoder offsets against OptiTrack brought tracking error from about 40 mm to 6 mm.</li>
     <li><strong>YAM joint targets → YAM actions that actually reach them.</strong> This was the tricky one. Stiff cobots like a UR5 use high-reduction actuators that follow a commanded trajectory precisely. The YAM's quasi-direct-drive actuators are compliant, so commanding the recorded path doesn't reproduce it. What solved it was offline <a href="https://la.disneyresearch.com/wp-content/uploads/Iterative-Learning-Control-for-High-Fidelity-Tracking-of-Fast-Motions-on-Entertainment-Humanoid-Robots-Paper.pdf">iterative learning control</a> on the real YAMs: the arms rehearse each trajectory, correcting the command after every run, until the tracking error is very low. The policy trains on those corrected commands.</li>
@@ -91,6 +91,11 @@ h2{font:600 24px/1.15 var(--display);margin:8px 0 0}
     <div class="figclip"><img src="https://ai2-s2-public.s3.amazonaws.com/figures/2017-08-08/144cc485649191364635bdc01b0a7e5a6b111ec3/3-Figure1-1.png" alt="Iterative learning control: after each run, the tracking error is passed through a learning filter and added to the control signal for the next run" loading="lazy"></div>
     <figcaption>Iterative learning control in one picture: after each run (iteration j), the tracking error is filtered and added to that run's control signal to make the next one. Figure from Bristow, Tharayil and Alleyne, "A survey of iterative learning control" (2006).</figcaption>
   </figure>
+
+  <ol class="probs" start="3">
+    <li><strong>Time alignment.</strong> Each training row pairs camera images with the arm's joint state, and there are two ways to build one. Most teleop datasets record what the robot would see if it read every sensor at the same instant, which is exactly what the rollout loop does: the latest camera frame, already 10–30 ms old, next to an encoder reading less than 1 ms old. The alternative is a time-aligned row, with the joint state taken at the moment the image was captured. A time-aligned row is cleaner, because the image and the encoder positions show the same physical moment. The downside is that the policy learns to predict without the latest encoder state, even though a fresher reading is available at rollout.</li>
+    <li><strong>Fine-tune π0 the normal way.</strong> The result is a dataset that looks like teleop data, in distribution for π0's pretraining, so fine-tuning is ordinary SFT on π0, exactly as with robot-collected teleop data.</li>
+  </ol>
 
   <p>The idea is close to Sunday's Skill Transform from <a href="https://www.sunday.ai/blog/no-robot-data">ACT-1: A Robot Foundation Model Trained on Zero Robot Data</a>. They record people wearing a glove whose geometry matches their robot's hand, then convert that data into robot data:</p>
   <blockquote>
