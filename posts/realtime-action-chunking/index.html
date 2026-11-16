@@ -86,37 +86,6 @@ loss = mean((v_t - (noise - actions))**2) * ~prefix  # learn only the postfix</c
     <figcaption>A retry: the lid doesn't seat cleanly the first time, so the policy goes back and seats it again, with nobody stepping in. Tubes rig, episode 40, about 2.6× speed.</figcaption>
   </figure>
 
-  <h2>Who was driving</h2>
-  <div class="tablewrap">
-    <table>
-      <thead><tr><th>Rig</th><th>Episode</th><th>Frames</th><th>Policy</th><th>DAgger</th></tr></thead>
-      <tbody>
-          <tr><td>Bags</td><td>1</td><td>6,500</td><td>100.0%</td><td>0</td></tr>
-          <tr><td>Bags</td><td>6</td><td>5,598</td><td>100.0%</td><td>0</td></tr>
-          <tr><td>Bags</td><td>11</td><td>10,184</td><td>100.0%</td><td>0</td></tr>
-          <tr><td>Bags</td><td>15</td><td>7,890</td><td>100.0%</td><td>0</td></tr>
-          <tr><td>Bags</td><td>25</td><td>7,665</td><td>100.0%</td><td>0</td></tr>
-          <tr><td>Bags</td><td>26</td><td>8,364</td><td>100.0%</td><td>0</td></tr>
-          <tr><td>Tubes</td><td>2</td><td>6,854</td><td>97.7%</td><td class=dag>2.3%</td></tr>
-          <tr><td>Tubes</td><td>3</td><td>6,156</td><td>100.0%</td><td>0</td></tr>
-          <tr><td>Tubes</td><td>14</td><td>5,813</td><td>98.8%</td><td class=dag>1.2%</td></tr>
-          <tr><td>Tubes</td><td>17</td><td>6,131</td><td>100.0%</td><td>0</td></tr>
-          <tr><td>Tubes</td><td>25</td><td>4,703</td><td>100.0%</td><td>0</td></tr>
-          <tr><td>Tubes</td><td>34</td><td>4,666</td><td>100.0%</td><td>0</td></tr>
-          <tr><td>Tubes</td><td>35</td><td>5,637</td><td>100.0%</td><td>0</td></tr>
-          <tr><td>Tubes</td><td>39</td><td>4,275</td><td>100.0%</td><td>0</td></tr>
-          <tr><td>Tubes</td><td>40</td><td>6,681</td><td>98.1%</td><td class=dag>1.9%</td></tr>
-          <tr><td>Tubes</td><td>43</td><td>5,606</td><td>93.1%</td><td class=dag>6.9%</td></tr>
-          <tr><td>Tubes</td><td>44</td><td>6,426</td><td>97.9%</td><td class=dag>2.1%</td></tr>
-          <tr><td>Tubes</td><td>45</td><td>6,155</td><td>100.0%</td><td>0</td></tr>
-          <tr class="total"><td>Bags, 6 episodes</td><td></td><td>46,201</td><td>100.0%</td><td>0</td></tr>
-          <tr class="total"><td>Tubes, 12 episodes</td><td></td><td>69,103</td><td>98.7%</td><td>1.3%</td></tr>
-          <tr class="total"><td>All 18</td><td></td><td>115,304</td><td>99.2%</td><td>0.8%</td></tr>
-      </tbody>
-    </table>
-  </div>
-  <p>13 of the 18 episodes needed no intervention at all. The worst, tubes episode 43, was 93% policy. Totals are frame-weighted.</p>
-
   <h2>How much smoother</h2>
   <p>I compared the RTC rollouts with the π0.5 policies we ran before it, on both rigs.</p>
   <figure>
