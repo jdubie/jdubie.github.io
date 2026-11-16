@@ -35,9 +35,9 @@ DATES = {"trolley-bench": "2026-11-13", "pi-api-beta": "2026-10-13", "real2sim-c
          "gemma-letters": "2026-11-15", "gemma-puzzles": "2026-11-15", "gemma-self-correction": "2026-11-16", "gemma-wordle": "2026-11-16"}
 FEATURED_ORDER = ["robotics", "evals", "post-training"]
 # Home page and track pages are sorted best -> worst by this list (user's ranking, 2026-11-16).
-RANKING = ["eight-robots", "gemma-wordle", "block-stacking-benchmark", "gemma-self-correction",
+RANKING = ["eight-robots", "gemma-wordle", "block-stacking-benchmark", "gemma-puzzles",
            "pi0-zero-robot-data", "gemma-letters", "terrain-bench",
-           "led-tracking-accuracy", "yam-track-env", "gemma-puzzles",
+           "led-tracking-accuracy", "yam-track-env", "gemma-self-correction",
            "pi-api-beta", "cad-finger-benchmark", "realtime-action-chunking", "dsrl-libero",
            "test-speedup-env", "remote-toy-cleanup", "find-duplicates", "real2sim-case-packing-cell",
            "trolley-bench"]
