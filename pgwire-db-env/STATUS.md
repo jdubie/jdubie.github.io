@@ -41,8 +41,13 @@ Done:
 - Results page `site/index.html` (`make_page.py` + `site/notes.json`), served by unit pgw-site on 0.0.0.0:8941.
   Memory file `pgwire-db-env-site.md` + MEMORY.md line written.
 
+- Opus 5.5, 20 min (`runs/smoke/opus__r0`, same harness/settings as Haiku), approved by Jack: 0.429, no violations.
+  protocol 0.529 (36/68), clients 0.443, sql 0.149 (4507/26127), acid 0.849 (37/42, 103/126 crash points), scale 0
+  (pgbench -i -s 10 timed out at 10 min). 2,600-line Python; WAL directory of empty files renamed x<id> -> c<id> as
+  the commit point, then applied to one-name-per-row table dirs. Worked one 17-minute session, then 13 no-op resumes.
+
 Not done:
-- Any sweep: Jack's call. Ideas on the page's next steps (stronger keep-going nudge, audit ACID for vacuous passes,
+- Any further runs: Jack's call. Ideas on the page's next steps (stronger keep-going nudge, audit ACID for vacuous passes,
   check scale limits against a metadata-only design).
 
 Not checked in (see `.gitignore`): Postgres source in `pgsrc/`, generated reference outputs, logs,
