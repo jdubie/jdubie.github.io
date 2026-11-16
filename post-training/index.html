@@ -1,81 +1,9 @@
 <!doctype html>
 <html lang="en">
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Post-training · Jack Dubie</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@600;700&family=Public+Sans:wght@400;500&family=JetBrains+Mono:wght@500&display=swap">
-<style>
-:root{--bg:#f3f4f5;--ink:#1b1f23;--muted:#5d6670;--rule:#d9dde1;--accent:#a3271b;
-  --display:"Archivo Narrow","Arial Narrow",Arial,sans-serif;--body:"Public Sans",system-ui,sans-serif;--mono:"JetBrains Mono",ui-monospace,monospace}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#15181b;--ink:#e7eaed;--muted:#9aa4ae;--rule:#2f353b;--accent:#e2614f;color-scheme:dark}}
-:root[data-theme="dark"]{--bg:#15181b;--ink:#e7eaed;--muted:#9aa4ae;--rule:#2f353b;--accent:#e2614f;color-scheme:dark}
-body{background:var(--bg);color:var(--ink);font:400 16px/1.6 var(--body);margin:0;padding:48px 16px 64px}
-main{max-width:960px;margin:0 auto;display:grid;gap:40px}
-h1{font:700 clamp(32px,6vw,44px)/1.05 var(--display);margin:0}
-h2{font:500 12px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
-ul{list-style:none;margin:0;padding:0}
-li{border-top:1px solid var(--rule);padding:20px 0;display:grid;grid-template-columns:336px 1fr;grid-template-rows:auto auto auto 1fr;gap:4px 24px;align-content:start}
-li>*{grid-column:2}
-li .thumb{grid-column:1;grid-row:1/span 4;display:block;aspect-ratio:16/9;overflow:hidden;border-radius:4px;background:var(--rule)}
-li .thumb img,li .thumb video{width:100%;height:100%;object-fit:cover;display:block}
-@media (max-width:720px){li{grid-template-columns:1fr;grid-template-rows:none;gap:4px}li>*,li .thumb{grid-column:1}li .thumb{grid-row:auto;margin-bottom:10px}li a{font-size:20px}}
-li a{font:600 22px/1.2 var(--display);color:var(--ink);text-decoration:none}
-li a:hover{color:var(--accent)}
-time{font:500 12px/1 var(--mono);color:var(--muted)}
-li p{margin:0;color:var(--muted)}
-.top{display:grid;gap:10px}
-.links{display:flex;flex-wrap:wrap;gap:6px 10px;font:500 14px/1.4 var(--mono);color:var(--muted)}
-.links a{color:var(--ink);text-decoration:underline;text-decoration-color:var(--accent);text-underline-offset:3px}
-.links a:hover{color:var(--accent)}
-.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;align-self:start;align-items:flex-start}
-.tags a,.filter a{font:500 11px/1 var(--mono);letter-spacing:.04em;color:var(--muted);border:1px solid var(--rule);border-radius:999px;padding:5px 10px;text-decoration:none}
-.tags a:hover,.filter a:hover{color:var(--accent);border-color:var(--accent)}
-.more{display:inline-block;margin-top:12px;font:500 14px/1.4 var(--mono);color:var(--ink);text-decoration:underline;text-decoration-color:var(--accent);text-underline-offset:3px}
-.more:hover{color:var(--accent)}
-section>p.lede{margin:0 0 12px;color:var(--muted);max-width:640px}
-li .thumb .ph{display:flex;align-items:center;justify-content:center;height:100%;padding:12px;text-align:center;font:700 18px/1.2 var(--display);color:var(--muted)}
-.back{font:500 13px/1 var(--mono);color:var(--muted);text-decoration:none}.back:hover{color:var(--accent)}
-</style>
-<main>
-  <header class="top">
-    <a class="back" href="../">← Jack Dubie</a>
-    <h1>Post-training</h1>
-    <nav class="links"><a href="mailto:jack.dubie@gmail.com">jack.dubie@gmail.com</a><span>·</span><a href="https://www.linkedin.com/in/jackdubie/">LinkedIn</a><span>·</span><a href="../Jack_Dubie_Resume.pdf">Resume</a></nav>
-  </header>
-  <section>
-    <p class="lede">Small SFT and RL experiments on Gemma 3 1B, each on one accelerator.</p>
-    <p class="lede">Also: the <a href="../posts/gemma-1b/">Teaching Gemma 1B</a> series index.</p>
-    <ul>
-      <li>
-        <a class="thumb" href="../posts/gemma-wordle/" tabindex="-1" aria-hidden="true"><video src="../posts/gemma-wordle/thumb.mp4" poster="../posts/gemma-wordle/thumb.jpg" muted autoplay loop playsinline preload="metadata"></video></a>
-        <time datetime="2026-11-16">November 16, 2026</time>
-        <a href="../posts/gemma-wordle/">Teaching Gemma 1B Wordle: SFT for the rules, RL for the strategy</a>
-        <p>Pretrained Gemma 3 1B goes from 0% to 57% at Wordle with SFT; RL in progress.</p>
-        <div class="tags"><a href="../post-training/">post-training</a></div>
-      </li>
-      <li>
-        <a class="thumb" href="../posts/gemma-self-correction/" tabindex="-1" aria-hidden="true"><video src="../posts/gemma-self-correction/thumb.mp4" poster="../posts/gemma-self-correction/thumb.jpg" muted autoplay loop playsinline preload="metadata"></video></a>
-        <time datetime="2026-11-16">November 16, 2026</time>
-        <a href="../posts/gemma-self-correction/">Gemma 1B won’t fix its own code</a>
-        <p>Gemma 3 1B resubmits the same failing code 95% of the time; starting over works far better than asking it to fix (34% vs 1%).</p>
-        <div class="tags"><a href="../post-training/">post-training</a></div>
-      </li>
-      <li>
-        <a class="thumb" href="../posts/gemma-letters/" tabindex="-1" aria-hidden="true"><video src="../posts/gemma-letters/thumb.mp4" poster="../posts/gemma-letters/thumb.jpg" muted autoplay loop playsinline preload="metadata"></video></a>
-        <time datetime="2026-11-15">November 15, 2026</time>
-        <a href="../posts/gemma-letters/">Teaching Gemma 1B to count letters</a>
-        <p>Fine-tuning Gemma 3 1B on synthetic examples takes letter counting from 20% to 84%.</p>
-        <div class="tags"><a href="../post-training/">post-training</a></div>
-      </li>
-      <li>
-        <a class="thumb" href="../posts/gemma-puzzles/" tabindex="-1" aria-hidden="true"><video src="../posts/gemma-puzzles/thumb.mp4" poster="../posts/gemma-puzzles/thumb.jpg" muted autoplay loop playsinline preload="metadata"></video></a>
-        <time datetime="2026-11-15">November 15, 2026</time>
-        <a href="../posts/gemma-puzzles/">Teaching Gemma 1B made-up puzzles with reinforcement learning</a>
-        <p>GRPO takes Gemma 3 1B from 33–59% to 96–100% on made-up puzzles in 45 minutes on one TPU chip.</p>
-        <div class="tags"><a href="../post-training/">post-training</a></div>
-      </li>
-    </ul>
-  </section>
-</main>
+<meta name="robots" content="noindex">
+<title>Moved</title>
+<link rel="canonical" href="/?tag=llm-post-training">
+<meta http-equiv="refresh" content="0; url=/?tag=llm-post-training">
+<p>Moved to <a href="/?tag=llm-post-training">/?tag=llm-post-training</a>.</p>
 </html>

@@ -5,18 +5,28 @@ from datetime import date
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 os.chdir(ROOT)
 
-TRACKS = [  # (slug, name, one-line description, featured top 3 in order, rest)
-    ("robotics", "Robotics", "Robot learning in production: policies, data collection, and a fleet at a customer site.",
-     ["yam-track-env", "pi-api-beta", "pi0-zero-robot-data"],
-     ["realtime-action-chunking", "led-tracking-accuracy", "eight-robots", "block-stacking-benchmark", "terrain-bench",
-      "real2sim-case-packing-cell", "dsrl-libero", "remote-toy-cleanup"]),
-    ("evals", "Agent evals", "Benchmarks and RL environments for coding agents, several of them controlling robots or physics simulations.",
-     ["block-stacking-benchmark", "find-duplicates", "test-speedup-env"],
-     ["yam-track-env", "terrain-bench", "cad-finger-benchmark", "trolley-bench", "real2sim-case-packing-cell"]),
-    ("post-training", "Post-training", "Small SFT and RL experiments on Gemma 3 1B, each on one accelerator.",
-     ["gemma-self-correction", "gemma-letters", "gemma-puzzles"],
-     ["gemma-wordle"]),
+LABELS = [  # (slug used in ?tag=, display name), in display order
+    ("robot-data-collection", "Robot data collection"),
+    ("robot-policy-training", "Robot policy training"),
+    ("robot-deployment", "Robot deployment"),
+    ("llm-post-training", "LLM post-training"),
+    ("agent-evals", "Agent evals"),
 ]
+POST_LABELS = {
+    "led-tracking-accuracy": ["robot-data-collection"],
+    "pi0-zero-robot-data": ["robot-data-collection", "robot-policy-training"],
+    "remote-toy-cleanup": ["robot-data-collection"],
+    "realtime-action-chunking": ["robot-policy-training"],
+    "dsrl-libero": ["robot-policy-training"],
+    "eight-robots": ["robot-deployment"],
+    "pi-api-beta": ["robot-deployment"],
+    "real2sim-case-packing-cell": ["robot-deployment", "agent-evals"],
+    "gemma-wordle": ["llm-post-training"], "gemma-self-correction": ["llm-post-training"],
+    "gemma-letters": ["llm-post-training"], "gemma-puzzles": ["llm-post-training"],
+    "block-stacking-benchmark": ["agent-evals"], "yam-track-env": ["agent-evals"], "terrain-bench": ["agent-evals"],
+    "cad-finger-benchmark": ["agent-evals"], "test-speedup-env": ["agent-evals"], "find-duplicates": ["agent-evals"],
+    "trolley-bench": ["agent-evals"],
+}
 DATES = {"trolley-bench": "2026-11-13", "pi-api-beta": "2026-10-13", "real2sim-case-packing-cell": "2026-10-13",
          "block-stacking-benchmark": "2026-11-10", "cad-finger-benchmark": "2026-10-13", "dsrl-libero": "2025-10-10",
          "eight-robots": "2026-11-11", "find-duplicates": "2026-11-15", "led-tracking-accuracy": "2026-01-23",
@@ -42,8 +52,7 @@ def meta(slug):
 def fmt(dt):
     d = date.fromisoformat(dt); return d.strftime("%B ") + str(d.day) + d.strftime(", %Y")
 
-def tracks_of(slug):
-    return [t for t in TRACKS if slug in t[3] or slug in t[4]]
+NAME = dict(LABELS)
 
 def item(slug, pre):
     title, desc = meta(slug); dt = DATES[slug]; base = f"posts/{slug}"
@@ -53,8 +62,8 @@ def item(slug, pre):
         th = f'<img src="{pre}{base}/thumb.jpg" alt="">'
     else:
         th = f'<span class="ph">{html.escape(title)}</span>'
-    tags = "".join(f'<a href="{pre}{t[0]}/">{t[1].lower()}</a>' for t in tracks_of(slug))
-    return f'''      <li>
+    tags = "".join(f'<a href="{pre}?tag={t}" data-tag="{t}">{NAME[t].lower()}</a>' for t in POST_LABELS[slug])
+    return f'''      <li data-tags="{' '.join(POST_LABELS[slug])}">
         <a class="thumb" href="{pre}{base}/" tabindex="-1" aria-hidden="true">{th}</a>
         <time datetime="{dt}">{fmt(dt)}</time>
         <a href="{pre}{base}/">{html.escape(title)}</a>
@@ -64,7 +73,8 @@ def item(slug, pre):
 
 home = open("index.html").read()
 HEAD = home[:home.index("<main>")]
-HEAD = HEAD.replace("li.hide{display:none}\n", "").replace(".filter{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}\n", "").replace(".filter a.on{color:var(--bg);background:var(--ink);border-color:var(--ink)}\n", "")
+for rule in ("li.hide{display:none}", ".filter{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}", ".filter a.on{color:var(--bg);background:var(--ink);border-color:var(--ink)}"):
+    if rule not in HEAD: HEAD = HEAD.replace("</style>", rule + "\n</style>")
 if ".more{" not in HEAD:
     HEAD = HEAD.replace("</style>", ".more{display:inline-block;margin-top:12px;font:500 14px/1.4 var(--mono);color:var(--ink);text-decoration:underline;text-decoration-color:var(--accent);text-underline-offset:3px}\n.more:hover{color:var(--accent)}\nsection>p.lede{margin:0 0 12px;color:var(--muted);max-width:640px}\nli .thumb .ph{display:flex;align-items:center;justify-content:center;height:100%;padding:12px;text-align:center;font:700 18px/1.2 var(--display);color:var(--muted)}\n.back{font:500 13px/1 var(--mono);color:var(--muted);text-decoration:none}.back:hover{color:var(--accent)}\n</style>")
 LINKS = re.search(r'<nav class="links">.*?</nav>', home, re.S).group(0)
@@ -81,31 +91,49 @@ def page(title, pre, header_extra, sections):
 </html>
 '''
 
-# ---- home: one list, best -> worst, with links to the track pages under the name
-all_posts = {x for t in TRACKS for x in t[3] + t[4]}
-assert set(RANKING) == all_posts, (all_posts - set(RANKING), set(RANKING) - all_posts)
-trackrow = '    <nav class="links trackrow">' + '<span>·</span>'.join(f'<a href="{t[0]}/">{t[1]}</a>' for t in TRACKS) + '</nav>\n'
-secs = f'''  <section>
+# ---- home: one list, best -> worst; label buttons filter it via ?tag=<label> (shareable)
+assert set(RANKING) == set(POST_LABELS), (set(POST_LABELS) ^ set(RANKING))
+for v in POST_LABELS.values(): assert all(t in NAME for t in v)
+filt = '    <nav class="filter" aria-label="Filter posts"><a href="./" data-tag="">All</a>' + "".join(
+    f'<a href="?tag={t}" data-tag="{t}">{n}</a>' for t, n in LABELS) + "</nav>\n"
+script = """<script>
+(function(){
+  var legacy={"#agent-evals":"agent-evals","#policy-learning":"robot-policy-training","#data-collection":"robot-data-collection","#deployment":"robot-deployment","#reproduction":"robot-policy-training"};
+  function current(){var t=new URLSearchParams(location.search).get("tag")||"";return t;}
+  function apply(t){
+    document.querySelectorAll("ul li").forEach(function(li){
+      var tags=(li.getAttribute("data-tags")||"").split(" ");
+      li.classList.toggle("hide", !!t && tags.indexOf(t)<0);});
+    document.querySelectorAll(".filter a").forEach(function(a){a.classList.toggle("on",a.getAttribute("data-tag")===t);});
+  }
+  function go(t){var u=new URL(location.href);if(t)u.searchParams.set("tag",t);else u.searchParams.delete("tag");u.hash="";history.pushState(null,"",u);apply(t);}
+  document.addEventListener("click",function(e){var a=e.target.closest("a[data-tag]");if(!a)return;e.preventDefault();go(a.getAttribute("data-tag"));window.scrollTo({top:0});});
+  window.addEventListener("popstate",function(){apply(current());});
+  window.addEventListener("hashchange",function(){if(legacy[location.hash])go(legacy[location.hash]);});
+  if(!current()&&legacy[location.hash]){go(legacy[location.hash]);}else{apply(current());}
+})();
+</script>
+"""
+secs = f"""  <section>
     <ul>
 {chr(10).join(item(x, "") for x in RANKING)}
     </ul>
-  </section>'''
-open("index.html", "w").write(page("Jack Dubie", "", "    <h1>Jack Dubie</h1>\n" + trackrow, secs))
+  </section>"""
+html_out = page("Jack Dubie", "", "    <h1>Jack Dubie</h1>\n", secs).replace("  </header>", filt + "  </header>", 1).replace("</main>\n</html>", "</main>\n" + script + "</html>")
+open("index.html", "w").write(html_out)
 
-# ---- track pages
-for key, name, desc, feat, others in TRACKS:
-    ranked = sorted(feat + others, key=RANKING.index)
-    extra = ""
-    if key == "post-training":
-        extra = '\n    <p class="lede">Also: the <a href="../posts/gemma-1b/">Teaching Gemma 1B</a> series index.</p>'
-    secs = f'''  <section>
-    <p class="lede">{html.escape(desc)}</p>{extra}
-    <ul>
-{chr(10).join(item(s, "../") for s in ranked)}
-    </ul>
-  </section>'''
-    os.makedirs(key, exist_ok=True)
-    open(f"{key}/index.html", "w").write(page(f"{name} · Jack Dubie", "../", f'    <a class="back" href="../">← Jack Dubie</a>\n    <h1>{name}</h1>\n', secs))
-all_posts = {s for t in TRACKS for s in t[3] + t[4]}
-missing = [d for d in os.listdir("posts") if os.path.exists(f"posts/{d}/index.html") and d not in all_posts and d != "gemma-1b"]
-print("posts not in any track:", missing)
+# old track pages -> redirects to the filtered home page
+def redirect(to):
+    return f"""<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="robots" content="noindex">
+<title>Moved</title>
+<link rel="canonical" href="{to}">
+<meta http-equiv="refresh" content="0; url={to}">
+<p>Moved to <a href="{to}">{to}</a>.</p>
+</html>
+"""
+for d, to in (("robotics", "/"), ("evals", "/?tag=agent-evals"), ("post-training", "/?tag=llm-post-training")):
+    os.makedirs(d, exist_ok=True); open(f"{d}/index.html", "w").write(redirect(to))
+print("ok", len(RANKING), "posts")
