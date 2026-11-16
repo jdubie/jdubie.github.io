@@ -4,7 +4,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <title>Gemma 1B won’t fix its own code</title>
-<meta name="description" content="Gemma 3 1B resubmits the same failing code 95% of the time, yet fixes someone else’s buggy code 60% of the time.">
+<meta name="description" content="Gemma 3 1B resubmits the same failing code 95% of the time; starting over works far better than asking it to fix (34% vs 1%).">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@600;700&family=Public+Sans:wght@400;500&family=JetBrains+Mono:wght@500&display=swap">
 <style>
@@ -87,7 +87,7 @@ td.num,th.num{text-align:right}
     <a class="back" href="../gemma-1b/">← Teaching Gemma 1B</a>
     <div class="eyebrow">Experiment · November 16, 2026</div>
     <h1>Gemma 1B won’t fix its own code</h1>
-    <p class="dek">Given a failing test and the exact error, Google’s smallest Gemma sends back the same code. Given someone else’s code with the same error, it usually fixes it.</p>
+    <p class="dek">Given a failing test and the exact error, Google’s smallest Gemma sends back the same code. Asking it to start over works far better than asking it to fix.</p>
   </header>
   <p class="series">Part of <a href="../gemma-1b/">Teaching Gemma 1B</a>, a series of small post-training experiments on one 1B model.</p>
   <p class="lede"><b>Gemma 3 1B can write code: it solved 88% of simple write-a-function problems on the first try. But when its code failed a test and I told it exactly what went wrong, it resubmitted the identical code 95% of the time and fixed only 1% of its failures.</b></p>
@@ -126,11 +126,13 @@ Please write a corrected version of the complete function in a ```python code bl
 Please write a corrected version of the complete function in a ```python code block.</pre></div><div class="turn assistant"><b>Gemma 3 1B · try 4</b><p class="same">[the same code as try 1, character for character]</p><pre>The provided solution is correct.  I apologize for the repeated error. It’s a simple, elegant solution to the problem.</pre></div><div class="turn user"><b>Harness</b><pre>I ran the tests. 1 of 2 failed:
 - repeat_word(&#x27;hi&#x27;, 3) returned &#x27;hihihi&#x27;, but expected &#x27;hi hi hi&#x27;
 
-Please write a corrected version of the complete function in a ```python code block.</pre></div></div><p>Its explanation contradicts itself: it agrees the test fails, then says the code produces exactly the expected output. The model isn’t misreading the feedback; it’s defending its previous answer.</p>
+Please write a corrected version of the complete function in a ```python code block.</pre></div></div><p>Its explanation contradicts itself: it agrees the test fails, then says the code produces exactly the expected output. It can’t check its code against the feedback, so it repeats the code and explains why it’s right.</p>
 
-  <h2>It’s its own code it won’t fix</h2>
-  <p>The model isn’t failing to understand the feedback. Shown <i>someone else’s</i> buggy function with the same kind of failing-test message, it fixed it 60% of the time. Shown its own failed attempt, 1%. It treats its previous turn as settled and copies it forward.</p>
-  <figure><svg viewBox="0 0 600 84" class="chart" role="img"><line x1="190.0" x2="190.0" y1="0" y2="62" class="grid"/><text x="190.0" y="78" class="tick" text-anchor="middle">0%</text><line x1="280.0" x2="280.0" y1="0" y2="62" class="grid"/><text x="280.0" y="78" class="tick" text-anchor="middle">25%</text><line x1="370.0" x2="370.0" y1="0" y2="62" class="grid"/><text x="370.0" y="78" class="tick" text-anchor="middle">50%</text><line x1="460.0" x2="460.0" y1="0" y2="62" class="grid"/><text x="460.0" y="78" class="tick" text-anchor="middle">75%</text><line x1="550.0" x2="550.0" y1="0" y2="62" class="grid"/><text x="550.0" y="78" class="tick" text-anchor="middle">100%</text><text x="180" y="15.0" class="rowlabel" text-anchor="end">Someone else’s buggy code</text><g class="mark" data-tip="Someone else’s buggy code · Fixed: 60%"><rect x="190" y="4" width="216.0" height="12" class="s-sft"/><text x="411.0" y="14" class="val">60%</text><rect x="0" y="2" width="600" height="16" class="hit"/></g><text x="180" y="43.0" class="rowlabel" text-anchor="end">Its own failed attempt</text><g class="mark" data-tip="Its own failed attempt · Fixed: 1%"><rect x="190" y="32" width="3.6" height="12" class="s-sft"/><text x="198.6" y="42" class="val">1%</text><rect x="0" y="30" width="600" height="16" class="hit"/></g></svg><figcaption>Share of failing functions the model fixed after seeing the test feedback, base Gemma 3 1B.</figcaption></figure>
+  <h2>Starting over beats fixing</h2>
+  <p>On the 20 problems where its first attempt failed, the model writes correct code from scratch about a third of the time. Shown its failed attempt and the test feedback, it fixes it 1% of the time. Seeing its own wrong answer makes it far worse than starting over, because it copies it.</p>
+  <figure><svg viewBox="0 0 600 112" class="chart" role="img"><line x1="190.0" x2="190.0" y1="0" y2="90" class="grid"/><text x="190.0" y="106" class="tick" text-anchor="middle">0%</text><line x1="280.0" x2="280.0" y1="0" y2="90" class="grid"/><text x="280.0" y="106" class="tick" text-anchor="middle">25%</text><line x1="370.0" x2="370.0" y1="0" y2="90" class="grid"/><text x="370.0" y="106" class="tick" text-anchor="middle">50%</text><line x1="460.0" x2="460.0" y1="0" y2="90" class="grid"/><text x="460.0" y="106" class="tick" text-anchor="middle">75%</text><line x1="550.0" x2="550.0" y1="0" y2="90" class="grid"/><text x="550.0" y="106" class="tick" text-anchor="middle">100%</text><text x="180" y="15.0" class="rowlabel" text-anchor="end">Write it again from scratch</text><g class="mark" data-tip="Write it again from scratch · Correct: 34%"><rect x="190" y="4" width="122.4" height="12" class="s-sft"/><text x="317.4" y="14" class="val">34%</text><rect x="0" y="2" width="600" height="16" class="hit"/></g><text x="180" y="43.0" class="rowlabel" text-anchor="end">Fix a one-character slip</text><g class="mark" data-tip="Fix a one-character slip · Correct: 35%"><rect x="190" y="32" width="126.0" height="12" class="s-sft"/><text x="321.0" y="42" class="val">35%</text><rect x="0" y="30" width="600" height="16" class="hit"/></g><text x="180" y="71.0" class="rowlabel" text-anchor="end">Fix its own mistake</text><g class="mark" data-tip="Fix its own mistake · Correct: 1%"><rect x="190" y="60" width="3.6" height="12" class="s-sft"/><text x="198.6" y="70" class="val">1%</text><rect x="0" y="58" width="600" height="16" class="hit"/></g></svg><figcaption>Base Gemma 3 1B on the same 20 problems, 8 samples each at temperature 1.0. “One-character slip”: a correct solution with one operator or number changed, such as <code>n % 14</code> for <code>n % 15</code>, shown as the model’s previous answer with the same kind of feedback.</figcaption></figure>
+  <p>It isn’t loyalty to its own answer. I showed it the same wrong code as a colleague’s, in the user’s message instead of its own previous turn, and it fixed 0.8% (versus 0.9%). What matters is the kind of bug. A one-character slip in otherwise correct code gets fixed as often as writing from scratch, while the model’s own mistakes are what it actually believes is the answer, so it writes them again.</p>
+  <p>It also can’t run even simple code in its head to check. Asked “In Python, what does <code>'hi' * 3</code> evaluate to?”, it answered <code>'hihihi'</code> only 11 times out of 32; most other answers were <code>'hihi'</code> or <code>'hi'</code>. The feedback tells it the code is wrong, and it has no way to see why.</p>
 
   <h2>Fine-tuning breaks the habit, mostly</h2>
   <p>I fine-tuned it on 652 conversations where the 1B model made an attempt, it failed, and a model about four times larger (Gemma 4 E4B) continued from the test feedback until the tests passed. The 1B model was trained only on the larger model’s turns, never on its own wrong attempt.</p>
@@ -145,10 +147,11 @@ Please write a corrected version of the complete function in a ```python code bl
   <h2>What I took away</h2>
   <ul class="plain">
     <li><b>For a small model, acting on feedback is the bottleneck, not writing code.</b></li>
-    <li><b>Models defend their own previous turn.</b> The same feedback works on someone else’s code and not on its own.</li>
+    <li><b>When a small model is wrong, ask again instead of asking it to fix.</b> On the same problems a fresh answer was correct 34% of the time; a retry with feedback, 1%.</li>
+    <li><b>Its mistakes aren’t slips.</b> It fixes a one-character typo as readily as it writes the code fresh, but it writes its own mistakes again, whoever it’s told wrote them.</li>
     <li><b>Fine-tuning changes behaviour quickly, including the behaviour you didn’t want.</b> 652 examples stopped the repetition, and also tripled the reply length.</li>
   </ul>
-  <p class="small">All sampling at temperature 1.0. Up to four tries per problem, with hidden tests so hard-coding the visible answers doesn’t count. The full write-up, with the evals, training details and the RL run, is <a href="../gemma-agent/">Gemma 1B can write code. It can’t take feedback</a>.</p>
+  <p class="small">All sampling at temperature 1.0. Up to four tries per problem, with hidden tests so hard-coding the visible answers doesn’t count.</p>
 
 </main>
 <div id="tip" role="tooltip" hidden></div>
