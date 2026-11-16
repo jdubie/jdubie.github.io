@@ -102,7 +102,7 @@ code{{background:var(--head);padding:1px 4px;border-radius:3px}} a{{color:var(--
 "raw" is the weighted sum before that rule.</p>
 <div class=wrap><table>{head}{''.join(rows)}{''.join(runs)}</table></div>
 
-<h2>Haiku 5.5 smoke run (20 minutes)</h2>
+<h2>Smoke runs (20 minutes each)</h2>
 {notes.get('smoke', '<p>Not run yet.</p>')}
 
 <h2>What is graded</h2>
@@ -157,8 +157,8 @@ same data and the file continues in a new session.</p>
 
 <h2>Caveats</h2>
 <ul>
-<li>One smoke run of one model is a sanity check, not a measurement.</li>
-<li>The mini and v1-Haiku baselines were graded before the 3-timeout SQL abort existed, so their SQL numbers are what the old rule gives (the abort can only lower a hanging server's score). The cheat and the smoke run were graded with it.</li>
+<li>One 20-minute run per model is a sanity check, not a measurement.</li>
+<li>Everything in the table was graded under the current rules (3-timeout SQL abort, crash points need an acknowledged control commit); PostgreSQL's ACID was rerun after the crash-point fix.</li>
 <li>Throughput limits (500 / 100 tps) and restart limits were set from what PostgreSQL does in the same sandbox, not from an
 empty-files reference, so they may be generous or harsh for a metadata-only design.</li>
 <li>The public kit is the grader's own harness code, with a 25/68 protocol subset, 34 of 214 regression files, and other ACID seeds;

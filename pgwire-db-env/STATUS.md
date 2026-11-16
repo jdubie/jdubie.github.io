@@ -28,9 +28,12 @@ Done:
 - Crash-point grader bug fixed (found by the v1-haiku baseline): a control trial must see the window's commit
   acknowledged, or a server that cannot run the window (no COPY / no extended protocol) passed it vacuously.
   `grade.py --only acid --keep` regraded the affected runs.
-- Baselines: cheat 0 (82 violations; raw 0.014), v1 toy 0.033, v1 Haiku server 0.215 (0.256 before the fix;
-  acid 0.65 is legit: its statement-log-in-file-names design survives crashes). mini and v1-haiku SQL were graded
-  before the 3-timeout abort.
+- Baselines: cheat 0 (82 violations; raw 0.014), v1 toy 0.032, v1 Haiku server 0.215 (0.256 before the fix;
+  acid 0.65 is legit: its statement-log-in-file-names design survives crashes).
+- Cleanup 2026-11-15 evening: Postgres ACID rerun with the fixed crash-point grader: 1.000 (42/42, 50/50).
+  mini and v1-haiku SQL regraded under the 3-timeout abort: mini 0.0689 -> 0.0667 (reward 0.0325 -> 0.0319),
+  v1-haiku unchanged (3441/26127, reward 0.2145). Kit rebuilt; task/ already carried the current PROMPT.md and
+  run_public.py, and run_agents.py copies task/ fresh per run.
 - Smoke run (the only model run): Haiku 5.5, 20 min, `runs/smoke/haiku__r0`: 0.143 (0.163 before the crash-point
   fix), no violations. 1,450-line Python server, one empty file per row. Stopped doing work at minute 14
   (134 one-turn "holding" resumes).
