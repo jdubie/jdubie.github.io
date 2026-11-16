@@ -74,7 +74,7 @@ def chart(pts: list[dict], series: list | None = None, aria: str = "Opus 5.5 rew
     """series: (key or (run index, key), label, colour, width); default = one run's reward and components."""
     if not pts:
         return "<p>Not graded yet.</p>"
-    W, H, L, R, T, B = 720, 320, 40, 150, 16, 42
+    W, H, L, R, T, B = 760, 320, 40, 190, 16, 42
     X = lambda t: L + (W - L - R) * t / 20  # noqa: E731
     Y = lambda v: T + (H - T - B) * (1 - v)  # noqa: E731
     g = ""
@@ -117,6 +117,41 @@ def table(pts: list[dict]) -> str:
             f"<th>durability</th><th>exact sessions · exact protocol · crash runs</th></tr>{rows}</table></div></details>")
 
 
+SWEEP = [  # (results dir, label, colour slot)
+    ("opus20v2", "Opus 5.5 (run 2)", "var(--c1)"), ("sweep-opus", "Opus 5.5 (repeat)", "var(--c1b)"),
+    ("sweep-sonnet", "Sonnet 5.5", "var(--c2)"), ("sweep-haiku", "Haiku 5.5", "var(--c3)"),
+    ("sweep-sol", "GPT-6.1 Sol", "var(--c4)"), ("sweep-terra", "GPT-6.1 Terra", "var(--c5)"),
+    ("sweep-gemini", "Gemini 4 Argon", "var(--c6)"),
+]
+
+
+def sweep_section(notes: dict) -> str:
+    runs = [(d, lbl, col, timeline(d)) for d, lbl, col in SWEEP]
+    runs = [r for r in runs if r[3]]
+    if len(runs) < 2:
+        return "<p>Sweep running.</p>"
+    rows = ""
+    for d, lbl, col, pts in sorted(runs, key=lambda r: -r[3][-1]["reward"]):
+        f = pts[-1]
+        first = next((p["t"] for p in pts if p["sql"] > 0), None)
+        rows += (f"<tr><td><span class=sw style='background:{col}'></span>{E(lbl)}</td><td class=n><b>{f['reward']:.3f}</b></td>"
+                 f"<td class=n>{f['sql']:.3f}</td><td class=n>{f['protocol']:.3f}</td><td class=n>{f['durability']:.3f}</td>"
+                 f"<td class=n>{f['sqlp']} · {f['pp']} · {f['dr']}</td><td class=n>{'–' if first is None else f'{first:g}'}</td></tr>")
+    series = [((i, "reward"), lbl, col, 2.2) for i, (_, lbl, col, _) in enumerate(runs)]
+    ch = chart([r[3] for r in runs], series, "Reward over time per model, same private variant")
+    probes = "".join(f"<li>{x}</li>" for x in notes.get("sweep_probing", []))
+    return f"""<p>One 20-minute run per model, all on run 2's private variant and workload seeds, so they are comparable; Opus has two
+runs (run 2 and a repeat) to show run-to-run spread. Same prompt and harness: Claude models through Claude Code, GPT-6.1 Sol and Terra
+through the Codex CLI 0.167 with an explicit <code>-m</code>, Gemini through Gemini CLI 0.67; each sandbox reaches only its oracle and its own
+vendor's API; 3 runs at a time.</p>
+<div class=wrap><table><tr><th>model</th><th>reward</th><th>sql</th><th>protocol</th><th>durability</th><th>exact / exact / passed</th>
+<th>first SQL credit<div class=sub>minute of first snapshot with sql &gt; 0</div></th></tr>{rows}</table></div>
+{notes.get('sweep', '')}
+{ch}
+<h3>How each model probed</h3>
+<ul>{probes}</ul>"""
+
+
 def main() -> None:
     notes = load(SITE / "notes.json") or {}
     pts = timeline()
@@ -138,9 +173,10 @@ def main() -> None:
 <title>Black-box database</title>
 <style>
 :root{{color-scheme:light;--bg:#fcfcfb;--fg:#0b0b0b;--mut:#52514e;--line:#e2e1dc;--head:#f1f0ec;--accent:#2a78d6;
---s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a}}
-@media (prefers-color-scheme:dark){{:root:not([data-theme=light]){{color-scheme:dark;--bg:#1a1a19;--fg:#f0efec;--mut:#c3c2b7;--line:#363532;--head:#252523;--accent:#3987e5;--s1:#3987e5;--s2:#d95926;--s3:#199e70}}}}
-:root[data-theme=dark]{{color-scheme:dark;--bg:#1a1a19;--fg:#f0efec;--mut:#c3c2b7;--line:#363532;--head:#252523;--accent:#3987e5;--s1:#3987e5;--s2:#d95926;--s3:#199e70}}
+--s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a;--c1:#2a78d6;--c1b:#8fb8ea;--c2:#eb6834;--c3:#1baf7a;--c4:#eda100;--c5:#e87ba4;--c6:#6250d6}}
+.sw{{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px}}
+@media (prefers-color-scheme:dark){{:root:not([data-theme=light]){{color-scheme:dark;--bg:#1a1a19;--fg:#f0efec;--mut:#c3c2b7;--line:#363532;--head:#252523;--accent:#3987e5;--s1:#3987e5;--s2:#d95926;--s3:#199e70;--c1:#3987e5;--c1b:#2a5a96;--c2:#d95926;--c3:#199e70;--c4:#c98500;--c5:#d55181;--c6:#9085e9}}}}
+:root[data-theme=dark]{{color-scheme:dark;--bg:#1a1a19;--fg:#f0efec;--mut:#c3c2b7;--line:#363532;--head:#252523;--accent:#3987e5;--s1:#3987e5;--s2:#d95926;--s3:#199e70;--c1:#3987e5;--c1b:#2a5a96;--c2:#d95926;--c3:#199e70;--c4:#c98500;--c5:#d55181;--c6:#9085e9}}
 body{{background:var(--bg);color:var(--fg);font:15px/1.55 system-ui,sans-serif;max-width:1100px;margin:2em auto;padding:0 16px}}
 h1{{font-size:26px;line-height:1.25}} h2{{margin-top:2.2em;font-size:20px}}
 .lead{{font-size:17px;border-left:4px solid var(--accent);padding:.2em 0 .2em 1em}}
@@ -171,7 +207,10 @@ Columns are oracle v2 (the current benchmark); the last column is the same serve
 <th>durability<div class=sub>×0.30</div></th><th>exact / exact / passed</th><th>reward on oracle v1</th></tr>{calib_rows()}</table></div>
 {notes.get('calibration', '')}
 
-<h2>Opus 5.5, 20 minutes: two runs</h2>
+<h2>Sweep: six models on the same private variant</h2>
+{sweep_section(notes)}
+
+<h2>Opus 5.5, 20 minutes: runs 1 and 2</h2>
 <p>Both runs: same harness, same prompt, 20 minutes, every 2-minute snapshot of <code>/work</code> graded with the full hidden grader
 (the last point is the final <code>/work</code>). Hover a column for the numbers.</p>
 {compare}

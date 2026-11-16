@@ -5,7 +5,7 @@ seeded translating proxy), then build one that answers byte for byte the same an
 Brief: `BRIEF.md`; task as the model sees it: `task/PROMPT.md`. Lives at `~/blackbox-db-env` (symlink
 here). Page on :8951 (unit bbx-site), regenerate with `python3 make_page.py` (prose in `site/notes.json`).
 
-## Where it stands, 2026-11-16 1:40am PT
+## Where it stands, 2026-11-16 9:40am PT
 
 Done:
 - Oracle (`oracle/variant.py`, `oracle/proxy.py`, images bbx-oracle:1 and :2), sandbox bbx-sandbox:1,
@@ -30,7 +30,9 @@ Done:
   scenario writes use only INSERT ... VALUES / UPDATE / DELETE with literals (+ DDL in the DDL scenario).
   Oracle 14/14 on both seeds, stock PostgreSQL 0.033; all calibration rows' durability re-run (unchanged).
   Regrade: run 1 still 0.066; run 2 0.336 -> 0.636 (durability 14/14 from minute 8).
-- Sweep on the run-2 private seeds running (unit bbx-sweep): opus (2nd point), sol, gemini, sonnet, terra, haiku.
+- Sweep on the run-2 private seeds (20 min each, finals + snapshots graded): Sol 0.941, Terra 0.875, Opus run 2 0.636 /
+  repeat 0.634, Sonnet 0.589, Haiku 0.064 (no login), Gemini 0.000 (no server). Terra t004/t006 graded with a 15 s
+  per-workload cap (BBX_WORKLOAD_CAP_S). Seed-free timelines in results/sweep-*; raw runs local only.
 
 Not done:
 - Heavier semantic layer (wire + dialect + memorised PostgreSQL = 0.744).
