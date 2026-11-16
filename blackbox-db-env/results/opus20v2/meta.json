@@ -2,6 +2,7 @@
  "model": "opus",
  "rep": 0,
  "minutes": 20,
+ "seed": "private",
  "seconds": 1142.5,
  "segments": [
   {
@@ -292,6 +293,5 @@
    "end_s": 1142.0,
    "exit": 0
   }
- ],
- "seed": "private"
+ ]
 }

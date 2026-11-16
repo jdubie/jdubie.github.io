@@ -25,8 +25,42 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 TASK = ROOT / "task"
 IMAGE, ORACLE, EGRESS_IMAGE = "bbx-sandbox:1", "bbx-oracle:2", "python:3.12-slim"  # the opus20 run used bbx-oracle:1
+GEMINI_IMAGE = "bbx-gemini:1"
 CLAUDE_BIN = Path.home() / ".local/share/claude/versions/2.1.322"
+CODEX_VENDOR = Path("/home/robot/.nvm/versions/node/v24.7.0/lib/node_modules/@openai/codex/node_modules/"
+                    "@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl")  # Codex CLI 0.167 from nvm
+GEMINI_KEY_FILE = Path.home() / ".config/gemini"
 CLAUDE_MODELS = {"opus": "claude-opus-5-5", "sonnet": "claude-sonnet-5-5", "haiku": "claude-haiku-5-5"}
+GEMINI_MODELS = {"gemini": "gemini-4-argon"}
+# OpenAI runs Sol/Terra through the Codex CLI with an explicit -m; never the CLI default model.
+OPENAI_MODELS = {"sol": "gpt-6.1-sol", "terra": "gpt-6.1-terra"}
+
+
+def api_hosts(model: str) -> str:
+    """The one vendor API an agent's egress proxy lets through."""
+    if model in CLAUDE_MODELS:
+        return "api.anthropic.com"
+    if model in OPENAI_MODELS:
+        return "chatgpt.com,api.openai.com"
+    return "generativelanguage.googleapis.com"
+
+
+def agent_cmd(model: str, seg: int, text: str) -> tuple[str, list[str]]:
+    """(image, argv) for one CLI session; seg > 0 resumes the previous session (as in pgwire-db-env)."""
+    if model in CLAUDE_MODELS:
+        argv = ["claude", "-p", text, "--model", CLAUDE_MODELS[model], "--dangerously-skip-permissions",
+                "--output-format", "stream-json", "--verbose", "--disallowedTools", "WebSearch,WebFetch"]
+        return IMAGE, argv + (["--continue"] if seg else [])
+    if model in GEMINI_MODELS:
+        argv = ["gemini", "-p", text, "-m", GEMINI_MODELS[model], "--approval-mode", "yolo", "--output-format", "stream-json"]
+        return GEMINI_IMAGE, argv + (["--resume", "latest"] if seg else [])
+    if model in OPENAI_MODELS:
+        flags = ["--json", "--skip-git-repo-check", "--dangerously-bypass-approvals-and-sandbox", "-c", 'web_search="disabled"',
+                 "-m", OPENAI_MODELS[model]]
+        if seg:
+            return IMAGE, ["/opt/codex/bin/codex", "exec", "resume", "--last", *flags, text]
+        return IMAGE, ["/opt/codex/bin/codex", "exec", *flags, "-C", "/work", text]
+    raise ValueError(f"unknown model {model}")
 LAUNCH = "Read PROMPT.md in the current directory and do what it says."
 NUDGE = "You have about {m} minutes left. Keep working on the task in PROMPT.md."
 RESUME_MIN_S = 60
@@ -59,7 +93,7 @@ def claude_token(minutes: int) -> str:
 class Env:
     """The run's private network, its oracle and its egress proxy."""
 
-    def __init__(self, name: str, seed: int):
+    def __init__(self, name: str, seed: int, allow: str = "api.anthropic.com"):
         self.net, self.oracle, self.egress = f"bbx-run-{name}", f"bbx-run-{name}-oracle", f"bbx-run-{name}-egress"
         self.vol = f"bbx-run-{name}-pg"
         docker("network", "create", "--internal", "--label", "bbx=1", self.net)
@@ -67,7 +101,7 @@ class Env:
         docker("run", "-d", "--name", self.oracle, "--label", "bbx=1", "--init", "--network", self.net, "--network-alias", "oracle",
                "-e", f"BBX_SEED={seed}", "--cpus", "4", "--memory", "6g", "--shm-size", "512m",
                "-v", f"{self.vol}:/var/lib/postgresql/data", ORACLE)
-        docker("run", "-d", "--name", self.egress, "--label", "bbx=1", "-e", "PROXY_ALLOW=api.anthropic.com",
+        docker("run", "-d", "--name", self.egress, "--label", "bbx=1", "-e", f"PROXY_ALLOW={allow}",
                "-v", f"{ROOT / 'docker/egress_proxy.py'}:/proxy.py:ro", EGRESS_IMAGE, "python", "-u", "/proxy.py")
         docker("network", "connect", "--alias", "egress", self.net, self.egress)
         for _ in range(300):
@@ -97,10 +131,25 @@ def run_agent(tag: str, model: str, rep: int, minutes: int, seed: int, grade: bo
         d.mkdir(parents=True)
     shutil.copytree(TASK, work, ignore=shutil.ignore_patterns("__pycache__"))
     (work / "PROMPT.md").write_text((TASK / "PROMPT.md").read_text().replace("{minutes}", str(minutes)))
-    secret = {"CLAUDE_CODE_OAUTH_TOKEN": claude_token(minutes)}
+    secret: dict[str, str] = {}
+    mounts: list[str] = []
+    if model in CLAUDE_MODELS:
+        secret["CLAUDE_CODE_OAUTH_TOKEN"] = claude_token(minutes)
+        mounts += ["-v", f"{CLAUDE_BIN}:/usr/local/bin/claude:ro", "-e", "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1",
+                   "-e", "DISABLE_AUTOUPDATER=1"]
+    elif model in GEMINI_MODELS:
+        secret["GEMINI_API_KEY"] = GEMINI_KEY_FILE.read_text().strip()
+        mounts += ["-e", "GEMINI_CLI_TRUST_WORKSPACE=true"]
+    elif model in OPENAI_MODELS:
+        auth = json.loads((Path.home() / ".codex/auth.json").read_text())
+        auth["tokens"]["refresh_token"] = ""  # the container can use the session but never rotate it
+        (home / "codex").mkdir()
+        (home / "codex/auth.json").write_text(json.dumps(auth))
+        (home / "codex/auth.json").chmod(0o600)
+        mounts += ["-e", "CODEX_HOME=/home/agent/codex", "-v", f"{CODEX_VENDOR}:/opt/codex:ro"]
     passwd = run / "passwd"
     passwd.write_text(f"agent:x:{os.getuid()}:{os.getgid()}::/home/agent:/bin/sh\n")
-    env = Env(f"{tag}-{model}-{rep}", seed)
+    env = Env(f"{tag}-{model}-{rep}", seed, api_hosts(model))
     t0 = time.time()
     deadline = t0 + minutes * 60
     stop = threading.Event()
@@ -120,19 +169,16 @@ def run_agent(tag: str, model: str, rep: int, minutes: int, seed: int, grade: bo
                 break
             name = f"bbx-agent-{tag}-{model}-{rep}-{seg}"
             text = LAUNCH if seg == 0 else NUDGE.format(m=round(left / 60))
-            cmd = ["claude", "-p", text, "--model", CLAUDE_MODELS[model], "--dangerously-skip-permissions",
-                   "--output-format", "stream-json", "--verbose", "--disallowedTools", "WebSearch,WebFetch"] + (["--continue"] if seg else [])
+            image, cmd = agent_cmd(model, seg, text)
             argv = ["docker", "run", "--rm", "--init", "--name", name, "--label", "bbx=1", "--cap-drop", "ALL",
                     "--security-opt", "no-new-privileges", "--read-only", "--user", f"{os.getuid()}:{os.getgid()}",
                     "--network", env.net, "--tmpfs", "/tmp:size=4g,exec", "--cpus", "4", "--memory", "8g", "--memory-swap", "8g",
                     "--pids-limit", "2048", "-v", f"{work.resolve()}:/work", "-v", f"{home.resolve()}:/home/agent",
-                    "-v", f"{passwd.resolve()}:/etc/passwd:ro", "-w", "/work", "-e", "HOME=/home/agent",
-                    "-v", f"{CLAUDE_BIN}:/usr/local/bin/claude:ro", "-e", "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1",
-                    "-e", "DISABLE_AUTOUPDATER=1"]
+                    "-v", f"{passwd.resolve()}:/etc/passwd:ro", "-w", "/work", "-e", "HOME=/home/agent"] + mounts
             for var in ("HTTPS_PROXY", "https_proxy", "HTTP_PROXY", "http_proxy"):
                 argv += ["-e", f"{var}=http://egress:3128"]
             argv += [x for k in secret for x in ("-e", k)]  # secrets travel by name only
-            argv += [IMAGE] + cmd
+            argv += [image] + cmd
             start = time.time() - t0
             with open(run / "transcript.jsonl", "ab") as out, open(run / "stderr.log", "ab") as err:
                 proc = subprocess.Popen(argv, stdout=out, stderr=err, env={**os.environ, **secret})
@@ -162,10 +208,19 @@ def main() -> None:
     ap.add_argument("--minutes", type=int, default=20)
     ap.add_argument("--tag", required=True)
     ap.add_argument("--seed", type=int, default=7101)
+    ap.add_argument("--concurrency", type=int, default=1)
     ap.add_argument("--no-grade", action="store_true")
     a = ap.parse_args()
-    for m in a.models.split(","):
-        run_agent(a.tag, m, 0, a.minutes, a.seed, not a.no_grade)
+    from concurrent.futures import ThreadPoolExecutor
+
+    def one(m: str):
+        try:
+            return run_agent(a.tag, m, 0, a.minutes, a.seed, not a.no_grade)
+        except Exception as e:  # one broken run must not end the sweep
+            print("RUN FAILED", m, type(e).__name__, e, flush=True)
+
+    with ThreadPoolExecutor(a.concurrency) as ex:
+        list(ex.map(one, a.models.split(",")))
 
 
 if __name__ == "__main__":

@@ -13,7 +13,7 @@
   "wseed": 90210,
   "oracle_version": 2,
   "target": "oracle seed 7101 layers wire,dialect,semantics",
-  "seconds": 89.4
+  "seconds": 78.3
  },
  "sql": {
   "score": 1.0,
@@ -799,7 +799,6 @@
    "denom": 30
   }
  ],
- "starts": 1,
  "durability": {
   "score": 1.0,
   "passed": 14,
@@ -809,7 +808,7 @@
     "scenario": "seq_insert",
     "seed": 0,
     "ok": true,
-    "acked": 74,
+    "acked": 112,
     "inflight": 0,
     "states_allowed": 1
    },
@@ -817,7 +816,7 @@
     "scenario": "seq_insert",
     "seed": 1,
     "ok": true,
-    "acked": 289,
+    "acked": 640,
     "inflight": 0,
     "states_allowed": 1
    },
@@ -825,7 +824,7 @@
     "scenario": "seq_mixed",
     "seed": 0,
     "ok": true,
-    "acked": 550,
+    "acked": 600,
     "inflight": 0,
     "states_allowed": 1
    },
@@ -833,7 +832,7 @@
     "scenario": "seq_mixed",
     "seed": 1,
     "ok": true,
-    "acked": 175,
+    "acked": 813,
     "inflight": 0,
     "states_allowed": 1
    },
@@ -841,7 +840,7 @@
     "scenario": "txn_batches",
     "seed": 0,
     "ok": true,
-    "acked": 155,
+    "acked": 787,
     "inflight": 0,
     "states_allowed": 1
    },
@@ -849,7 +848,7 @@
     "scenario": "txn_batches",
     "seed": 1,
     "ok": true,
-    "acked": 326,
+    "acked": 445,
     "inflight": 0,
     "states_allowed": 1
    },
@@ -857,7 +856,7 @@
     "scenario": "transfer",
     "seed": 0,
     "ok": true,
-    "acked": 178,
+    "acked": 322,
     "inflight": 0,
     "states_allowed": 1
    },
@@ -865,7 +864,7 @@
     "scenario": "transfer",
     "seed": 1,
     "ok": true,
-    "acked": 630,
+    "acked": 1215,
     "inflight": 0,
     "states_allowed": 1
    },
@@ -905,7 +904,7 @@
     "scenario": "two_crashes",
     "seed": 0,
     "ok": true,
-    "acked": 610,
+    "acked": 932,
     "inflight": 0,
     "states_allowed": 1
    },
@@ -913,7 +912,7 @@
     "scenario": "two_crashes",
     "seed": 1,
     "ok": true,
-    "acked": 287,
+    "acked": 399,
     "inflight": 0,
     "states_allowed": 1
    }

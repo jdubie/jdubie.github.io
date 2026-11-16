@@ -4,11 +4,11 @@
   "t_min": 19.0,
   "sql": 0.3458,
   "protocol": 0.7232,
-  "durability": 0.0,
-  "reward": 0.3364,
+  "durability": 1.0,
+  "reward": 0.6364,
   "sql_perfect": "0/60",
   "protocol_perfect": "10/50",
-  "durability_runs": "0/14",
+  "durability_runs": "14/14",
   "oracle_version": 2
  },
  {
@@ -52,11 +52,11 @@
   "t_min": 8,
   "sql": 0.2572,
   "protocol": 0.7175,
-  "durability": 0.0,
-  "reward": 0.2951,
+  "durability": 1.0,
+  "reward": 0.5951,
   "sql_perfect": "0/60",
   "protocol_perfect": "10/50",
-  "durability_runs": "0/14",
+  "durability_runs": "14/14",
   "oracle_version": 2
  },
  {
@@ -64,11 +64,11 @@
   "t_min": 10,
   "sql": 0.3205,
   "protocol": 0.7232,
-  "durability": 0.0,
-  "reward": 0.325,
+  "durability": 1.0,
+  "reward": 0.625,
   "sql_perfect": "0/60",
   "protocol_perfect": "10/50",
-  "durability_runs": "0/14",
+  "durability_runs": "14/14",
   "oracle_version": 2
  },
  {
@@ -76,11 +76,11 @@
   "t_min": 12,
   "sql": 0.3266,
   "protocol": 0.7232,
-  "durability": 0.0,
-  "reward": 0.3278,
+  "durability": 1.0,
+  "reward": 0.6278,
   "sql_perfect": "0/60",
   "protocol_perfect": "10/50",
-  "durability_runs": "0/14",
+  "durability_runs": "14/14",
   "oracle_version": 2
  },
  {
@@ -88,11 +88,11 @@
   "t_min": 14,
   "sql": 0.3427,
   "protocol": 0.7232,
-  "durability": 0.0,
-  "reward": 0.335,
+  "durability": 1.0,
+  "reward": 0.635,
   "sql_perfect": "0/60",
   "protocol_perfect": "10/50",
-  "durability_runs": "0/14",
+  "durability_runs": "14/14",
   "oracle_version": 2
  },
  {
@@ -100,11 +100,11 @@
   "t_min": 16,
   "sql": 0.3427,
   "protocol": 0.7232,
-  "durability": 0.0,
-  "reward": 0.335,
+  "durability": 1.0,
+  "reward": 0.635,
   "sql_perfect": "0/60",
   "protocol_perfect": "10/50",
-  "durability_runs": "0/14",
+  "durability_runs": "14/14",
   "oracle_version": 2
  },
  {
@@ -112,11 +112,11 @@
   "t_min": 18,
   "sql": 0.3458,
   "protocol": 0.7232,
-  "durability": 0.0,
-  "reward": 0.3364,
+  "durability": 1.0,
+  "reward": 0.6364,
   "sql_perfect": "0/60",
   "protocol_perfect": "10/50",
-  "durability_runs": "0/14",
+  "durability_runs": "14/14",
   "oracle_version": 2
  }
 ]

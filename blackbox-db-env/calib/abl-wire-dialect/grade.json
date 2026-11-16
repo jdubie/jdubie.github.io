@@ -13,7 +13,7 @@
   "wseed": 90210,
   "oracle_version": 2,
   "target": "oracle seed 7101 layers wire,dialect",
-  "seconds": 78.9
+  "seconds": 71.7
  },
  "sql": {
   "score": 0.6492050637641635,
@@ -799,7 +799,6 @@
    "denom": 30
   }
  ],
- "starts": 1,
  "durability": {
   "score": 0.8571428571428571,
   "passed": 12,
@@ -809,7 +808,7 @@
     "scenario": "seq_insert",
     "seed": 0,
     "ok": true,
-    "acked": 80,
+    "acked": 142,
     "inflight": 0,
     "states_allowed": 1
    },
@@ -817,7 +816,7 @@
     "scenario": "seq_insert",
     "seed": 1,
     "ok": true,
-    "acked": 311,
+    "acked": 431,
     "inflight": 0,
     "states_allowed": 1
    },
@@ -825,7 +824,7 @@
     "scenario": "seq_mixed",
     "seed": 0,
     "ok": true,
-    "acked": 502,
+    "acked": 444,
     "inflight": 0,
     "states_allowed": 1
    },
@@ -833,7 +832,7 @@
     "scenario": "seq_mixed",
     "seed": 1,
     "ok": true,
-    "acked": 144,
+    "acked": 797,
     "inflight": 0,
     "states_allowed": 1
    },
@@ -841,7 +840,7 @@
     "scenario": "txn_batches",
     "seed": 0,
     "ok": true,
-    "acked": 150,
+    "acked": 667,
     "inflight": 0,
     "states_allowed": 1
    },
@@ -849,7 +848,7 @@
     "scenario": "txn_batches",
     "seed": 1,
     "ok": true,
-    "acked": 311,
+    "acked": 310,
     "inflight": 0,
     "states_allowed": 1
    },
@@ -857,7 +856,7 @@
     "scenario": "transfer",
     "seed": 0,
     "ok": true,
-    "acked": 179,
+    "acked": 439,
     "inflight": 0,
     "states_allowed": 1
    },
@@ -865,7 +864,7 @@
     "scenario": "transfer",
     "seed": 1,
     "ok": true,
-    "acked": 701,
+    "acked": 1600,
     "inflight": 0,
     "states_allowed": 1
    },
@@ -892,8 +891,8 @@
     "acked": 8,
     "inflight": 0,
     "states_allowed": 1,
-    "got": "[[['1', 'a', '1'], ['2', 'bx', '1'], ['3', 'c', '1']], [['32', '3072']], ['error', '42P01']]",
-    "want_one_of": "[[[['1', 'a', '1'], ['2', 'bx', '1'], ['3', 'c', '1']], [['32', '3072']], ['error', '54P01']]]"
+    "got": "[[['1', 'a', '1'], ['3', 'c', '1'], ['2', 'bx', '1']], [['1', 'x1', '3'], ['2', 'x2', '6'], ['3', 'x3', '9'], ['4', 'x4', '12'], ['5', 'x5', '15'], ['6', 'x6', '18'], ['7', 'x7', '21'], ['8', 'x8', '24'], ['9', 'x9', '27'], ['10', 'x10', '30']], ['error', '42P01']]",
+    "want_one_of": "[[[['+1', 'a', '+1'], ['+3', 'c', '+1'], ['+2', 'bx', '+1']], [['+1', 'x1', '+3'], ['+2', 'x2', '+6'], ['+3', 'x3', '+9'], ['+4', 'x4', '+12'], ['+5', 'x5', '+15'], ['+6', 'x6', '+18'], ['+7', 'x7', '+21'], ['+8', 'x8', '+24'], ['+9', 'x9', '+27'], ['+10', 'x10', '+30']], ['error', '54P01']]]"
    },
    {
     "scenario": "ddl",
@@ -902,14 +901,14 @@
     "acked": 8,
     "inflight": 0,
     "states_allowed": 1,
-    "got": "[[['1', 'a', '9'], ['2', 'bx', '9'], ['3', 'c', '9']], [['12', '432']], ['error', '42P01']]",
-    "want_one_of": "[[[['1', 'a', '9'], ['2', 'bx', '9'], ['3', 'c', '9']], [['12', '432']], ['error', '54P01']]]"
+    "got": "[[['1', 'a', '9'], ['3', 'c', '9'], ['2', 'bx', '9']], [['1', 'x1', '3'], ['2', 'x2', '6'], ['3', 'x3', '9'], ['4', 'x4', '12'], ['5', 'x5', '15'], ['6', 'x6', '18'], ['7', 'x7', '21'], ['8', 'x8', '24'], ['9', 'x9', '27']], ['error', '42P01']]",
+    "want_one_of": "[[[['+1', 'a', '+9'], ['+3', 'c', '+9'], ['+2', 'bx', '+9']], [['+1', 'x1', '+3'], ['+2', 'x2', '+6'], ['+3', 'x3', '+9'], ['+4', 'x4', '+12'], ['+5', 'x5', '+15'], ['+6', 'x6', '+18'], ['+7', 'x7', '+21'], ['+8', 'x8', '+24'], ['+9', 'x9', '+27']], ['error', '54P01']]]"
    },
    {
     "scenario": "two_crashes",
     "seed": 0,
     "ok": true,
-    "acked": 540,
+    "acked": 1383,
     "inflight": 0,
     "states_allowed": 1
    },
@@ -917,7 +916,7 @@
     "scenario": "two_crashes",
     "seed": 1,
     "ok": true,
-    "acked": 290,
+    "acked": 568,
     "inflight": 0,
     "states_allowed": 1
    }

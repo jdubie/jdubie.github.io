@@ -230,8 +230,10 @@ terminate; ParameterStatus after SET. Scored from the first byte.</td></tr>
 <tr><td>durability</td><td class=n>0.30</td><td>7 scenarios × 2 seeds: 2,000 single inserts; 1,500 mixed insert/update/delete; 800 multi-statement
 transactions; 4 concurrent connections of money transfers; an open uncommitted transaction; DDL (create, index, add column, drop);
 two crashes in a row. SIGKILL at a random moment or right after the last acknowledgement, restart, query. Pass = the state equals the
-oracle's after replaying the acknowledged commits plus some subset of the in-flight ones (verify queries cast to text, so only lost,
-torn or phantom writes fail).</td></tr></table></div>
+oracle's after replaying the acknowledged commits plus some subset of the in-flight ones. Verified with plain <code>SELECT * FROM t</code>,
+rows as a multiset, integers canonicalised, so only lost, torn or phantom writes fail; the writes themselves use only
+<code>INSERT ... VALUES</code>, UPDATE/DELETE with literals (transfers <code>bal = bal ± n</code>), BEGIN/COMMIT, and in the DDL
+scenario CREATE INDEX / ALTER TABLE ADD COLUMN / DROP TABLE.</td></tr></table></div>
 <p><b>Why these weights.</b> SQL behaviour is most of what "behaves identically" means and gives the smoothest gradient, so it
 gets the largest share. Durability is 0.30 because the brief makes persistence and crash safety first-class, and because it cannot be
 faked by replay. Protocol is 0.25: the handshake and framing are the first wall a model hits, and the extended flow and error paths are

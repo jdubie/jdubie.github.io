@@ -26,7 +26,12 @@ Done:
   Seed-free summaries in `results/opus20v2`; its server and transcript are not committed (they spell out the
   secret variant).
 
+- 2026-11-16 durability fix (Jack): verify with plain `SELECT *`, rows as a multiset, integers canonicalised;
+  scenario writes use only INSERT ... VALUES / UPDATE / DELETE with literals (+ DDL in the DDL scenario).
+  Oracle 14/14 on both seeds, stock PostgreSQL 0.033; all calibration rows' durability re-run (unchanged).
+  Regrade: run 1 still 0.066; run 2 0.336 -> 0.636 (durability 14/14 from minute 8).
+- Sweep on the run-2 private seeds running (unit bbx-sweep): opus (2nd point), sol, gemini, sonnet, terra, haiku.
+
 Not done:
 - Heavier semantic layer (wire + dialect + memorised PostgreSQL = 0.744).
-- Decouple durability verify queries from casts, then regrade both runs.
 - Further runs: Jack's call.

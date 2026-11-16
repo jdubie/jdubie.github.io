@@ -5,14 +5,18 @@ connection), each phase ended by a SIGKILL either at a random moment or right af
 After the final restart the verify queries run on the candidate. The oracle then replays the setup and every
 acknowledged committing operation, and for every subset of the operations that were in flight at the kill runs
 the verify queries inside a transaction it rolls back. The candidate passes if its answers (rows, or the error's
-SQLSTATE) equal the oracle's for one of those subsets. Verify queries cast every column to text, so value
-formatting cannot fail a durability check: only lost, torn or phantom writes can.
+SQLSTATE) equal the oracle's for one of those subsets. Verify queries are plain `SELECT * FROM t`; rows are
+compared as a multiset and integers are canonicalised (the variant's `+5` / `1_000` styles), so neither ORDER BY,
+casts nor value formatting are needed to pass: only lost, torn or phantom writes fail. The scenarios' own writes
+use only CREATE TABLE, INSERT ... VALUES, UPDATE/DELETE with literals and `col op literal` (transfers add
+`bal = bal +/- n`), BEGIN/COMMIT, plus CREATE INDEX / ALTER TABLE ADD COLUMN / DROP TABLE in the DDL scenario.
 """
 
 from __future__ import annotations
 
 import itertools
 import random
+import re
 import sys
 import threading
 import time
@@ -40,7 +44,7 @@ def sc_seq_insert(rng):
     ops = [{"body": [_ins(t, i, rng)]} for i in range(1, 2001)]
     return {"setup": [f"CREATE TABLE {t} (id integer PRIMARY KEY, s text, n integer)"],
             "phases": [{"conns": [ops], "kill": "random"}],
-            "verify": [f"SELECT id::text, s, n::text FROM {t} ORDER BY id"]}
+            "verify": [f"SELECT * FROM {t}"]}
 
 
 def sc_seq_mixed(rng):
@@ -52,12 +56,12 @@ def sc_seq_mixed(rng):
             ops.append({"body": [_ins(t, nxt, rng)]})
             nxt += 1
         elif r < 0.8:
-            ops.append({"body": [f"UPDATE {t} SET n = n + {rng.randint(1, 9)}, s = s || 'u' WHERE id = {rng.randint(1, nxt)}"]})
+            ops.append({"body": [f"UPDATE {t} SET n = {rng.randint(-1000, 1000)}, s = 'u{rng.randint(0, 10**6)}' WHERE id = {rng.randint(1, nxt)}"]})
         else:
             ops.append({"body": [f"DELETE FROM {t} WHERE id = {rng.randint(1, nxt)}"]})
     return {"setup": [f"CREATE TABLE {t} (id integer PRIMARY KEY, s text, n integer)"] + [_ins(t, i, rng) for i in range(1, 51)],
             "phases": [{"conns": [ops], "kill": "random"}],
-            "verify": [f"SELECT id::text, s, n::text FROM {t} ORDER BY id"]}
+            "verify": [f"SELECT * FROM {t}"]}
 
 
 def sc_txn_batches(rng):
@@ -70,11 +74,11 @@ def sc_txn_batches(rng):
                 body.append(_ins(t, nxt, rng))
                 nxt += 1
             else:
-                body.append(f"UPDATE {t} SET n = n * 2 WHERE id = {rng.randint(1, nxt - 1)}")
+                body.append(f"UPDATE {t} SET n = {rng.randint(-1000, 1000)} WHERE id = {rng.randint(1, nxt - 1)}")
         ops.append({"body": body, "txn": True})
     return {"setup": [f"CREATE TABLE {t} (id integer PRIMARY KEY, s text, n integer)"],
             "phases": [{"conns": [ops], "kill": "random"}],
-            "verify": [f"SELECT id::text, s, n::text FROM {t} ORDER BY id", f"SELECT count(*)::text, sum(n)::text FROM {t}"]}
+            "verify": [f"SELECT * FROM {t}"]}
 
 
 def sc_transfer(rng):
@@ -92,9 +96,9 @@ def sc_transfer(rng):
         conns.append(ops)
     return {"setup": [f"CREATE TABLE {a} (id integer PRIMARY KEY, bal integer NOT NULL)",
                       f"CREATE TABLE {g} (id integer PRIMARY KEY, src integer, dst integer, amt integer)",
-                      f"INSERT INTO {a} SELECT g, 1000 FROM generate_series(1, 16) AS g"],
+                      f"INSERT INTO {a} VALUES " + ", ".join(f"({i}, 1000)" for i in range(1, 17))],
             "phases": [{"conns": conns, "kill": "random"}],
-            "verify": [f"SELECT id::text, bal::text FROM {a} ORDER BY id", f"SELECT count(*)::text, sum(amt)::text FROM {g}"]}
+            "verify": [f"SELECT * FROM {a}", f"SELECT * FROM {g}"]}
 
 
 def sc_uncommitted(rng):
@@ -103,7 +107,7 @@ def sc_uncommitted(rng):
     open_txn = [{"body": [_ins(t, i, rng) for i in range(100, 130)] + [f"UPDATE {t} SET n = 0"], "txn": True, "commit": False}]
     return {"setup": [f"CREATE TABLE {t} (id integer PRIMARY KEY, s text, n integer)"],
             "phases": [{"conns": [first], "kill": "after"}, {"conns": [open_txn], "kill": "after"}],
-            "verify": [f"SELECT id::text, s, n::text FROM {t} ORDER BY id"]}
+            "verify": [f"SELECT * FROM {t}"]}
 
 
 def sc_ddl(rng):
@@ -113,14 +117,13 @@ def sc_ddl(rng):
         f"INSERT INTO {t2} VALUES (1, 'a'), (2, 'b'), (3, 'c')",
         f"CREATE INDEX ON {t2} (s)",
         f"ALTER TABLE {t2} ADD COLUMN n integer DEFAULT {rng.randint(1, 9)}",
-        f"UPDATE {t2} SET s = s || 'x' WHERE id = 2",
+        f"UPDATE {t2} SET s = 'bx' WHERE id = 2",
         f"DROP TABLE {gone}",
-        f"INSERT INTO {t} SELECT g, 'x' || g, g * 3 FROM generate_series(1, {rng.randint(20, 80)}) AS g",
-        f"DELETE FROM {t} WHERE n % 2 = 0"]]
+        f"INSERT INTO {t} VALUES " + ", ".join(f"({i}, 'x{i}', {i * 3})" for i in range(1, rng.randint(20, 80) + 1)),
+        f"DELETE FROM {t} WHERE id > {rng.randint(5, 15)}"]]
     return {"setup": [f"CREATE TABLE {t} (id integer PRIMARY KEY, s text, n integer)", f"CREATE TABLE {gone} (a integer)"],
             "phases": [{"conns": [ops], "kill": "after"}],
-            "verify": [f"SELECT id::text, s, n::text FROM {t2} ORDER BY id", f"SELECT count(*)::text, sum(n)::text FROM {t}",
-                       f"SELECT count(*)::text FROM {gone}"]}
+            "verify": [f"SELECT * FROM {t2}", f"SELECT * FROM {t}", f"SELECT * FROM {gone}"]}
 
 
 def sc_two_crashes(rng):
@@ -129,7 +132,7 @@ def sc_two_crashes(rng):
     p2 = [{"body": [_ins(t, i, rng)]} for i in range(101, 2001)]
     return {"setup": [f"CREATE TABLE {t} (id integer PRIMARY KEY, s text, n integer)"],
             "phases": [{"conns": [p1], "kill": "after"}, {"conns": [p2], "kill": "random"}],
-            "verify": [f"SELECT id::text, s, n::text FROM {t} ORDER BY id"]}
+            "verify": [f"SELECT * FROM {t}"]}
 
 
 SCENARIOS = {f.__name__[3:]: f for f in (sc_seq_insert, sc_seq_mixed, sc_txn_batches, sc_transfer, sc_uncommitted, sc_ddl, sc_two_crashes)}
@@ -278,6 +281,21 @@ def allowed_answers(oracle_host: str, spec: dict, sc: dict, statuses: list) -> l
     return out
 
 
+_INT = re.compile(r"[+-]?[0-9][0-9_]*")
+
+
+def canon(answers: list) -> list:
+    """Order-free, formatting-free form of verify answers: rows sorted, integer strings as plain ints."""
+    out = []
+    for a in answers:
+        if isinstance(a, list) and a[:1] == ["error"]:
+            out.append(a)
+            continue
+        rows = [[str(int(v.replace("_", ""))) if isinstance(v, str) and _INT.fullmatch(v) else v for v in r] for r in a]
+        out.append(sorted(rows, key=repr))
+    return out
+
+
 def run_all(make_box, oracle_host: str, spec: dict, wseed: int, log=print) -> dict:
     runs = []
     for name, fn in SCENARIOS.items():
@@ -298,7 +316,7 @@ def run_all(make_box, oracle_host: str, spec: dict, wseed: int, log=print) -> di
                 rec["inflight"] = sum(x == "sent" for ph in st for conn in ph for x in conn)
             if c["ok"]:
                 allowed = allowed_answers(oracle_host, spec, sc, c["statuses"])
-                rec["ok"] = c["answers"] in allowed
+                rec["ok"] = canon(c["answers"]) in [canon(x) for x in allowed]
                 rec["states_allowed"] = len(allowed)
                 if not rec["ok"]:
                     rec["got"] = str(c["answers"])[:600]

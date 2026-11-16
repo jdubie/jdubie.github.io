@@ -1,0 +1,15 @@
+{
+  "tools": {
+    "exclude": ["google_web_search", "web_fetch"]
+  },
+  "privacy": {
+    "usageStatisticsEnabled": false
+  },
+  "telemetry": {
+    "enabled": false
+  },
+  "general": {
+    "disableAutoUpdate": true,
+    "disableUpdateNag": true
+  }
+}

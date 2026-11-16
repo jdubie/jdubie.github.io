@@ -13,7 +13,7 @@
   "wseed": 90210,
   "oracle_version": 2,
   "target": "oracle seed 7101 layers wire,dialect,semantics",
-  "seconds": 41.5
+  "seconds": 31.2
  },
  "sql": {
   "score": 0.0,
@@ -859,7 +859,6 @@
    "denom": 27
   }
  ],
- "starts": 1,
  "durability": {
   "score": 0.0,
   "passed": 0,

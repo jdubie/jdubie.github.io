@@ -13,7 +13,7 @@
   "wseed": 90210,
   "oracle_version": 2,
   "target": "oracle seed 7101 layers wire,semantics",
-  "seconds": 64.2
+  "seconds": 35.4
  },
  "sql": {
   "score": 0.22271381893546485,
@@ -799,7 +799,6 @@
    "denom": 30
   }
  ],
- "starts": 1,
  "durability": {
   "score": 0.0,
   "passed": 0,
