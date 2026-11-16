@@ -31,52 +31,172 @@ li p{margin:0;color:var(--muted)}
 .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;align-self:start;align-items:flex-start}
 .tags a,.filter a{font:500 11px/1 var(--mono);letter-spacing:.04em;color:var(--muted);border:1px solid var(--rule);border-radius:999px;padding:5px 10px;text-decoration:none}
 .tags a:hover,.filter a:hover{color:var(--accent);border-color:var(--accent)}
-.filter{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
-.filter a.on{color:var(--bg);background:var(--ink);border-color:var(--ink)}
-li.hide{display:none}
+.more{display:inline-block;margin-top:12px;font:500 14px/1.4 var(--mono);color:var(--ink);text-decoration:underline;text-decoration-color:var(--accent);text-underline-offset:3px}
+.more:hover{color:var(--accent)}
+section>p.lede{margin:0 0 12px;color:var(--muted);max-width:640px}
+li .thumb .ph{display:flex;align-items:center;justify-content:center;height:100%;padding:12px;text-align:center;font:700 18px/1.2 var(--display);color:var(--muted)}
+.back{font:500 13px/1 var(--mono);color:var(--muted);text-decoration:none}.back:hover{color:var(--accent)}
 </style>
 <main>
   <header class="top">
     <h1>Jack Dubie</h1>
     <nav class="links"><a href="mailto:jack.dubie@gmail.com">jack.dubie@gmail.com</a><span>·</span><a href="https://www.linkedin.com/in/jackdubie/">LinkedIn</a><span>·</span><a href="Jack_Dubie_Resume.pdf">Resume</a></nav>
-    <nav class="filter" aria-label="Filter posts"><a href="#" data-tag="">All</a><a href="#policy-learning" data-tag="policy-learning">policy learning</a><a href="#data-collection" data-tag="data-collection">data collection</a><a href="#deployment" data-tag="deployment">deployment</a><a href="#agent-evals" data-tag="agent-evals">agent evals</a><a href="#reproduction" data-tag="reproduction">reproduction</a></nav>
   </header>
   <section>
+    <h2>Robotics</h2>
     <ul>
-      <li data-tags="agent-evals">
-        <a class="thumb" href="posts/trolley-bench/" tabindex="-1" aria-hidden="true"><video src="posts/trolley-bench/thumb.mp4" poster="posts/trolley-bench/thumb.jpg" muted autoplay loop playsinline preload="metadata"></video></a>
-        <time datetime="2026-11-13">November 13, 2026</time>
-        <a href="posts/trolley-bench/">Which school of ethics does your AI model follow?</a>
-        <p>Seven AI models got one minute to decide the trolley problem, then had to name the school of thought behind their choice.</p>
-        <div class="tags"><a href="#agent-evals">agent evals</a></div>
+      <li>
+        <a class="thumb" href="posts/yam-track-env/" tabindex="-1" aria-hidden="true"><video src="posts/yam-track-env/thumb.mp4" poster="posts/yam-track-env/thumb.jpg" muted autoplay loop playsinline preload="metadata"></video></a>
+        <time datetime="2026-11-14">November 14, 2026</time>
+        <a href="posts/yam-track-env/">How good are agents at robotic control?</a>
+        <p>An agent benchmark where models get 8 minutes and a socket to a simulated YAM arm whose dynamics are hidden, and must make it follow 14 trajectories. Sol (gpt-6.1-sol) reached 0.10 mm, better than a controller that knows the true dynamics; the Claude models stopped early.</p>
+        <div class="tags"><a href="robotics/">robotics</a><a href="evals/">agent evals</a></div>
       </li>
-      <li data-tags="deployment">
+      <li>
         <a class="thumb" href="posts/pi-api-beta/" tabindex="-1" aria-hidden="true"><video src="posts/pi-api-beta/thumb.mp4" poster="posts/pi-api-beta/thumb.jpg" muted autoplay loop playsinline preload="metadata"></video></a>
         <time datetime="2026-10-13">October 13, 2026</time>
         <a href="posts/pi-api-beta/">Physical Intelligence featured our robot</a>
-        <p>Our packaging robot in the Pi API beta launch, and why their base model impressed us.</p>
-        <div class="tags"><a href="#deployment">deployment</a></div>
+        <p>Physical Intelligence featured Frontier Machines in their Pi API beta launch. Their base model is really impressive.</p>
+        <div class="tags"><a href="robotics/">robotics</a></div>
       </li>
-      <li data-tags="agent-evals" data-order="90">
+      <li>
+        <a class="thumb" href="posts/pi0-zero-robot-data/" tabindex="-1" aria-hidden="true"><video src="posts/pi0-zero-robot-data/thumb.mp4" poster="posts/pi0-zero-robot-data/thumb.jpg" muted autoplay loop playsinline preload="metadata"></video></a>
+        <time datetime="2025-12-12">December 12, 2025</time>
+        <a href="posts/pi0-zero-robot-data/">Fine-tuning π0 with zero robot data</a>
+        <p>Policies fine-tuned only on exoskeleton demonstrations, retargeted to the robot with offline iterative learning control, with zero robot-collected samples: a cube in November, a pile of bags in December.</p>
+        <div class="tags"><a href="robotics/">robotics</a></div>
+      </li>
+    </ul>
+    <a class="more" href="robotics/">See all 11 robotics posts →</a>
+  </section>
+  <section>
+    <h2>Agent evals</h2>
+    <ul>
+      <li>
+        <a class="thumb" href="posts/block-stacking-benchmark/" tabindex="-1" aria-hidden="true"><video src="posts/block-stacking-benchmark/thumb.mp4" poster="posts/block-stacking-benchmark/thumb.jpg" muted autoplay loop playsinline preload="metadata"></video></a>
+        <time datetime="2026-11-10">November 10, 2026</time>
+        <a href="posts/block-stacking-benchmark/">Coding agents stacking blocks with a robot arm</a>
+        <p>Six coding agents each got 20 minutes and a 300 Hz socket to a simulated YAM arm; Opus 5.5 and GPT-6.1 Sol both stacked all eight blocks.</p>
+        <div class="tags"><a href="robotics/">robotics</a><a href="evals/">agent evals</a></div>
+      </li>
+      <li>
+        <a class="thumb" href="posts/find-duplicates/" tabindex="-1" aria-hidden="true"><video src="posts/find-duplicates/thumb.mp4" poster="posts/find-duplicates/thumb.jpg" muted autoplay loop playsinline preload="metadata"></video></a>
+        <time datetime="2026-11-15">November 15, 2026</time>
+        <a href="posts/find-duplicates/">Find every duplicate file, as fast as you can</a>
+        <p>Six coding agents had 15 minutes, six times each, to write the fastest correct duplicate-file finder for 23 hidden trap trees. Opus was fastest on average; Gemini matched it when it finished.</p>
+        <div class="tags"><a href="evals/">agent evals</a></div>
+      </li>
+      <li>
+        <a class="thumb" href="posts/test-speedup-env/" tabindex="-1" aria-hidden="true"><video src="posts/test-speedup-env/thumb.mp4" poster="posts/test-speedup-env/thumb.jpg" muted autoplay loop playsinline preload="metadata"></video></a>
+        <time datetime="2026-10-12">October 12, 2026</time>
+        <a href="posts/test-speedup-env/">Make the tests faster, without breaking them</a>
+        <p>An RL environment that rewards coding agents to speed up a slow client-server test suite only if it still catches 24 hidden bugs, where Gemini 4 Argon reached 40.8x and Opus 10.3x against a hand-written 78.7x. Grok 4.7 scored 0: its suite was 23.5x faster and caught every bug, but it loosened a rate limit to get there.</p>
+        <div class="tags"><a href="evals/">agent evals</a></div>
+      </li>
+    </ul>
+    <a class="more" href="evals/">See all 8 agent evals posts →</a>
+  </section>
+  <section>
+    <h2>Post-training</h2>
+    <ul>
+      <li>
+        <a class="thumb" href="posts/gemma-self-correction/" tabindex="-1" aria-hidden="true"><video src="posts/gemma-self-correction/thumb.mp4" poster="posts/gemma-self-correction/thumb.jpg" muted autoplay loop playsinline preload="metadata"></video></a>
+        <time datetime="2026-11-16">November 16, 2026</time>
+        <a href="posts/gemma-self-correction/">Gemma 1B won’t fix its own code</a>
+        <p>Gemma 3 1B resubmits the same failing code 95% of the time; starting over works far better than asking it to fix (34% vs 1%).</p>
+        <div class="tags"><a href="post-training/">post-training</a></div>
+      </li>
+      <li>
+        <a class="thumb" href="posts/gemma-letters/" tabindex="-1" aria-hidden="true"><video src="posts/gemma-letters/thumb.mp4" poster="posts/gemma-letters/thumb.jpg" muted autoplay loop playsinline preload="metadata"></video></a>
+        <time datetime="2026-11-15">November 15, 2026</time>
+        <a href="posts/gemma-letters/">Teaching Gemma 1B to count letters</a>
+        <p>Fine-tuning Gemma 3 1B on synthetic examples takes letter counting from 20% to 84%.</p>
+        <div class="tags"><a href="post-training/">post-training</a></div>
+      </li>
+      <li>
+        <a class="thumb" href="posts/gemma-puzzles/" tabindex="-1" aria-hidden="true"><video src="posts/gemma-puzzles/thumb.mp4" poster="posts/gemma-puzzles/thumb.jpg" muted autoplay loop playsinline preload="metadata"></video></a>
+        <time datetime="2026-11-15">November 15, 2026</time>
+        <a href="posts/gemma-puzzles/">Teaching Gemma 1B made-up puzzles with reinforcement learning</a>
+        <p>GRPO takes Gemma 3 1B from 33–59% to 96–100% on made-up puzzles in 45 minutes on one TPU chip.</p>
+        <div class="tags"><a href="post-training/">post-training</a></div>
+      </li>
+    </ul>
+    <a class="more" href="post-training/">See all 4 post-training posts →</a>
+  </section>
+  <section>
+    <h2>Archive</h2>
+    <ul>
+      <li>
+        <a class="thumb" href="posts/gemma-wordle/" tabindex="-1" aria-hidden="true"><video src="posts/gemma-wordle/thumb.mp4" poster="posts/gemma-wordle/thumb.jpg" muted autoplay loop playsinline preload="metadata"></video></a>
+        <time datetime="2026-11-16">November 16, 2026</time>
+        <a href="posts/gemma-wordle/">Teaching Gemma 1B Wordle: SFT for the rules, RL for the strategy</a>
+        <p>Pretrained Gemma 3 1B goes from 0% to 57% at Wordle with SFT; RL in progress.</p>
+        <div class="tags"><a href="post-training/">post-training</a></div>
+      </li>
+      <li>
+        <a class="thumb" href="posts/terrain-bench/" tabindex="-1" aria-hidden="true"><video src="posts/terrain-bench/thumb.mp4" poster="posts/terrain-bench/thumb.jpg" muted autoplay loop playsinline preload="metadata"></video></a>
+        <time datetime="2026-11-13">November 13, 2026</time>
+        <a href="posts/terrain-bench/">Can a coding agent design a car and drive it?</a>
+        <p>Seven coding agents got 30 minutes and 1,000 attempts to design and drive a 2D car over rough terrain, through a socket; GPT-6.1 Sol, Opus 5.5 and GPT-6.1 Terra went about 2.4 km, Haiku 5.5 about 0.4 km.</p>
+        <div class="tags"><a href="robotics/">robotics</a><a href="evals/">agent evals</a></div>
+      </li>
+      <li>
+        <a class="thumb" href="posts/trolley-bench/" tabindex="-1" aria-hidden="true"><video src="posts/trolley-bench/thumb.mp4" poster="posts/trolley-bench/thumb.jpg" muted autoplay loop playsinline preload="metadata"></video></a>
+        <time datetime="2026-11-13">November 13, 2026</time>
+        <a href="posts/trolley-bench/">Which school of ethics does your AI model follow?</a>
+        <p>Haiku is a deontologist, Opus follows the Doctrine of Double Effect, and the other five AI models are utilitarians.</p>
+        <div class="tags"><a href="evals/">agent evals</a></div>
+      </li>
+      <li>
+        <a class="thumb" href="posts/eight-robots/" tabindex="-1" aria-hidden="true"><video src="posts/eight-robots/thumb.mp4" poster="posts/eight-robots/thumb.jpg" muted autoplay loop playsinline preload="metadata"></video></a>
+        <time datetime="2026-11-11">November 11, 2026</time>
+        <a href="posts/eight-robots/">Eight robots running 97.6% autonomously</a>
+        <p>Eight robots packing at a customer site, running 97.6% autonomously. They have packed over 45,000 bags for our customer.</p>
+        <div class="tags"><a href="robotics/">robotics</a></div>
+      </li>
+      <li>
         <a class="thumb" href="posts/real2sim-case-packing-cell/" tabindex="-1" aria-hidden="true"><video src="posts/real2sim-case-packing-cell/thumb.mp4" poster="posts/real2sim-case-packing-cell/thumb.jpg" muted autoplay loop playsinline preload="metadata"></video></a>
         <time datetime="2026-10-13">October 13, 2026</time>
         <a href="posts/real2sim-case-packing-cell/">Real2sim with a coding agent</a>
-        <p>A coding agent rebuilt our case-packing cell in MuJoCo from the robot's own cameras in about an hour and a half, checking its renders against the real footage.</p>
-        <div class="tags"><a href="#agent-evals">agent evals</a></div>
+        <p>A coding agent rebuilt a bottle case-packing cell in MuJoCo from the robot&#x27;s own cameras in about an hour and a half, iterating until its renders matched the real footage.</p>
+        <div class="tags"><a href="robotics/">robotics</a><a href="evals/">agent evals</a></div>
+      </li>
+      <li>
+        <a class="thumb" href="posts/cad-finger-benchmark/" tabindex="-1" aria-hidden="true"><video src="posts/cad-finger-benchmark/thumb.mp4" poster="posts/cad-finger-benchmark/thumb.jpg" muted autoplay loop playsinline preload="metadata"></video></a>
+        <time datetime="2026-10-13">October 13, 2026</time>
+        <a href="posts/cad-finger-benchmark/">Can a coding agent CAD a robot finger from pictures?</a>
+        <p>Five coding agents got five pictures of a robot gripper finger and 20 minutes to rebuild it in CAD; Opus and Haiku matched a careful hand-built model, and most quit within six minutes.</p>
+        <div class="tags"><a href="evals/">agent evals</a></div>
+      </li>
+      <li>
+        <a class="thumb" href="posts/realtime-action-chunking/" tabindex="-1" aria-hidden="true"><video src="posts/realtime-action-chunking/thumb.mp4" poster="posts/realtime-action-chunking/thumb.jpg" muted autoplay loop playsinline preload="metadata"></video></a>
+        <time datetime="2026-06-28">June 28, 2026</time>
+        <a href="posts/realtime-action-chunking/">Implementing training-time RTC in π0.5</a>
+        <p>Implementing training-time realtime action chunking in π0.5: a small change to training and inference that made rollouts smooth, stateful and about 99% autonomous on 14 hours of teleop data.</p>
+        <div class="tags"><a href="robotics/">robotics</a></div>
+      </li>
+      <li>
+        <a class="thumb" href="posts/led-tracking-accuracy/" tabindex="-1" aria-hidden="true"><video src="posts/led-tracking-accuracy/thumb.mp4" poster="posts/led-tracking-accuracy/thumb.jpg" muted autoplay loop playsinline preload="metadata"></video></a>
+        <time datetime="2026-01-23">January 23, 2026</time>
+        <a href="posts/led-tracking-accuracy/">Meta Quest 3S UMI implementation</a>
+        <p>Replacing an $8,000 exoskeleton with a $500 Meta Quest 3S for data collection: 20% lower tracking error, and a policy picking at 4.4 seconds per pick with zero robot data.</p>
+        <div class="tags"><a href="robotics/">robotics</a></div>
+      </li>
+      <li>
+        <a class="thumb" href="posts/dsrl-libero/" tabindex="-1" aria-hidden="true"><video src="posts/dsrl-libero/thumb.mp4" poster="posts/dsrl-libero/thumb.jpg" muted autoplay loop playsinline preload="metadata"></video></a>
+        <time datetime="2025-10-10">October 10, 2025</time>
+        <a href="posts/dsrl-libero/">Reproducing DSRL: latent-space RL on pi0, from sim to a real robot</a>
+        <p>Reproducing DSRL, latent-space RL on pi0: it took a sim cube pick from 50% to about 95% and a LIBERO task from 30% to 100%, then lifted a real arm&#x27;s candy-bar toss from 16% to 41%.</p>
+        <div class="tags"><a href="robotics/">robotics</a></div>
+      </li>
+      <li>
+        <a class="thumb" href="posts/remote-toy-cleanup/" tabindex="-1" aria-hidden="true"><video src="posts/remote-toy-cleanup/thumb.mp4" poster="posts/remote-toy-cleanup/thumb.jpg" muted autoplay loop playsinline preload="metadata"></video></a>
+        <time datetime="2024-03-19">March 19, 2024</time>
+        <a href="posts/remote-toy-cleanup/">Cleaning up toys from 7,000 miles away</a>
+        <p>A home robot with under $1k of parts, leader-follower arms and an internet teleop link, picking up toys while I drove it from 7,000 miles away.</p>
+        <div class="tags"><a href="robotics/">robotics</a></div>
       </li>
     </ul>
   </section>
 </main>
-<script>
-function applyFilter(){
-  var t=decodeURIComponent(location.hash.slice(1));
-  document.querySelectorAll('ul li').forEach(function(li){
-    var tags=(li.getAttribute('data-tags')||'').split(' ');
-    li.classList.toggle('hide', !!t && tags.indexOf(t)<0);
-  });
-  document.querySelectorAll('.filter a').forEach(function(a){a.classList.toggle('on',a.getAttribute('data-tag')===t);});
-}
-window.addEventListener('hashchange',applyFilter);applyFilter();
-</script>
-
 </html>

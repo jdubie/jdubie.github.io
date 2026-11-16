@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="tags" content="data collection">
+<title>Quest 3S UMI</title>
+<meta name="description" content="Replacing an $8,000 exoskeleton with a $500 Meta Quest 3S for data collection: 20% lower tracking error, and a policy picking at 4.4 seconds per pick with zero robot data.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@600;700&family=Public+Sans:wght@400;500&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+:root{--bg:#f3f4f5;--surface:#fff;--ink:#1b1f23;--muted:#5d6670;--rule:#d9dde1;--accent:#a3271b;
+  --display:"Archivo Narrow","Arial Narrow",Arial,sans-serif;--body:"Public Sans",system-ui,sans-serif;--mono:"JetBrains Mono",ui-monospace,monospace}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#15181b;--surface:#1d2125;--ink:#e7eaed;--muted:#9aa4ae;--rule:#2f353b;--accent:#e2614f;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#15181b;--surface:#1d2125;--ink:#e7eaed;--muted:#9aa4ae;--rule:#2f353b;--accent:#e2614f;color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font:400 16px/1.65 var(--body);margin:0;padding:28px 16px 64px}
+main{max-width:720px;margin:0 auto;display:grid;gap:28px}
+.back{font:500 13px/1 var(--mono);color:var(--muted);text-decoration:none}.back:hover{color:var(--accent)}
+.eyebrow{font:500 12px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+header{display:grid;gap:14px}
+h1{font:700 clamp(30px,5vw,44px)/1.1 var(--display);margin:0;text-wrap:balance}
+p{margin:0}
+a{color:var(--accent)}
+figure{margin:0;display:grid;gap:8px}
+video{width:100%;display:block;border-radius:4px;background:#000}
+figcaption{font-size:13px;color:var(--muted)}
+blockquote{margin:0;padding:16px 20px;background:var(--surface);border-left:3px solid var(--accent);border-radius:0 4px 4px 0;display:grid;gap:10px}
+blockquote footer{font-size:13px;color:var(--muted)}
+.placeholder{aspect-ratio:16/9;display:grid;place-items:center;border:1px dashed var(--rule);border-radius:4px;color:var(--muted);font:500 13px/1.4 var(--mono);text-align:center;padding:16px}
+pre{background:var(--surface);border:1px solid var(--rule);border-radius:4px;padding:14px 16px;overflow-x:auto;font:400 13px/1.6 var(--mono)}
+h2{font:600 24px/1.15 var(--display);margin:8px 0 0}
+.timeline{margin:0;padding-left:20px;display:grid;gap:8px}
+video{max-height:80vh;width:auto;max-width:100%;margin:0 auto}
+.tags{display:flex;flex-wrap:wrap;gap:6px}.tags a{font:500 11px/1 var(--mono);letter-spacing:.04em;color:var(--muted);border:1px solid var(--rule);border-radius:999px;padding:4px 9px;text-decoration:none}.tags a:hover{color:var(--accent);border-color:var(--accent)}
+.qs{margin:0;padding-left:22px;display:grid;gap:14px}
+.qs p{margin:6px 0 0}
+.q2pair{display:grid;grid-template-columns:minmax(0,260px) minmax(0,1fr);gap:14px;align-items:start;margin-top:10px}
+.q2pair video{width:100%;max-height:none}
+@media (max-width:560px){.q2pair{grid-template-columns:1fr}}
+.dm{overflow-x:auto;background:var(--surface);border-radius:6px;width:min(1080px,calc(100vw - 32px));margin-left:calc(50% - min(540px,calc(50vw - 16px)))}
+.dm table{border-collapse:collapse;font-size:13px;min-width:860px;width:100%}
+.dm th,.dm td{padding:8px 10px;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top;line-height:1.35}
+.dm thead th,.dm tr:first-child th{font:500 11px/1.3 var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
+.dm .w{display:block;text-transform:none;letter-spacing:0;font-weight:400;margin-top:2px}
+.dm th[scope=row]{font-weight:600;white-space:nowrap}
+.dm .sc{display:inline-block;min-width:18px;text-align:center;font:600 11px/18px var(--mono);border-radius:4px;margin-right:6px;color:#fff}
+.dm .s1{background:#b3261e}.dm .s2{background:#d9822b}.dm .s3{background:#9aa4ae}.dm .s4{background:#4f8f5a}.dm .s5{background:#1f7a44}
+.dm .tot{font:700 16px var(--mono);white-space:nowrap}
+.dm tr.pick{background:color-mix(in srgb,var(--accent) 7%,transparent)}
+.small{font-size:13px;color:var(--muted)}
+</style>
+<main>
+  <header>
+    <a class="back" href="/">← Jack Dubie</a>
+    <div class="eyebrow">January 23, 2026</div>
+    <div class="tags"><a href="/robotics/">data collection</a></div>
+    <h1>Meta Quest 3S UMI implementation</h1>
+  </header>
+
+  <p>We collected robot training data with an exoskeleton: a person wears it, does the task, and the arm's joint encoders record the motion. It worked, but it cost about $8,000 per rig, it was bulky and heavy to wear for long sessions, and our calibration checks with it were off by 8–15 mm.</p>
+  <p>A Meta Quest 3S already tracks its two controllers in 3D from the infrared LEDs on them, for about $500. The question was whether that tracking is good enough to train robot policies on. That came down to three questions.</p>
+
+  <h2>Why the Quest 3S</h2>
+  <p>We compared five ways to capture a person's hand motion. Each is scored 1–5 on each attribute (5 is best), and the weighted score combines them with the weights shown under each column. On a phone, scroll the table sideways for the details.</p>
+  <div class="dm"><table>
+<tr><th>Solution</th><th>Weighted score</th><th>BOM<span class="w">weight 20%</span></th><th>Accuracy<span class="w">weight 20%</span></th><th>Degradation detectable<span class="w">weight 15%</span></th><th>Ergonomics<span class="w">weight 10%</span></th><th>Mobility<span class="w">weight 10%</span></th><th>Not environment-dependent<span class="w">weight 10%</span></th><th>Occlusion-free<span class="w">weight 10%</span></th><th>Footprint<span class="w">weight 5%</span></th></tr>
+<tr><th scope="row">Exoskeleton</th><td class="tot">2.40</td><td><span class="sc s1">1</span>~$8,000 per rig</td><td><span class="sc s2">2</span>8–15 mm on calibration checks</td><td><span class="sc s2">2</span>Calibration drift is silent</td><td><span class="sc s1">1</span>Bulky and heavy to wear for long sessions</td><td><span class="sc s3">3</span>Wearable, but a big rig to move</td><td><span class="sc s5">5</span>Mechanical: unaffected</td><td><span class="sc s5">5</span>None: joint encoders</td><td><span class="sc s2">2</span>Large rig at the workstation</td></tr>
+<tr><th scope="row">EMF tracking</th><td class="tot">2.45</td><td><span class="sc s2">2</span>Several $k (est.)</td><td><span class="sc s3">3</span>mm-level near the transmitter (est.)</td><td><span class="sc s1">1</span>Distortion is unreliable to measure</td><td><span class="sc s3">3</span>Light sensors, but cabled to the base unit</td><td><span class="sc s2">2</span>Works only near the transmitter</td><td><span class="sc s1">1</span>Metal nearby, like many of the machines we need to operate around, distorts it</td><td><span class="sc s5">5</span>None: no line of sight needed</td><td><span class="sc s4">4</span>Small sensors + transmitter</td></tr>
+<tr><th scope="row">OptiTrack</th><td class="tot">3.10</td><td><span class="sc s1">1</span>$10k+ for a camera rig (est.)</td><td><span class="sc s5">5</span>Sub-mm</td><td><span class="sc s5">5</span>Lost markers reported immediately</td><td><span class="sc s5">5</span>Light passive markers</td><td><span class="sc s1">1</span>Fixed install</td><td><span class="sc s3">3</span>Sunlight, reflective surfaces</td><td><span class="sc s2">2</span>Markers must be seen by several cameras</td><td><span class="sc s1">1</span>Cameras around the workspace</td></tr>
+<tr><th scope="row">Lighthouse VR tracker</th><td class="tot">3.50</td><td><span class="sc s4">4</span>~$1k (est.)</td><td><span class="sc s4">4</span>A few mm (est.)</td><td><span class="sc s3">3</span>Reports lost tracking; reflections are silent</td><td><span class="sc s4">4</span>Light tracker pucks</td><td><span class="sc s3">3</span>Base stations to set up at each site</td><td><span class="sc s3">3</span>Sunlight, reflective surfaces</td><td><span class="sc s3">3</span>Needs line of sight to a base station</td><td><span class="sc s3">3</span>Base stations + trackers</td></tr>
+<tr class="pick"><th scope="row">Meta Quest 3S</th><td class="tot">3.95</td><td><span class="sc s5">5</span>~$500</td><td><span class="sc s4">4</span>1–3 mm median, p99 up to 9 mm</td><td><span class="sc s4">4</span>Non-trivial occlusions are detectable via jumps you see when you sample pose at a very high frequency</td><td><span class="sc s3">3</span>A headset worn for the whole session</td><td><span class="sc s5">5</span>Inside-out: no external setup</td><td><span class="sc s3">3</span>Lighting, featureless surroundings</td><td><span class="sc s2">2</span>Controllers must be in view of the headset</td><td><span class="sc s5">5</span>Headset + two controllers</td></tr>
+  </table></div>
+  <p class="small">Scores and weights are ours. Exoskeleton and Quest figures come from our own measurements, below and in the earlier exoskeleton work; figures marked “est.” are rough estimates, not measurements.</p>
+
+  <h2>Three questions</h2>
+  <ol class="qs">
+    <li><strong>Controller → headset: how accurately does the headset track the controller LEDs?</strong>
+      <p>We joined two controllers rigidly with a 3D-printed bracket, so their true distance and relative rotation never change, and looked for variance in the position and rotation the headset reported between them. With the LEDs in view of the headset's cameras, the error was about 3 mm, and the distance between them, 84.74 mm, stayed within 1.45 mm at p99. That measures how consistently the headset places one controller relative to the other, not absolute accuracy.</p>
+      <figure>
+        <img src="rigid_pair.png" alt="Two Quest controllers held in one hand, joined by an orange 3D-printed bracket" loading="lazy" style="width:100%;max-width:520px;border-radius:4px;display:block">
+        <figcaption>The test rig: two controllers locked together by an orange 3D-printed bracket.</figcaption>
+      </figure></li>
+    <li><strong>Headset → room: how accurately does the headset track itself in the room?</strong>
+      <p>We mounted the headset itself on a YAM arm with a 3D-printed mount and moved it through scripted trajectories. The arm's joint encoders and forward kinematics give the ground-truth pose, so the error in a hand-eye calibration between the two measures the headset's inside-out tracking directly. On 12 fast trajectories, including a pick and place at 2 seconds a pick, the median error was 1–3 mm per trajectory and the p99 1.7–9.2 mm. Getting there took better time alignment between the two streams; a slow trajectory before that fix was at 6.9 mm median, 10.9 mm p99.</p>
+      <div class="q2pair">
+        <figure>
+          <video src="headset_on_yam.mp4" controls muted loop playsinline preload="metadata"></video>
+          <figcaption>The headset riding on the arm through a scripted trajectory, at 4× speed.</figcaption>
+        </figure>
+        <figure>
+          <img src="headset_mount.png" alt="Render of the orange 3D-printed mount that holds the Quest headset on the YAM arm" loading="lazy" style="width:100%;border-radius:4px;display:block;background:#fff">
+          <figcaption>The 3D-printed mount that holds it there.</figcaption>
+        </figure>
+      </div></li>
+    <li><strong>Occlusions: what happens when the headset loses sight of a controller, and can we tell?</strong>
+      <p>The Quest OS does report a tracking failure, but only after a 3–5 second timeout. During a brief occlusion it keeps reporting a position and orientation, carried by the controller's IMU alone, and that position drifts quickly. When the LEDs come back into view, the tracked position snaps back, so an occlusion shows up as a jump in position.</p>
+      <p>To catch it, we sampled the pose at a very high rate, fast enough to tell that kind of jump apart from a quick hand movement. We confirmed it on purpose, then counted jumps over 10 mm per episode: a full bag-packing episode in the office had none, and later ones had one and four. The conversion pipeline now checks every episode automatically, writing a histogram of pose jumps and a warning into the episode's folder.</p></li>
+  </ol>
+
+  <p>That was enough to build on. The Quest rig that came out of it cut the bill of materials 94%, from about $8,000 to $500, and tracking error 20%, while matching the exoskeleton rig's policy performance.</p>
+
+  <h2>A policy trained with no robot data</h2>
+  <figure>
+    <video src="img_3897.mp4" controls muted loop playsinline preload="metadata"></video>
+    <figcaption>A policy trained only on Quest demonstrations, picking tablets into the box at 4.4 seconds per pick. It never saw a single frame of robot-collected fine-tuning data.</figcaption>
+  </figure>
+  <p>The Quest demos went through the same <a href="/posts/pi0-zero-robot-data/">retargeting pipeline</a> we'd built for the exoskeleton, which uses offline iterative learning control to make the robot's motion match the human's.</p>
+
+</main>
+</html>

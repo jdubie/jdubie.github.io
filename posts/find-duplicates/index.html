@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Find Every Duplicate File</title>
+<meta name="tags" content="agent evals">
+<meta name="description" content="Six coding agents had 15 minutes, six times each, to write the fastest correct duplicate-file finder for 23 hidden trap trees. Opus was fastest on average; Gemini matched it when it finished.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@600;700&family=Public+Sans:wght@400;500&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+:root{--c-opus:#c2410c;--c-sonnet:#d97706;--c-haiku:#a16207;--c-sol:#1d4ed8;--c-terra:#0f766e;--c-gemini:#7e22ce;--bg:#f3f4f5;--surface:#fff;--ink:#1b1f23;--muted:#5d6670;--rule:#d9dde1;--accent:#a3271b;
+  --display:"Archivo Narrow","Arial Narrow",Arial,sans-serif;--body:"Public Sans",system-ui,sans-serif;--mono:"JetBrains Mono",ui-monospace,monospace}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--c-opus:#fb923c;--c-sonnet:#fbbf24;--c-haiku:#d9b44a;--c-sol:#60a5fa;--c-terra:#2dd4bf;--c-gemini:#c084fc;--bg:#15181b;--surface:#1d2125;--ink:#e7eaed;--muted:#9aa4ae;--rule:#2f353b;--accent:#e2614f;color-scheme:dark}}
+:root[data-theme="dark"]{--c-opus:#fb923c;--c-sonnet:#fbbf24;--c-haiku:#d9b44a;--c-sol:#60a5fa;--c-terra:#2dd4bf;--c-gemini:#c084fc;--bg:#15181b;--surface:#1d2125;--ink:#e7eaed;--muted:#9aa4ae;--rule:#2f353b;--accent:#e2614f;color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font:400 16px/1.65 var(--body);margin:0;padding:28px 16px 64px}
+main{max-width:720px;margin:0 auto;display:grid;gap:28px}
+.back{font:500 13px/1 var(--mono);color:var(--muted);text-decoration:none}.back:hover{color:var(--accent)}
+.eyebrow{font:500 12px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+header{display:grid;gap:14px}
+h1{font:700 clamp(30px,5vw,44px)/1.1 var(--display);margin:0;text-wrap:balance}
+p{margin:0}
+a{color:var(--accent)}
+figure{margin:0;display:grid;gap:8px}
+figcaption{font-size:13px;color:var(--muted)}
+h2{font:600 24px/1.15 var(--display);margin:8px 0 0}
+.draft{font:500 12px/1.4 var(--mono);color:var(--accent);border:1px dashed var(--accent);border-radius:4px;padding:8px 12px}
+.tablewrap{overflow-x:auto;background:var(--surface);border:1px solid var(--rule);border-radius:4px}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:right;padding:8px 14px;border-bottom:1px solid var(--rule);font-variant-numeric:tabular-nums}
+th:first-child,td:first-child{text-align:left}
+tr:last-child td{border-bottom:0}
+th{font:500 11px/1.2 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:var(--bg)}
+tr.group td{font:500 11px/1.2 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:var(--bg)}
+td.l{text-align:left}
+td.nw{white-space:nowrap}
+svg text{font:500 11px var(--mono);fill:var(--muted)}
+svg text.n{font:600 13px var(--body);fill:var(--ink)}
+.chart{background:var(--surface);border:1px solid var(--rule);border-radius:4px;padding:12px}
+.chart svg{display:block;width:100%;max-width:540px;margin:0 auto}
+code{font:500 .88em var(--mono)}
+pre{margin:0;background:var(--surface);border:1px solid var(--rule);border-radius:4px;padding:12px 14px;font:500 12.5px/1.55 var(--mono);white-space:pre-wrap;overflow-wrap:anywhere}
+ul{margin:0;padding-left:20px;display:grid;gap:8px}
+details{background:var(--surface);border:1px solid var(--rule);border-radius:4px;padding:10px 14px}summary{cursor:pointer;font-weight:500}
+details pre{border:0;padding:0;margin-top:10px}
+.tags{display:flex;flex-wrap:wrap;gap:6px}.tags a{font:500 11px/1 var(--mono);letter-spacing:.04em;color:var(--muted);border:1px solid var(--rule);border-radius:999px;padding:4px 9px;text-decoration:none}.tags a:hover{color:var(--accent);border-color:var(--accent)}
+</style>
+<main>
+  <header>
+    <a class="back" href="/">← Jack Dubie</a>
+    <div class="eyebrow">November 15, 2026</div>
+    <div class="tags"><a href="/evals/">agent evals</a></div>
+    <h1>Find every duplicate file, as fast as you can</h1>
+  </header>
+
+  <p><strong>Six coding agents each had 15 minutes, six times over, to write the fastest correct duplicate-file finder, graded on 23 hidden test trees full of traps. Opus 5.5 was fastest on average, at 4.0× a naive baseline, then Sonnet 5.5 at 3.7×. Gemini 4 Argon's finished programs were as fast as Opus's, but one of its six runs ended with no program at all. Haiku 5.5 was slowest at 2.1×. The traps caught only two finished programs, both from GPT-6.1 Sol, which timed out on a 3 GiB sparse file.</strong></p>
+
+  <p>"Find the duplicate files" sounds like an interview question, which makes it a good speed task: the answer is easy to check, the obvious solution is slow, and the fast solutions are full of ways to be subtly wrong. The traps are the point. A finder that trusts file sizes, a weak checksum, inode numbers or symlinks will be fast and wrong, and a wrong answer on any one tree costs more than speed can win back.</p>
+
+  <h2>The prompt</h2>
+
+  <p>Each agent ran headless in its own sandbox with one instruction, <code>Read PROMPT.md in the current directory and do what it says.</code> This is that file, word for word (with its hard line breaks joined), the same for every model:</p>
+
+  <pre># Write the fastest correct duplicate-file finder
+
+Write a program that finds every set of files with identical contents under a directory tree. It is graded on hidden test trees, first for being exactly right, then for speed.
+
+You have about 15 minutes. Work autonomously; nobody will answer questions. Keep making it faster (and keep it correct) until time runs out.
+
+## What to deliver
+
+- `/work/run.sh`: run as `sh /work/run.sh ROOT` with `/work` as the working directory. It prints the answer on stdout and exits 0.
+- `/work/build.sh` (optional): run once, offline, before grading, with `/work` writable. Compile here. During grading, `/work` is **read-only** and `/tmp` is a fresh 1 GB tmpfs.
+- Use anything in this image: Python 3.12 (standard library only), C/C++ (gcc), Rust (rustc and cargo, no crates), Go. There is no network.
+
+## The exact rules
+
+1. Walk every directory under ROOT that you can reach **without following symbolic links**.
+2. A **candidate** is a regular file (by `lstat`) with size &gt; 0 that you can open and read. Everything else is ignored, and is never an error: symlinks (never followed, whether they point to files, directories, devices, themselves or nowhere), FIFOs, sockets, device files, empty files, entries you can&#x27;t `lstat`, files you can&#x27;t open, and directories you can&#x27;t open or list (and all that is inside).
+3. Two candidates are **duplicates** when their contents are byte-for-byte identical.
+4. **Hard links:** paths sharing an inode (same `st_dev` and `st_ino`) are one file, not duplicates of each other. A **group** is a set of two or more *distinct inodes* with identical contents. Print every reachable path of every inode in the group. An inode with several names and no identical twin is not a group.
+5. **Names are bytes.** A name can hold any byte except `/` and NUL: newlines, invalid UTF-8, leading dashes, glob characters. Paths can be far longer than `PATH_MAX` and thousands of directories deep.
+6. **Output:** each path relative to ROOT (no leading `./` or `/`, byte-exact), followed by a NUL byte; after the last path of a group, one more NUL byte. Example: `a/x\0b/y\0\0c\0d\0e\0\0`. The order of groups, and of paths within a group, doesn&#x27;t matter. Nothing else on stdout. No groups: print nothing.
+
+The tree is on tmpfs, mounted read-only, and nothing changes it while you run. Other filesystems and bind mounts can be mounted inside it; walk into them like any other directory. You run as the owner of the files with no capabilities, so permission bits apply to you.
+
+## How it is graded
+
+The hidden grader generates about 20 trees, runs your `run.sh` on each in a sandbox with **8 CPUs** and **8 GB** of memory, and measures wall-clock time from start to exit.
+
+- A case is **correct** only if your groups are exactly the expected groups. Wrong, malformed, a non-zero exit, or slower than 10× the baseline plus 20 s, and the case fails.
+- The **baseline** is a single-threaded Python program that walks the tree correctly and SHA-256 hashes every candidate in full. It scores 1.0 on every case.
+- Each speed case scores `speedup = baseline_time / your_time`. A few small cases test correctness only and score 1.0 if right. A failed case scores 0.01, which is the same as being 100× slower than the baseline.
+- **Reward = the geometric mean of the case scores.** One failed case costs far more than any single case&#x27;s speed can win back.
+
+The hidden trees are the same kinds of thing as the public ones, bigger, plus others that test the rules above. Expect: many GB of data; hundreds of thousands of files; one directory with 150k entries; chains thousands of levels deep; files that are all the same size and differ only in their first, last or a middle byte; large files that really are identical; sparse files with large apparent sizes; collisions for weak checksums; symlink loops; FIFOs; unreadable files and directories; and other filesystems and bind mounts inside the tree.
+
+## Tools
+
+- `python3 tools/check.py [name-filter] [-v] [--regen]` generates the public cases (small versions) under `/tmp/dupfind-public`, runs your `run.sh` on each, and checks the answer with the grader&#x27;s rule.
+- `tools/cases_public.py` is the generator for the public cases. `public/expected/` holds their answers.
+
+Keep `run.sh` correct at all times. A failed case costs more than any speedup is worth.</pre>
+
+  <p>So the agent knows the exact rules, how speed is scored, and the kinds of traps to expect. It gets the 7 public cases at 1/20 scale and a checker. It does not get the 16 hidden-only cases or their generators.</p>
+
+  <h2>The traps</h2>
+
+  <p>The grader builds 23 trees on a RAM disk at full scale and runs each solution on each one in a container with 8 CPUs, 8 GB of memory and no network. Fourteen cases are scored on speed, and nine are pass/fail:</p>
+
+  <ul>
+    <li><strong>Size doesn't help.</strong> Twenty 400 MB files identical except for the last byte. Others differ only in the first byte, or in one byte in the middle with matching heads and tails.</li>
+    <li><strong>Weak checksums collide.</strong> Same size, same first and last 64 KiB, same CRC32, different bytes in the middle.</li>
+    <li><strong>Every byte must be read.</strong> Large files that really are identical, and a 3 GiB sparse file whose holes make it a duplicate of a dense file full of zeros.</li>
+    <li><strong>Hard links are one file.</strong> 8,000 inodes with 68,000 names between them. Names of one inode are not duplicates of each other.</li>
+    <li><strong>Nothing may be followed.</strong> Symlink loops, links to ancestors, dangling links, FIFOs that block forever if opened, sockets and device links.</li>
+    <li><strong>Paths are bytes and can be enormous.</strong> Newlines and invalid UTF-8 in names, and a chain 2,500 directories deep, far past <code>PATH_MAX</code>.</li>
+    <li><strong>Scale.</strong> 300,000 files of 1 to 64 bytes, one directory with 150,000 entries, and 50,000 copies of one file.</li>
+    <li><strong>Other filesystems inside the tree</strong> (new in this version). In <code>cross_device</code>, two tmpfs mounts whose inode numbers collide, so keying files on inode number alone merges different files. In <code>bind_alias</code>, a directory bind-mounted in two more places, so one file is reachable by several paths and every path must be printed.</li>
+  </ul>
+
+  <p>The reward is the geometric mean over cases of the baseline's time divided by the solution's time. A pass/fail case scores 1 if right. Any wrong case scores 0.01. The baseline is a single-threaded Python program that walks the tree correctly and SHA-256 hashes every candidate in full.</p>
+
+  <h2>Results</h2>
+
+  <figure class="chart">
+    <svg viewBox="0 0 600 300" width="100%" role="img" aria-label="Average reward over 15 minutes per model. Final averages: Opus 5.5 3.50, Sonnet 5.5 3.43, GPT-6.1 Sol 2.60, GPT-6.1 Terra 2.75, Gemini 4 Argon 4.06, Haiku 5.5 2.11."><line x1="34" x2="470" y1="262.0" y2="262.0" stroke="var(--rule)"/><text x="28" y="266.0" text-anchor="end">0</text><line x1="34" x2="470" y1="212.8" y2="212.8" stroke="var(--rule)"/><text x="28" y="216.8" text-anchor="end">1</text><line x1="34" x2="470" y1="163.6" y2="163.6" stroke="var(--rule)"/><text x="28" y="167.6" text-anchor="end">2</text><line x1="34" x2="470" y1="114.4" y2="114.4" stroke="var(--rule)"/><text x="28" y="118.4" text-anchor="end">3</text><line x1="34" x2="470" y1="65.2" y2="65.2" stroke="var(--rule)"/><text x="28" y="69.2" text-anchor="end">4</text><line x1="34" x2="470" y1="16.0" y2="16.0" stroke="var(--rule)"/><text x="28" y="20.0" text-anchor="end">5</text><line x1="34" x2="470" y1="212.8" y2="212.8" stroke="var(--muted)" stroke-dasharray="3 3"/><text x="466" y="226.8" text-anchor="end">naive baseline = 1</text><text x="34.0" y="278" text-anchor="middle">0</text><text x="121.2" y="278" text-anchor="middle">3</text><text x="208.4" y="278" text-anchor="middle">6</text><text x="295.6" y="278" text-anchor="middle">9</text><text x="382.8" y="278" text-anchor="middle">12</text><text x="470.0" y="278" text-anchor="middle">15</text><text x="34" y="296">minutes into the run</text><path d="M34.0,262.0H38.8V262.0H43.7V262.0H48.5V262.0H53.4V262.0H58.2V262.0H63.1V262.0H67.9V262.0H72.8V262.0H77.6V262.0H82.4V217.9H87.3V217.9H92.1V217.9H97.0V153.9H101.8V153.9H106.7V153.9H111.5V153.9H116.4V153.9H121.2V153.9H126.0V153.9H130.9V113.6H135.7V113.6H140.6V113.6H145.4V113.6H150.3V105.7H155.1V105.7H160.0V105.7H164.8V105.7H169.6V89.5H174.5V89.5H179.3V88.0H184.2V88.0H189.0V87.5H193.9V87.5H198.7V87.5H203.6V87.5H208.4V87.5H213.2V87.5H218.1V88.0H222.9V88.0H227.8V88.1H232.6V88.1H237.5V88.1H242.3V88.1H247.2V88.1H252.0V88.2H256.8V88.2H261.7V88.2H266.5V88.2H271.4V88.2H276.2V88.2H281.1V88.2H285.9V88.2H290.8V88.2H295.6V88.2H300.4V88.2H305.3V88.2H310.1V88.2H315.0V88.2H319.8V88.2H324.7V88.2H329.5V88.2H334.4V88.2H339.2V88.2H344.0V88.2H348.9V88.2H353.7V88.2H358.6V88.2H363.4V88.2H368.3V88.2H373.1V88.2H378.0V88.2H382.8V88.2H387.6V88.2H392.5V88.2H397.3V88.2H402.2V88.2H407.0V88.2H411.9V88.2H416.7V88.2H421.6V88.2H426.4V88.2H431.2V88.2H436.1V88.2H440.9V88.2H445.8V90.0H450.6V90.0H455.5V90.0H460.3V90.0H465.2V90.0H470.0V90.0" fill="none" stroke="var(--c-opus)" stroke-width="2.2" stroke-linejoin="round"/><path d="M34.0,262.0H38.8V262.0H43.7V262.0H48.5V262.0H53.4V262.0H58.2V262.0H63.1V262.0H67.9V262.0H72.8V262.0H77.6V262.0H82.4V262.0H87.3V262.0H92.1V224.0H97.0V163.1H101.8V163.1H106.7V142.4H111.5V142.4H116.4V142.4H121.2V142.4H126.0V142.4H130.9V142.4H135.7V142.4H140.6V142.4H145.4V123.9H150.3V123.9H155.1V123.9H160.0V91.4H164.8V91.4H169.6V91.4H174.5V91.4H179.3V91.4H184.2V91.4H189.0V91.4H193.9V91.4H198.7V91.4H203.6V91.4H208.4V91.4H213.2V91.4H218.1V91.4H222.9V91.4H227.8V91.4H232.6V91.4H237.5V91.4H242.3V91.4H247.2V91.4H252.0V91.4H256.8V91.4H261.7V91.4H266.5V91.4H271.4V91.4H276.2V91.4H281.1V91.4H285.9V91.4H290.8V91.4H295.6V91.4H300.4V91.4H305.3V91.4H310.1V91.4H315.0V91.4H319.8V91.4H324.7V91.4H329.5V91.4H334.4V91.4H339.2V91.4H344.0V91.4H348.9V91.4H353.7V91.4H358.6V91.4H363.4V91.4H368.3V91.4H373.1V91.4H378.0V91.4H382.8V91.4H387.6V91.4H392.5V91.4H397.3V91.4H402.2V91.4H407.0V91.4H411.9V91.4H416.7V91.4H421.6V91.4H426.4V91.4H431.2V91.4H436.1V91.4H440.9V91.4H445.8V93.4H450.6V93.4H455.5V93.4H460.3V93.4H465.2V93.4H470.0V93.4" fill="none" stroke="var(--c-sonnet)" stroke-width="2.2" stroke-linejoin="round"/><path d="M34.0,262.0H38.8V262.0H43.7V262.0H48.5V262.0H53.4V262.0H58.2V262.0H63.1V262.0H67.9V262.0H72.8V262.0H77.6V262.0H82.4V262.0H87.3V262.0H92.1V177.6H97.0V177.6H101.8V150.0H106.7V150.0H111.5V150.0H116.4V150.0H121.2V150.0H126.0V150.0H130.9V150.0H135.7V150.0H140.6V150.0H145.4V150.0H150.3V150.0H155.1V141.7H160.0V140.4H164.8V140.4H169.6V140.4H174.5V140.4H179.3V140.4H184.2V140.4H189.0V136.6H193.9V136.6H198.7V136.6H203.6V136.6H208.4V136.6H213.2V136.6H218.1V136.6H222.9V136.6H227.8V136.6H232.6V136.6H237.5V136.6H242.3V136.6H247.2V133.0H252.0V133.0H256.8V126.2H261.7V126.2H266.5V126.2H271.4V122.8H276.2V122.8H281.1V122.8H285.9V122.8H290.8V122.8H295.6V122.8H300.4V122.8H305.3V122.8H310.1V123.0H315.0V123.0H319.8V123.0H324.7V123.0H329.5V123.0H334.4V123.0H339.2V123.0H344.0V123.0H348.9V123.0H353.7V119.5H358.6V119.5H363.4V119.5H368.3V119.5H373.1V118.1H378.0V118.1H382.8V118.1H387.6V118.1H392.5V118.1H397.3V118.1H402.2V118.1H407.0V118.1H411.9V118.1H416.7V118.1H421.6V118.2H426.4V118.2H431.2V118.2H436.1V118.2H440.9V118.1H445.8V118.1H450.6V118.3H455.5V118.3H460.3V133.7H465.2V133.7H470.0V134.1" fill="none" stroke="var(--c-sol)" stroke-width="2.2" stroke-linejoin="round"/><path d="M34.0,262.0H38.8V262.0H43.7V262.0H48.5V262.0H53.4V262.0H58.2V239.9H63.1V239.9H67.9V239.9H72.8V239.9H77.6V239.9H82.4V239.9H87.3V205.5H92.1V205.5H97.0V205.5H101.8V205.5H106.7V171.6H111.5V171.6H116.4V171.6H121.2V171.6H126.0V171.6H130.9V171.6H135.7V171.6H140.6V164.4H145.4V164.4H150.3V164.4H155.1V164.4H160.0V146.9H164.8V146.9H169.6V146.9H174.5V146.9H179.3V132.8H184.2V132.8H189.0V132.8H193.9V132.8H198.7V132.8H203.6V132.8H208.4V132.8H213.2V132.8H218.1V132.8H222.9V132.8H227.8V132.8H232.6V132.8H237.5V132.8H242.3V132.8H247.2V132.8H252.0V132.8H256.8V129.8H261.7V129.8H266.5V129.8H271.4V129.8H276.2V129.8H281.1V129.8H285.9V129.8H290.8V129.8H295.6V129.8H300.4V129.8H305.3V129.8H310.1V129.8H315.0V129.8H319.8V129.8H324.7V129.8H329.5V129.8H334.4V130.0H339.2V130.0H344.0V130.0H348.9V126.8H353.7V126.8H358.6V126.8H363.4V126.8H368.3V126.8H373.1V126.8H378.0V126.8H382.8V126.8H387.6V126.8H392.5V126.8H397.3V126.8H402.2V126.8H407.0V126.8H411.9V126.8H416.7V126.8H421.6V126.8H426.4V127.2H431.2V127.2H436.1V125.8H440.9V125.8H445.8V126.2H450.6V126.2H455.5V126.6H460.3V126.6H465.2V126.6H470.0V126.6" fill="none" stroke="var(--c-terra)" stroke-width="2.2" stroke-linejoin="round"/><path d="M34.0,262.0H38.8V262.0H43.7V262.0H48.5V262.0H53.4V262.0H58.2V262.0H63.1V262.0H67.9V262.0H72.8V262.0H77.6V262.0H82.4V262.0H87.3V262.0H92.1V262.0H97.0V262.0H101.8V262.0H106.7V262.0H111.5V262.0H116.4V262.0H121.2V262.0H126.0V262.0H130.9V262.0H135.7V262.0H140.6V262.0H145.4V262.0H150.3V262.0H155.1V262.0H160.0V262.0H164.8V262.0H169.6V262.0H174.5V262.0H179.3V262.0H184.2V262.0H189.0V262.0H193.9V262.0H198.7V262.0H203.6V262.0H208.4V262.0H213.2V262.0H218.1V262.0H222.9V262.0H227.8V262.0H232.6V262.0H237.5V262.0H242.3V262.0H247.2V262.0H252.0V262.0H256.8V262.0H261.7V262.0H266.5V262.0H271.4V262.0H276.2V262.0H281.1V262.0H285.9V262.0H290.8V262.0H295.6V262.0H300.4V262.0H305.3V262.0H310.1V262.0H315.0V262.0H319.8V199.3H324.7V199.6H329.5V199.6H334.4V199.6H339.2V199.6H344.0V199.6H348.9V199.6H353.7V199.6H358.6V199.6H363.4V199.6H368.3V199.6H373.1V199.6H378.0V135.6H382.8V136.1H387.6V136.1H392.5V136.1H397.3V136.1H402.2V136.1H407.0V136.1H411.9V136.1H416.7V136.1H421.6V136.1H426.4V136.1H431.2V135.8H436.1V135.8H440.9V135.8H445.8V135.8H450.6V135.4H455.5V135.4H460.3V60.7H465.2V61.1H470.0V62.3" fill="none" stroke="var(--c-gemini)" stroke-width="2.2" stroke-linejoin="round"/><path d="M34.0,262.0H38.8V262.0H43.7V262.0H48.5V262.0H53.4V262.0H58.2V262.0H63.1V262.0H67.9V262.0H72.8V262.0H77.6V262.0H82.4V262.0H87.3V225.7H92.1V192.3H97.0V154.1H101.8V154.1H106.7V154.1H111.5V154.1H116.4V154.1H121.2V154.0H126.0V153.8H130.9V153.8H135.7V153.8H140.6V153.8H145.4V153.8H150.3V153.8H155.1V153.8H160.0V153.8H164.8V153.8H169.6V153.8H174.5V153.8H179.3V153.8H184.2V153.8H189.0V153.8H193.9V157.8H198.7V157.7H203.6V157.7H208.4V157.7H213.2V157.7H218.1V157.7H222.9V157.7H227.8V157.7H232.6V157.7H237.5V157.6H242.3V157.6H247.2V157.6H252.0V157.6H256.8V157.6H261.7V157.6H266.5V157.6H271.4V157.6H276.2V157.6H281.1V157.6H285.9V157.6H290.8V157.6H295.6V157.6H300.4V157.6H305.3V157.6H310.1V157.6H315.0V157.6H319.8V157.6H324.7V157.6H329.5V157.6H334.4V157.6H339.2V157.6H344.0V157.6H348.9V157.6H353.7V157.6H358.6V157.6H363.4V157.6H368.3V157.6H373.1V157.6H378.0V157.6H382.8V157.6H387.6V157.6H392.5V157.6H397.3V157.6H402.2V157.6H407.0V157.6H411.9V157.6H416.7V157.6H421.6V157.6H426.4V157.6H431.2V157.6H436.1V157.6H440.9V157.6H445.8V158.0H450.6V158.0H455.5V158.0H460.3V158.0H465.2V158.0H470.0V158.0" fill="none" stroke="var(--c-haiku)" stroke-width="2.2" stroke-linejoin="round"/><text x="476" y="66.3" class="n" style="fill:var(--c-gemini)">Gemini 4.06</text><text x="476" y="94.0" class="n" style="fill:var(--c-opus)">Opus 3.50</text><text x="476" y="109.0" class="n" style="fill:var(--c-sonnet)">Sonnet 3.43</text><text x="476" y="130.6" class="n" style="fill:var(--c-terra)">Terra 2.75</text><text x="476" y="145.6" class="n" style="fill:var(--c-sol)">Sol 2.60</text><text x="476" y="162.0" class="n" style="fill:var(--c-haiku)">Haiku 2.11</text></svg>
+    <figcaption>Reward over the 15 minutes, each line the average of a model's three runs in the second sweep. While an agent worked, the harness copied its folder every 10 s whenever anything had changed. Up to 5 copies per run, evenly spaced, plus the final state went through the full hidden grader, and each run holds its value until its next graded copy. A run counts as 0 until it has a working <code>run.sh</code>, so a line climbing in steps is partly runs arriving at different times. The table below has every run of both sweeps.</figcaption>
+  </figure>
+
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Model</th><th>Mean</th><th>Sweep 1</th><th>Sweep 2</th><th>All 23 right</th></tr></thead>
+      <tbody>
+        <tr class="group"><td colspan="5">Models, 2 sweeps × 3 runs of 15 minutes</td></tr>
+        <tr><td>Opus 5.5</td><td>4.01</td><td class="nw">5.26 · 3.15 · 5.16</td><td class="nw">4.82 · 3.25 · 2.42</td><td>6/6</td></tr>
+        <tr><td>Sonnet 5.5</td><td>3.73</td><td class="nw">3.60 · 4.23 · 4.27</td><td class="nw">3.54 · 3.05 · 3.69</td><td>6/6</td></tr>
+        <tr><td>Gemini 4 Argon</td><td>3.26</td><td class="nw">0.01 · 2.82 · 4.55</td><td class="nw">3.82 · 4.54 · 3.83</td><td>5/6</td></tr>
+        <tr><td>GPT-6.1 Sol</td><td>2.81</td><td class="nw">3.06 · 3.12 · 2.91</td><td class="nw">2.05 · 3.08 · 2.67</td><td>4/6</td></tr>
+        <tr><td>GPT-6.1 Terra</td><td>2.77</td><td class="nw">2.85 · 2.91 · 2.63</td><td class="nw">2.67 · 2.90 · 2.69</td><td>6/6</td></tr>
+        <tr><td>Haiku 5.5</td><td>2.14</td><td class="nw">2.49 · 1.85 · 2.17</td><td class="nw">2.05 · 2.21 · 2.09</td><td>6/6</td></tr>
+        <tr class="group"><td colspan="5">Reference points, same 23 cases</td></tr>
+        <tr><td>Naive baseline: Python, SHA-256 everything</td><td>1.02</td><td></td><td></td><td class='nw'>23/23</td></tr>
+        <tr><td>Python reference: size filter, head/tail probe, threaded hash</td><td>1.14</td><td></td><td></td><td class='nw'>23/23</td></tr>
+        <tr><td>Sloppy on purpose: size + first 64 KiB</td><td>0.17</td><td></td><td></td><td class='nw'>13/23</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>35 of 36 runs delivered a finder, and 33 of those were right on all 23 trees. Sol's other two were right on 22 and too slow on the sparse file. The ranking is mostly speed, and the speed comes from two choices: how a match gets confirmed on big files, and whether the program uses more than one core.</p>
+
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Case</th><th>Opus</th><th>Sonnet</th><th>Sol</th><th>Terra</th><th>Gemini</th><th>Haiku</th></tr></thead>
+      <tbody>
+        <tr class="group"><td colspan="7">Median speedup over the baseline, all finished runs, scored cases only</td></tr>
+        <tr><td><code>flat_sizes</code></td><td>31.4</td><td>32.2</td><td>43.8</td><td>28.5</td><td><b>63.4</b></td><td>17.9</td></tr>
+        <tr><td><code>last_byte</code></td><td><b>35.2</b></td><td>32.2</td><td>22.7</td><td>22.9</td><td>11.0</td><td>6.5</td></tr>
+        <tr><td><code>nested_mix</code></td><td>4.6</td><td>4.3</td><td>2.5</td><td>1.8</td><td><b>5.9</b></td><td>1.9</td></tr>
+        <tr><td><code>hardlinks</code></td><td>5.7</td><td>2.5</td><td>2.1</td><td>1.9</td><td><b>9.4</b></td><td>1.2</td></tr>
+        <tr><td><code>empty_files</code></td><td><b>9.4</b></td><td>1.8</td><td>1.8</td><td>1.8</td><td>6.1</td><td>1.3</td></tr>
+        <tr><td><code>first_byte</code></td><td><b>65.9</b></td><td>38.3</td><td>23.3</td><td>23.8</td><td>15.1</td><td>8.5</td></tr>
+        <tr><td><code>middle_byte</code></td><td>8.1</td><td><b>11.4</b></td><td>5.7</td><td>3.6</td><td>5.9</td><td>8.1</td></tr>
+        <tr><td><code>big_true_dups</code></td><td><b>11.8</b></td><td>11.0</td><td>6.7</td><td>3.7</td><td>4.4</td><td>8.8</td></tr>
+        <tr><td><code>many_tiny</code></td><td>5.2</td><td>3.2</td><td>2.8</td><td>2.8</td><td><b>6.9</b></td><td>1.4</td></tr>
+        <tr><td><code>huge_flat_dir</code></td><td>2.4</td><td>3.4</td><td><b>3.4</b></td><td>2.8</td><td>3.4</td><td>1.5</td></tr>
+        <tr><td><code>wide_tree</code></td><td>4.6</td><td>2.5</td><td>1.9</td><td>1.6</td><td><b>6.7</b></td><td>1.2</td></tr>
+        <tr><td><code>sparse_giant</code></td><td><b>28.2</b></td><td>14.3</td><td>3.6</td><td>3.3</td><td>10.9</td><td>4.1</td></tr>
+        <tr><td><code>one_giant_group</code></td><td>31.4</td><td>25.7</td><td>22.8</td><td>21.2</td><td><b>47.9</b></td><td>8.4</td></tr>
+        <tr><td><code>size_classes</code></td><td>7.2</td><td><b>18.4</b></td><td>16.3</td><td>12.5</td><td>13.9</td><td>6.2</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>How the 15 minutes went</h2>
+
+  <p>The chart shows two ways of spending 15 minutes. The Claude models had a working finder about 2 to 4 minutes in, and every Sonnet and Haiku run had its final score within 7 minutes. Opus kept improving a little longer, its last change at 4:30 to 7:20. Then they stopped. Claude Code ends its session after each reply, so the harness resumed it with "You have about N minutes left. Keep working on the task in PROMPT.md." Opus, Sonnet and Haiku were resumed about 150 to 400 times per run, almost always to say the finder was final.</p>
+
+  <p>Sol and Terra climbed steadily for the whole run, in one or two long sessions, with 11 to 20 saved changes each. Gemini read and planned for 6 to 14 minutes without writing anything, then produced a finished, fast program in one go. Its first working copy already scored 3.8 to 4.6, and it barely changed after that.</p>
+
+  <p>One curve goes the wrong way. Sol's third run reached 3.62 at 10:50, its best score. A change after that made the final version time out on the 3 GiB sparse file, and it finished at 2.67. Sol's first run timed out on that case from its first graded copy to its last.</p>
+
+  <h2>What the models did</h2>
+
+  <p><strong>Everyone wrote native code.</strong> On the first version of this benchmark, Haiku wrote Python and scored 0.99. This time all 35 finished runs were C or C++, compiled once in <code>build.sh</code>. All of them key files on inode, so hard links count once, and compare sizes before contents. Most read a few bytes from each file before committing to a full read, and most ask where a sparse file's data is (<code>SEEK_DATA</code>) instead of reading gigabytes of holes.</p>
+
+  <p><strong>Gemini walks fastest and reads big files slowest.</strong> Gemini wrote the largest programs, 36 to 57 KB of C++ for the five that finished, each with a parallel directory walk on raw <code>getdents64</code>. That made it the fastest on tree-shaped cases: a median 63× on <code>flat_sizes</code> and 9.4× on <code>hardlinks</code>. But four of its five finished programs confirm matches with full SHA-256, so on 400 MB files that differ in one byte it managed a median 11× to 15×, where Opus reached 35× to 66×.</p>
+
+  <p><strong>Sol and Terra wrote single-threaded programs.</strong> Both OpenAI models wrote short, careful C++ with plain <code>opendir</code>/<code>readdir</code> and a byte-for-byte compare. They tested hard: in one run Terra ran 100 randomized differential tests and reran its finder with only 8 to 11 open file descriptors. On a machine with 8 CPUs, one thread caps them on every read-heavy case. Terra was the most consistent model, all six runs between 2.63 and 2.91.</p>
+
+  <p><strong>Opus has the widest spread.</strong> Its six runs range from 2.42 to 5.26. In one run of the first sweep it spent all 15 minutes trying to handle groups of same-size files too large to open at once. With the open-file limit forced to 100, its new fallback hung on 3,000 identical files, so it put back the previous version and stopped at 3.15. Two runs of the second sweep were slow on the last-byte case, 1.6× and 4.1×, against 50× for its best.</p>
+
+  <p><strong>Gemini's failed run never got to a program.</strong> In the first sweep it spent 15 minutes designing and editing a 58 KB C++ file, never compiled it, and never wrote <code>run.sh</code>, so the grader had nothing to run. Its other five runs averaged 3.91, about the same as Opus's 4.01.</p>
+
+  <h2>Did the traps work?</h2>
+
+  <p>In these 36 runs the traps caught two programs, both Sol's, both on the sparse file. To check that they catch more than that, I ran a deliberately sloppy Python finder that groups files by size and their first 64 KiB. It gets 13 of 23 right and fails <code>last_byte</code>, <code>hardlinks</code>, <code>symlinks</code>, <code>middle_byte</code>, <code>deep_pathmax</code>, <code>sparse_giant</code>, <code>crc_bait</code>, <code>trivial</code>, <code>cross_device</code>, <code>bind_alias</code>.</p>
+
+  <p>The more useful test is the first version of this benchmark. It had 21 cases, without the two mount traps, and every model got all 21 right, so the traps separated nobody. I added <code>cross_device</code> and <code>bind_alias</code>, said in the prompt that mounts can appear inside the tree, and graded the six solutions from that first run on all 23 cases:</p>
+
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>First-version solution</th><th>On 21 cases</th><th>On 23 cases</th><th>Correct</th><th>Failed</th></tr></thead>
+      <tbody>
+        <tr><td>Opus</td><td>4.70</td><td>4.15</td><td>23/23</td><td class="l">none</td></tr>
+        <tr><td>Sonnet</td><td>3.21</td><td>2.91</td><td>23/23</td><td class="l">none</td></tr>
+        <tr><td>Sol</td><td>3.59</td><td>3.26</td><td>23/23</td><td class="l">none</td></tr>
+        <tr><td>Terra</td><td>3.10</td><td>2.90</td><td>23/23</td><td class="l">none</td></tr>
+        <tr><td>Gemini</td><td>5.00</td><td>3.65</td><td>22/23</td><td class="l"><code>bind_alias</code></td></tr>
+        <tr><td>Haiku</td><td>0.99</td><td>1.00</td><td>23/23</td><td class="l">none</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>The bind-mount trap caught Gemini's old solution. It treated a file reached through a bind mount as a duplicate of itself and reported 368 groups that aren't duplicates, which took its score from 5.00 to 3.65. All of Gemini's later solutions, written with the mounts line in the prompt, pass. So the trap works, and once the rule is written down, every model follows it.</p>
+
+
+  <h2>Caveats</h2>
+  <ul>
+    <li><strong>Six runs per model.</strong> The spread within a model is up to 2.8 points (Opus 2.42 to 5.26), larger than most gaps between models. The two sweeps ranked the models differently: Gemini was fifth in the first, because of its empty run, and first in the second, ahead of Opus and Sonnet.</li>
+    <li><strong>Hashes the grader can't catch.</strong> Several finished programs trust a home-made 128-bit hash and never compare the bytes: in the first sweep alone, Opus's third run, Sonnet's second and third, and Haiku's second. No fixed test tree can catch that, because it would need a collision built for each program's hash. The CRC32 trap only catches CRC32. Their answers were all right, but "correct on 23 trees" is not "correct".</li>
+    <li><strong>Different harnesses.</strong> The Claude models ran in headless Claude Code, Sol and Terra in the Codex CLI, and Argon in the Gemini CLI in yolo mode. The Gemini CLI's own policy refused a few shell commands in some of Argon's runs, such as <code>nm -D … | grep</code>.</li>
+    <li><strong>A leftover file in the first sweep.</strong> The previous version of the prompt (<code>PROMPT.md.v1</code>) was copied into every agent's folder by mistake. It is the same task without the line about mounts inside the tree, so it gives nothing hidden away. Gemini opened it in all three runs, and Haiku compared it with the real prompt once. The second sweep did not have it.</li>
+    <li><strong>Sparse curves.</strong> Only 2 to 6 states per run were graded, so the curves show when the reward changed but not every step in between.</li>
+    <li><strong>The reward is relative.</strong> On tiny trees the baseline's Python start-up dominates, so a large speedup there means less than it looks.</li>
+  </ul>
+
+  <p>The prompt, grader, reference finders and harness are in <a href="https://github.com/jdubie/jdubie.github.io/tree/drafts/dupfind-env"><code>dupfind-env/</code></a>.</p>
+</main>
+</html>

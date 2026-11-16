@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="tags" content="policy learning,reproduction">
+<title>Training-Time RTC in π0.5</title>
+<meta name="description" content="Implementing training-time realtime action chunking in π0.5: a small change to training and inference that made rollouts smooth, stateful and about 99% autonomous on 14 hours of teleop data.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@600;700&family=Public+Sans:wght@400;500&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+:root{--bg:#f3f4f5;--surface:#fff;--ink:#1b1f23;--muted:#5d6670;--rule:#d9dde1;--accent:#a3271b;
+  --display:"Archivo Narrow","Arial Narrow",Arial,sans-serif;--body:"Public Sans",system-ui,sans-serif;--mono:"JetBrains Mono",ui-monospace,monospace}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#15181b;--surface:#1d2125;--ink:#e7eaed;--muted:#9aa4ae;--rule:#2f353b;--accent:#e2614f;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#15181b;--surface:#1d2125;--ink:#e7eaed;--muted:#9aa4ae;--rule:#2f353b;--accent:#e2614f;color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font:400 16px/1.65 var(--body);margin:0;padding:28px 16px 64px}
+main{max-width:720px;margin:0 auto;display:grid;gap:28px}
+.back{font:500 13px/1 var(--mono);color:var(--muted);text-decoration:none}.back:hover{color:var(--accent)}
+.eyebrow{font:500 12px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+header{display:grid;gap:14px}
+h1{font:700 clamp(30px,5vw,44px)/1.1 var(--display);margin:0;text-wrap:balance}
+p{margin:0}
+a{color:var(--accent)}
+figure{margin:0;display:grid;gap:8px}
+video{width:100%;display:block;border-radius:4px;background:#000}
+figcaption{font-size:13px;color:var(--muted)}
+blockquote{margin:0;padding:16px 20px;background:var(--surface);border-left:3px solid var(--accent);border-radius:0 4px 4px 0;display:grid;gap:10px}
+blockquote footer{font-size:13px;color:var(--muted)}
+h2{font:600 24px/1.15 var(--display);margin:8px 0 0}
+ol{margin:0;padding-left:22px;display:grid;gap:10px}
+.tablewrap{overflow-x:auto;background:var(--surface);border:1px solid var(--rule);border-radius:4px}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:right;padding:7px 14px;border-bottom:1px solid var(--rule);font-variant-numeric:tabular-nums}
+th:first-child,td:first-child{text-align:left}
+th{font:500 11px/1.2 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:var(--bg)}
+tr.total td{font-weight:600;border-bottom:0}
+td.dag{color:var(--accent)}
+.draft{font:500 12px/1.4 var(--mono);color:var(--accent);border:1px dashed var(--accent);border-radius:4px;padding:8px 12px}
+pre{background:var(--surface);border:1px solid var(--rule);border-radius:4px;padding:12px 14px;overflow-x:auto;font:400 12.5px/1.55 var(--mono);margin:0}
+code{font-family:var(--mono);font-size:.9em}
+.vpair{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}
+@media (max-width:560px){.vpair{grid-template-columns:1fr}}
+.tags{display:flex;flex-wrap:wrap;gap:6px}.tags a{font:500 11px/1 var(--mono);letter-spacing:.04em;color:var(--muted);border:1px solid var(--rule);border-radius:999px;padding:4px 9px;text-decoration:none}.tags a:hover{color:var(--accent);border-color:var(--accent)}
+</style>
+<main>
+  <header>
+    <a class="back" href="/">← Jack Dubie</a>
+    <div class="eyebrow">June 28, 2026</div>
+    <div class="tags"><a href="/robotics/">policy learning</a><a href="/robotics/">reproduction</a></div>
+    <h1>Implementing training-time RTC in π0.5</h1>
+  </header>
+
+  <p>Action-chunking policies like π0.5 predict a chunk of future actions at a time. Run them asynchronously and you get seams: the next chunk is computed while the robot is still executing the last one, and it doesn't know what the robot has already committed to. I implemented <a href="https://arxiv.org/pdf/2512.05964">training-time realtime chunking (RTC)</a> from Physical Intelligence in our π0.5 fork, trained it on 14 hours of teleop-only data (no DAgger), and rolled it out for 30 minutes on two rigs. It was smoother than any rollout I'd seen us try.</p>
+
+  <figure>
+    <video src="montage.mp4" controls muted playsinline preload="metadata"></video>
+    <figcaption>Every rollout from the session, on the bags rig and then the tubes rig. The label in the corner shows whether the policy (ROLLOUT) or a person (DAgger) is driving.</figcaption>
+  </figure>
+
+  <h2>The change to training</h2>
+  <p>The idea: during training, pretend some of the chunk was already committed. For each example I sample a delay of 0 to 5 actions. Those first actions go into the model clean, as a prefix, and only the rest are noised and learned. The model learns to continue smoothly from whatever it's handed.</p>
+  <pre><code># per example, simulate an inference delay of d actions
+d = randint(0, rtc_max_delay + 1)                 # rtc_max_delay = 5
+prefix = arange(horizon) &lt; d                      # first d actions
+t_tok = where(prefix, 0.0, t)                     # prefix clean (t=0), rest noised
+x_t = t_tok * noise + (1 - t_tok) * actions
+v_t = model(obs, x_t, t_tok)                      # per-token timesteps
+loss = mean((v_t - (noise - actions))**2) * ~prefix  # learn only the postfix</code></pre>
+  <p>That needs one change to the model: each action token gets its own flow-matching timestep instead of one per example, so the prefix can sit at t = 0 while the rest denoises. π0.5's adaptive norm already takes the timestep, so it's the same weights; nothing new to learn from scratch, and pi05_base loads unchanged.</p>
+
+  <p>I've put a clean version on the <a href="https://github.com/jdubie/openpi/tree/train-time-rtc"><code>train-time-rtc</code> branch</a> of my <a href="https://github.com/jdubie/openpi">openpi fork</a> (commit <a href="https://github.com/jdubie/openpi/commit/1f1a8d9">1f1a8d9</a>), with a README section on how to use it. That port passes its unit tests on small dummy models on CPU, but unlike the version in this post it hasn't been trained on a robot yet.</p>
+
+  <h2>The change to inference</h2>
+  <p>On the robot, inference runs asynchronously. Each request sends the next 5 actions the robot is already committed to as the prefix; 5 covers the measured ~59 ms of inference delay at 60 Hz with margin. The server pins those actions at t = 0 on every denoising step and only denoises the rest, so the new chunk starts exactly where the old one is going. No interpolation, no blending.</p>
+  <p>One fix came the night of the rollout: the very first chunk had no prefix, so the arms jumped at the start. Seeding it with the last commanded action solved that.</p>
+
+  <h2>What it did</h2>
+  <ol>
+    <li><strong>Smooth.</strong> You can't tell when one chunk hands over to the next.</li>
+    <li><strong>Dexterous.</strong> It put lids on tubes 13 out of 13 times, better than a person could, including tubes in different places and one upside down.</li>
+    <li><strong>Stateful.</strong> Because every chunk is conditioned on what the robot just did, it never got stuck. When something went wrong it retried, which stateless policies don't do.</li>
+    <li><strong>About 99% autonomous.</strong> Given a clean start, almost every frame of the session was the policy's own.</li>
+  </ol>
+
+  <figure>
+    <video src="retry.mp4" controls muted loop playsinline preload="metadata"></video>
+    <figcaption>A retry: the lid doesn't seat cleanly the first time, so the policy goes back and seats it again, with nobody stepping in. Tubes rig, episode 40, about 2.6× speed.</figcaption>
+  </figure>
+
+  <h2>Who was driving</h2>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Rig</th><th>Episode</th><th>Frames</th><th>Policy</th><th>DAgger</th></tr></thead>
+      <tbody>
+          <tr><td>Bags</td><td>1</td><td>6,500</td><td>100.0%</td><td>0</td></tr>
+          <tr><td>Bags</td><td>6</td><td>5,598</td><td>100.0%</td><td>0</td></tr>
+          <tr><td>Bags</td><td>11</td><td>10,184</td><td>100.0%</td><td>0</td></tr>
+          <tr><td>Bags</td><td>15</td><td>7,890</td><td>100.0%</td><td>0</td></tr>
+          <tr><td>Bags</td><td>25</td><td>7,665</td><td>100.0%</td><td>0</td></tr>
+          <tr><td>Bags</td><td>26</td><td>8,364</td><td>100.0%</td><td>0</td></tr>
+          <tr><td>Tubes</td><td>2</td><td>6,854</td><td>97.7%</td><td class=dag>2.3%</td></tr>
+          <tr><td>Tubes</td><td>3</td><td>6,156</td><td>100.0%</td><td>0</td></tr>
+          <tr><td>Tubes</td><td>14</td><td>5,813</td><td>98.8%</td><td class=dag>1.2%</td></tr>
+          <tr><td>Tubes</td><td>17</td><td>6,131</td><td>100.0%</td><td>0</td></tr>
+          <tr><td>Tubes</td><td>25</td><td>4,703</td><td>100.0%</td><td>0</td></tr>
+          <tr><td>Tubes</td><td>34</td><td>4,666</td><td>100.0%</td><td>0</td></tr>
+          <tr><td>Tubes</td><td>35</td><td>5,637</td><td>100.0%</td><td>0</td></tr>
+          <tr><td>Tubes</td><td>39</td><td>4,275</td><td>100.0%</td><td>0</td></tr>
+          <tr><td>Tubes</td><td>40</td><td>6,681</td><td>98.1%</td><td class=dag>1.9%</td></tr>
+          <tr><td>Tubes</td><td>43</td><td>5,606</td><td>93.1%</td><td class=dag>6.9%</td></tr>
+          <tr><td>Tubes</td><td>44</td><td>6,426</td><td>97.9%</td><td class=dag>2.1%</td></tr>
+          <tr><td>Tubes</td><td>45</td><td>6,155</td><td>100.0%</td><td>0</td></tr>
+          <tr class="total"><td>Bags, 6 episodes</td><td></td><td>46,201</td><td>100.0%</td><td>0</td></tr>
+          <tr class="total"><td>Tubes, 12 episodes</td><td></td><td>69,103</td><td>98.7%</td><td>1.3%</td></tr>
+          <tr class="total"><td>All 18</td><td></td><td>115,304</td><td>99.2%</td><td>0.8%</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>13 of the 18 episodes needed no intervention at all. The worst, tubes episode 43, was 93% policy. Totals are frame-weighted.</p>
+
+  <h2>How much smoother</h2>
+  <p>I compared the RTC rollouts with the π0.5 policies we ran before it, on both rigs.</p>
+  <figure>
+    <video src="bags_before_after.mp4" controls muted loop playsinline preload="metadata"></video>
+    <figcaption>Bags rig, the first part of an episode on each side, both at about 3× speed: the RTC policy (left) and the same recipe without RTC (right).</figcaption>
+  </figure>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Rig</th><th>Policy</th><th>Episodes</th><th>RMS jerk (rad/s³)</th><th>Peak jerk, p99</th><th>Motion above 5 Hz</th><th>Chunk jumps /s</th></tr></thead>
+      <tbody>
+        <tr><td>Bags</td><td>RTC</td><td>147</td><td>56</td><td>632</td><td>4%</td><td>0.03</td></tr>
+        <tr><td>Bags</td><td>Same recipe, no RTC</td><td>2</td><td>149</td><td>2,383</td><td>41%</td><td>1.13</td></tr>
+        <tr><td>Bags</td><td>Previous production π0.5</td><td>23</td><td>164</td><td>2,779</td><td>37%</td><td>1.10</td></tr>
+        <tr><td>Tubes</td><td>RTC</td><td>12</td><td>45</td><td>456</td><td>6%</td><td>0.02</td></tr>
+        <tr><td>Tubes</td><td>Previous tubes π0.5</td><td>12</td><td>146</td><td>2,185</td><td>43%</td><td>0.98</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <figure>
+    <picture>
+      <source srcset="traces_dark.png" media="(prefers-color-scheme: dark)">
+      <img src="traces_light.png" alt="Commanded and measured joint angle over 10 seconds with and without RTC. The no-RTC commands step abruptly; the RTC commands are smooth." loading="lazy" style="width:100%;display:block;border-radius:4px">
+    </picture>
+    <figcaption>One joint over 10 seconds of real time. The commanded action (colour) is what the policy asked for; the grey line is where the joint actually went. Without RTC the commands step at chunk boundaries; with RTC they don't.</figcaption>
+  </figure>
+  <figure>
+    <picture>
+      <source srcset="steps_dark.png" media="(prefers-color-scheme: dark)">
+      <img src="steps_light.png" alt="Per-frame change in the commanded joint angle. Without RTC there are regular spikes; the RTC policy stays flat." loading="lazy" style="width:100%;display:block;border-radius:4px">
+    </picture>
+    <figcaption>The same 10 seconds as the size of each frame-to-frame step in the command. The regular spikes without RTC are the seams between chunks.</figcaption>
+  </figure>
+  <figure>
+    <picture>
+      <source srcset="jerk_dark.png" media="(prefers-color-scheme: dark)">
+      <img src="jerk_light.png" alt="Jerk over the same 10 seconds. Without RTC the commanded jerk spikes past 1,500 rad/s³ at every chunk boundary; with RTC it stays under about 500." loading="lazy" style="width:100%;display:block;border-radius:4px">
+    </picture>
+    <figcaption>The same 10 seconds as jerk, across all 12 arm joints. Without RTC the commanded jerk spikes at every chunk boundary; with RTC it stays low. The measured joints (grey) spike far less, because the arm's controller smooths the command.</figcaption>
+  </figure>
+
+  <p>The commands are about 3× less jerky on average and 4–5× less at their peaks (99th percentile), and the jumps between chunks are essentially gone. The arm's own controller smooths a lot of that out, so the motion at the joints is only modestly smoother on tubes and about the same on bags. Medians of the commanded actions while the policy was driving.</p>
+  <p>None of this is a controlled A/B. The only same-recipe comparison has just 2 episodes; the others are different checkpoints trained on different data, a few days apart, and the recordings don't say which scheduler ran. And π0.7, which doesn't use training-time RTC, is about as smooth as the RTC policy, so smoothness alone isn't unique to RTC.</p>
+
+  <h2>How is this different from inpainting?</h2>
+  <p>The two are fundamentally very similar and share a goal: make each new chunk agree with what the robot is already doing.</p>
+  <ul>
+    <li><strong>RTC:</strong> the prefix is a clean anchor at t = 0, and the trained model <em>learns</em> consistency by attending over that clean prefix.</li>
+    <li><strong>Inpainting:</strong> the prefix is forced onto a fixed noise-to-target trajectory at the running noise level, and consistency is <em>imposed analytically</em> at each denoising step through a correlation correction.</li>
+  </ul>
+</main>
+</html>

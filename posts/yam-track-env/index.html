@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="tags" content="agent evals">
+<title>Agents at Robot Control</title>
+<meta name="description" content="An agent benchmark where models get 8 minutes and a socket to a simulated YAM arm whose dynamics are hidden, and must make it follow 14 trajectories. Sol (gpt-6.1-sol) reached 0.10 mm, better than a controller that knows the true dynamics; the Claude models stopped early.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@600;700&family=Public+Sans:wght@400;500&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+:root{--bg:#f3f4f5;--surface:#fff;--ink:#1b1f23;--muted:#5d6670;--rule:#d9dde1;--accent:#a3271b;--grok:#2160a8;
+  --display:"Archivo Narrow","Arial Narrow",Arial,sans-serif;--body:"Public Sans",system-ui,sans-serif;--mono:"JetBrains Mono",ui-monospace,monospace}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#15181b;--surface:#1d2125;--ink:#e7eaed;--muted:#9aa4ae;--rule:#2f353b;--accent:#e2614f;--grok:#6fa8ec;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#15181b;--surface:#1d2125;--ink:#e7eaed;--muted:#9aa4ae;--rule:#2f353b;--accent:#e2614f;--grok:#6fa8ec;color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font:400 16px/1.65 var(--body);margin:0;padding:28px 16px 64px}
+main{max-width:720px;margin:0 auto;display:grid;gap:28px}
+.back{font:500 13px/1 var(--mono);color:var(--muted);text-decoration:none}.back:hover{color:var(--accent)}
+.eyebrow{font:500 12px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+header{display:grid;gap:14px}
+h1{font:700 clamp(30px,5vw,44px)/1.1 var(--display);margin:0;text-wrap:balance}
+p{margin:0}
+a{color:var(--accent)}
+figure{margin:0;display:grid;gap:8px;min-width:0}
+video,img{max-width:100%;height:auto;display:block;border-radius:4px}
+main>*{min-width:0}
+figcaption{font-size:13px;color:var(--muted)}
+h2{font:600 24px/1.15 var(--display);margin:8px 0 0}
+.draft{font:500 12px/1.4 var(--mono);color:var(--accent);border:1px dashed var(--accent);border-radius:4px;padding:8px 12px}
+.tablewrap{overflow-x:auto;background:var(--surface);border:1px solid var(--rule);border-radius:4px}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:right;padding:8px 14px;border-bottom:1px solid var(--rule);font-variant-numeric:tabular-nums}
+th:first-child,td:first-child{text-align:left}
+tr:last-child td{border-bottom:0}
+th{font:500 11px/1.2 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:var(--bg)}
+tr.group td{font:500 11px/1.2 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:var(--bg)}
+svg text{font:500 11px var(--mono);fill:var(--muted)}
+.chart{background:var(--surface);border:1px solid var(--rule);border-radius:4px;padding:12px}
+code{font:500 .88em var(--mono)}
+pre{margin:0;background:var(--surface);border:1px solid var(--rule);border-radius:4px;padding:12px 14px;font:500 12.5px/1.55 var(--mono);white-space:pre-wrap;overflow-wrap:anywhere}
+ul{margin:0;padding-left:20px;display:grid;gap:8px}
+.tags{display:flex;flex-wrap:wrap;gap:6px}.tags a{font:500 11px/1 var(--mono);letter-spacing:.04em;color:var(--muted);border:1px solid var(--rule);border-radius:999px;padding:4px 9px;text-decoration:none}.tags a:hover{color:var(--accent);border-color:var(--accent)}
+</style>
+<main>
+  <header>
+    <a class="back" href="/">← Jack Dubie</a>
+    <div class="eyebrow">November 14, 2026</div>
+    <div class="tags"><a href="/evals/">agent evals</a></div>
+    <h1>How good are agents at robotic control?</h1>
+  </header>
+
+  <p><strong>I gave agents a socket to a simulated YAM arm whose masses, inertias, friction and motor constants were all hidden, and 8 minutes to make it follow 14 trajectories as closely as they could. Sol (gpt-6.1-sol) got the gripper to within 0.10 mm on average, closer than a controller that knows the true dynamics (0.13 mm). It did that by learning a correction for each trajectory, not a better model. The Claude models stopped well before their time was up.</strong></p>
+
+  <figure>
+    <video src="replay_recorded_0.mp4" poster="poster.jpg" controls muted loop playsinline></video>
+    <figcaption>8 s of a real YAM right arm's motion in production, replayed on the hidden arm. Left: PD control only (33.9 mm over the full 12 s). Right: Sol's best attempt (0.09 mm). The red ring is where the tool point should be, the blue disk is where it is. The strip below plots each one's tool-point error as it happens, on a log scale: over the full 12 s Sol is about 370&times; closer.</figcaption>
+  </figure>
+
+  <h2>The environment</h2>
+
+  <p>The arm is a MuJoCo YAM with its real kinematic chain. Each run gets its own robot: link masses, centres of mass, inertias, link lengths, rotor inertia, joint friction and motor torque constants are all drawn away from the nominal model the agent is given, which has no friction at all. The agent reaches the arm only through a Unix socket. It is lockstep, so the arm advances one 1/30 s frame only when stepped, and each connection gets its own copy of the arm, so experiments can run in parallel. Each joint's drive runs a 1500 Hz PD loop plus feedforward torque, with capped gains and torques.</p>
+
+  <p>Error is the RMS distance, in mm, of three points on the gripper from where the reference puts them, measured at 1500 Hz. The 14 references are built to stress one part of the dynamics each (gravity, friction, inertia, Coriolis), plus six 12 s windows of a real YAM right arm working in production. An agent's score is the mean over references of its best finished attempt. Unfinished references count as the arm left limp.</p>
+
+  <h2>The prompt</h2>
+
+  <p>Each agent ran headless with one instruction, <code>Read PROMPT.md in the current directory and do what it says.</code> This is that file, word for word:</p>
+
+  <pre># Make a YAM arm follow these trajectories as closely as you can
+
+There is a YAM 6-DOF arm (gripper fixed shut). It is the same arm as in `tools/yam_nominal.xml`, but that file is
+only nominal: the real arm&#x27;s link masses, centres of mass, inertias, link lengths, rotor inertias, joint friction
+and motor torque constants all differ from it, by amounts nobody has told you. The file has no friction at all.
+There is no gravity compensation anywhere: if you do not hold the arm up, it falls.
+
+## The arm
+
+You reach the real arm only through the Unix socket `/sim/sim.sock` (stream, one JSON object per line each way;
+`tools/arm.py` is a small client for it). It runs in lockstep: it advances only when you step it, one frame of
+1/30 s at a time, so you can take as long as you like to think between frames. Every connection gets its own copy
+of the same arm, so you can run experiments, and trials, in parallel.
+
+On connect you receive `{&quot;type&quot;:&quot;hello&quot;, ...}` with the joint limits, gain limits, torque limits and the names of
+the references you can run. Then send:
+
+- `{&quot;type&quot;:&quot;reset&quot;,&quot;q&quot;:[6]}` places the arm at rest at those joint angles (rad). Reply: an observation.
+- `{&quot;type&quot;:&quot;step&quot;,&quot;q&quot;:[6],&quot;qd&quot;:[6],&quot;kp&quot;:[6],&quot;kd&quot;:[6],&quot;tau&quot;:[6],&quot;n&quot;:1}` holds this drive command for `n` frames
+  (1 to 300). Omitted `qd`, `kp`, `kd`, `tau` are zero. Reply: `{&quot;type&quot;:&quot;obs&quot;,&quot;t&quot;,&quot;q&quot;,&quot;qd&quot;,&quot;tau&quot;}` for n = 1,
+  or `{&quot;type&quot;:&quot;obs_batch&quot;,&quot;frames&quot;:[...]}` with one observation per frame.
+- `{&quot;type&quot;:&quot;trial&quot;,&quot;name&quot;:...}` starts a scored run of a reference (below).
+- `{&quot;type&quot;:&quot;status&quot;}` lists every trial finished so far on this arm, from any connection.
+
+An observation is taken at the end of each frame: `q` joint angles (rad), `qd` joint speeds (rad/s), `tau` the
+torque each drive commanded (Nm). All three are noisy. A bad request gets `{&quot;type&quot;:&quot;error&quot;,&quot;msg&quot;:...}`.
+
+**The drives.** Each joint has a motor drive that runs its own loop at 1500 Hz. During a frame it applies
+
+    tau_motor = clip( kp*(q + qd*s - q_meas) + kd*(qd - qd_meas) + tau , -tau_max, +tau_max )
+
+where `s` is the time since the frame began (0 to 1/30 s): the position setpoint moves at `qd` within the frame.
+`kp` is capped at [120, 120, 120, 60, 15, 15], `kd` at [7.5, 7.5, 7.5, 2.25, 2.25, 2.25] (higher values are clipped), and `tau_max` is [28, 28, 28, 10, 10, 10] Nm.
+The torque a motor actually delivers is not exactly `tau_motor`. Joint ranges are hard stops.
+
+## References and trials
+
+A reference is 12 s of joint angles, given as a JSON dict of arrays sampled at the frame times 0, 1/30, ..., 12 s:
+`t` (N+1,), `q`, `qd`, `qdd` (N+1, 6). The reference itself is smooth between those samples.
+
+`{&quot;type&quot;:&quot;trial&quot;,&quot;name&quot;:...}` places the arm at rest at the reference&#x27;s first sample and replies
+`{&quot;type&quot;:&quot;trial_start&quot;,&quot;name&quot;,&quot;n_frames&quot;,&quot;ref&quot;,&quot;obs&quot;}`. Step it one frame at a time (n = 1) through all
+`n_frames`; each reply carries `&quot;frame&quot;`, and after the last one you also get
+`{&quot;type&quot;:&quot;trial_result&quot;,&quot;rms_mm&quot;,...}`. Sending reset or another trial abandons the trial unscored.
+
+**Error is in millimetres.** Three points fixed to the gripper are tracked: the wrist centre on joint 6&#x27;s axis,
+the tool point 11.5 cm out along it, and a point 6 cm off that axis (so wrist roll counts). A trial&#x27;s error is the
+RMS distance of those points from where the reference puts them, on the real arm&#x27;s own geometry, at 1500 Hz over
+the whole 12 s, so what happens inside a frame counts. Lower is better.
+
+The references come in these kinds: `gravity_*` (slow moves and holds across the workspace), `friction_*` (slow
+reversals, tiny dithers, constant-speed plateaus), `inertia_*` (quick short moves of the shoulder/elbow or of the
+wrist), `coriolis_*` (fast base swings with the arm stretched out) and `recorded_*` (12 s windows of a real YAM
+right arm&#x27;s motion in production, up to about 6 rad/s and 50 rad/s^2 on the wrist).
+
+## Your task
+
+`references/` holds the 14 references you are scored on, one JSON file each; they are also the trial names.
+**Score: for each reference, the lowest `rms_mm` of any trial of it that you finish; the final score is the mean
+of those over all 14 references.** A reference you never finish a trial of counts as the arm left limp, which is
+hundreds of mm. You may run each trial as often as you like, from as many connections at once as you like, and use
+reset/step between trials to study the arm. Only finished trials count, and only those finished within your time.
+
+Keep the scripts you write in this directory (not /tmp), so what you did can be read afterwards.
+
+You have 8 minutes of wall-clock time. Finish a trial of every reference early, then improve them.</pre>
+
+  <h2>Results</h2>
+
+  <p>Two robots per model, 8 minutes each. Reward is log<sub>10</sub>(PD-only error / score) per robot, averaged, so 0 is plain PD control and each +1 is 10&times; more accurate.</p>
+
+  <div class="tablewrap"><table>
+    <tr><th>Model</th><th>Robot 1 mm</th><th>Robot 2 mm</th><th>Reward</th><th>Time used</th><th>Trials</th></tr>
+    <tr><td>Sol (gpt-6.1-sol)</td><td>0.10</td><td>0.12</td><td>+2.6</td><td>8 / 8 min</td><td>484 / 500</td></tr><tr><td>Terra (gpt-6.1-terra)</td><td>0.47</td><td>0.33</td><td>+2.0</td><td>8 / 8 min</td><td>559 / 431</td></tr><tr><td>Opus 5.5</td><td>0.42</td><td>1.78</td><td>+1.7</td><td>4.7 / 6.6 min</td><td>272 / 406</td></tr><tr><td>Grok 4.7</td><td>1.90</td><td>2.22</td><td>+1.3</td><td>8 / 8 min</td><td>450 / 259</td></tr><tr><td>Sonnet 5.5</td><td>4.50</td><td>3.36</td><td>+1.0</td><td>0.5 / 2.7 min</td><td>14 / 126</td></tr><tr><td>Haiku 5.5</td><td>16.27</td><td>4.02</td><td>+0.7</td><td>1.2 / 2.3 min</td><td>56 / 112</td></tr>
+    <tr class="group"><td colspan="6">Fixed controllers, for reference</td></tr>
+    <tr><td>PD only, no feedforward</td><td>35.97</td><td>46.85</td><td>0</td><td></td><td></td></tr><tr><td>Nominal-model feedforward</td><td>4.31</td><td>7.47</td><td>+0.9</td><td></td><td></td></tr><tr><td>True dynamics (oracle)</td><td>0.13</td><td>0.16</td><td>+2.5</td><td></td><td></td></tr>
+  </table></div>
+
+  <h2>Reward over time</h2>
+
+  <figure class="chart">
+    <img src="reward_v1.png" alt="Reward over the 8 minutes for each model" style="width:100%">
+    <figcaption>Each line is the mean of a model's two robots, scored as it stood at each moment. Sol, Terra and Grok kept improving until the deadline; Opus, Sonnet and Haiku stopped early and stayed flat.</figcaption>
+  </figure>
+
+  <h2>What the models did</h2>
+
+  <ul>
+    <li><strong>Sol</strong> computed nominal inverse-dynamics feedforward for every reference, ran all 14 at once on separate connections, then corrected each reference's torque sequence again and again from its last attempt's error. That is iterative learning control. It ran about 35 attempts per reference, lowering the learning rate and the noise in its error estimate until time ran out.</li>
+    <li><strong>Opus</strong> did the same thing (nominal feedforward, then learning control) and reached 0.42 mm on one robot, but ended its runs after 4.7 and 6.6 of its 8 minutes.</li>
+    <li><strong>Terra</strong> kept running trials until the deadline (559 and 431 of them) and ended about 4&times; behind Sol.</li>
+    <li><strong>Sonnet</strong>'s first run made one pass with nominal-model feedforward, reported 4.4 mm and stopped after 27 seconds: "I made one pass and did not tune it."</li>
+    <li><strong>Haiku</strong>'s first run used no model, just PD plus an integral term it tuned by sweeping, and got 16.3 mm. It said it stopped "at the 8-minute budget" after 69 seconds.</li>
+  </ul>
+
+  <p>Beating the oracle is not a contradiction. The oracle knows the dynamics but still runs a fixed, one-pass controller. Seeing the actual trajectories and being allowed to retry lets a learning loop cancel what any one-pass controller leaves behind.</p>
+
+  <h2>Caveats</h2>
+
+  <ul>
+    <li>Two robots per model, one run each. The ordering of Sonnet, Haiku and Grok could change with more runs.</li>
+    <li>This version rewards learning on the exact trajectories you are scored on. A second version holds the test trajectories out and scores a controller the agent leaves behind; that sweep is incomplete (Sol 0.20 mm, Terra 0.42, Opus 1.18 and 2.07, Grok 1.68, Haiku 2.79 and 5.54, Sonnet 3.19 and 5.80, with the second robot missing for Sol, Terra and Grok).</li>
+    <li>The arm is simulated. The meshes are the real YAM Pro CAD, but they are drawn on the task's chain, whose link offsets differ from the CAD by up to about 1 cm.</li>
+  </ul>
+</main>
+</html>

@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agent evals · Jack Dubie</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@600;700&family=Public+Sans:wght@400;500&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+:root{--bg:#f3f4f5;--ink:#1b1f23;--muted:#5d6670;--rule:#d9dde1;--accent:#a3271b;
+  --display:"Archivo Narrow","Arial Narrow",Arial,sans-serif;--body:"Public Sans",system-ui,sans-serif;--mono:"JetBrains Mono",ui-monospace,monospace}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#15181b;--ink:#e7eaed;--muted:#9aa4ae;--rule:#2f353b;--accent:#e2614f;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#15181b;--ink:#e7eaed;--muted:#9aa4ae;--rule:#2f353b;--accent:#e2614f;color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font:400 16px/1.6 var(--body);margin:0;padding:48px 16px 64px}
+main{max-width:960px;margin:0 auto;display:grid;gap:40px}
+h1{font:700 clamp(32px,6vw,44px)/1.05 var(--display);margin:0}
+h2{font:500 12px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+ul{list-style:none;margin:0;padding:0}
+li{border-top:1px solid var(--rule);padding:20px 0;display:grid;grid-template-columns:336px 1fr;grid-template-rows:auto auto auto 1fr;gap:4px 24px;align-content:start}
+li>*{grid-column:2}
+li .thumb{grid-column:1;grid-row:1/span 4;display:block;aspect-ratio:16/9;overflow:hidden;border-radius:4px;background:var(--rule)}
+li .thumb img,li .thumb video{width:100%;height:100%;object-fit:cover;display:block}
+@media (max-width:720px){li{grid-template-columns:1fr;grid-template-rows:none;gap:4px}li>*,li .thumb{grid-column:1}li .thumb{grid-row:auto;margin-bottom:10px}li a{font-size:20px}}
+li a{font:600 22px/1.2 var(--display);color:var(--ink);text-decoration:none}
+li a:hover{color:var(--accent)}
+time{font:500 12px/1 var(--mono);color:var(--muted)}
+li p{margin:0;color:var(--muted)}
+.top{display:grid;gap:10px}
+.links{display:flex;flex-wrap:wrap;gap:6px 10px;font:500 14px/1.4 var(--mono);color:var(--muted)}
+.links a{color:var(--ink);text-decoration:underline;text-decoration-color:var(--accent);text-underline-offset:3px}
+.links a:hover{color:var(--accent)}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;align-self:start;align-items:flex-start}
+.tags a,.filter a{font:500 11px/1 var(--mono);letter-spacing:.04em;color:var(--muted);border:1px solid var(--rule);border-radius:999px;padding:5px 10px;text-decoration:none}
+.tags a:hover,.filter a:hover{color:var(--accent);border-color:var(--accent)}
+.more{display:inline-block;margin-top:12px;font:500 14px/1.4 var(--mono);color:var(--ink);text-decoration:underline;text-decoration-color:var(--accent);text-underline-offset:3px}
+.more:hover{color:var(--accent)}
+section>p.lede{margin:0 0 12px;color:var(--muted);max-width:640px}
+li .thumb .ph{display:flex;align-items:center;justify-content:center;height:100%;padding:12px;text-align:center;font:700 18px/1.2 var(--display);color:var(--muted)}
+.back{font:500 13px/1 var(--mono);color:var(--muted);text-decoration:none}.back:hover{color:var(--accent)}
+</style>
+<main>
+  <header class="top">
+    <a class="back" href="../">← Jack Dubie</a>
+    <h1>Agent evals</h1>
+    <nav class="links"><a href="mailto:jack.dubie@gmail.com">jack.dubie@gmail.com</a><span>·</span><a href="https://www.linkedin.com/in/jackdubie/">LinkedIn</a><span>·</span><a href="../Jack_Dubie_Resume.pdf">Resume</a></nav>
+  </header>
+  <section>
+    <p class="lede">Benchmarks and RL environments for coding agents, several of them controlling robots or physics simulations.</p>
+    <ul>
+      <li>
+        <a class="thumb" href="../posts/block-stacking-benchmark/" tabindex="-1" aria-hidden="true"><video src="../posts/block-stacking-benchmark/thumb.mp4" poster="../posts/block-stacking-benchmark/thumb.jpg" muted autoplay loop playsinline preload="metadata"></video></a>
+        <time datetime="2026-11-10">November 10, 2026</time>
+        <a href="../posts/block-stacking-benchmark/">Coding agents stacking blocks with a robot arm</a>
+        <p>Six coding agents each got 20 minutes and a 300 Hz socket to a simulated YAM arm; Opus 5.5 and GPT-6.1 Sol both stacked all eight blocks.</p>
+        <div class="tags"><a href="../robotics/">robotics</a><a href="../evals/">agent evals</a></div>
+      </li>
+      <li>
+        <a class="thumb" href="../posts/find-duplicates/" tabindex="-1" aria-hidden="true"><video src="../posts/find-duplicates/thumb.mp4" poster="../posts/find-duplicates/thumb.jpg" muted autoplay loop playsinline preload="metadata"></video></a>
+        <time datetime="2026-11-15">November 15, 2026</time>
+        <a href="../posts/find-duplicates/">Find every duplicate file, as fast as you can</a>
+        <p>Six coding agents had 15 minutes, six times each, to write the fastest correct duplicate-file finder for 23 hidden trap trees. Opus was fastest on average; Gemini matched it when it finished.</p>
+        <div class="tags"><a href="../evals/">agent evals</a></div>
+      </li>
+      <li>
+        <a class="thumb" href="../posts/test-speedup-env/" tabindex="-1" aria-hidden="true"><video src="../posts/test-speedup-env/thumb.mp4" poster="../posts/test-speedup-env/thumb.jpg" muted autoplay loop playsinline preload="metadata"></video></a>
+        <time datetime="2026-10-12">October 12, 2026</time>
+        <a href="../posts/test-speedup-env/">Make the tests faster, without breaking them</a>
+        <p>An RL environment that rewards coding agents to speed up a slow client-server test suite only if it still catches 24 hidden bugs, where Gemini 4 Argon reached 40.8x and Opus 10.3x against a hand-written 78.7x. Grok 4.7 scored 0: its suite was 23.5x faster and caught every bug, but it loosened a rate limit to get there.</p>
+        <div class="tags"><a href="../evals/">agent evals</a></div>
+      </li>
+      <li>
+        <a class="thumb" href="../posts/yam-track-env/" tabindex="-1" aria-hidden="true"><video src="../posts/yam-track-env/thumb.mp4" poster="../posts/yam-track-env/thumb.jpg" muted autoplay loop playsinline preload="metadata"></video></a>
+        <time datetime="2026-11-14">November 14, 2026</time>
+        <a href="../posts/yam-track-env/">How good are agents at robotic control?</a>
+        <p>An agent benchmark where models get 8 minutes and a socket to a simulated YAM arm whose dynamics are hidden, and must make it follow 14 trajectories. Sol (gpt-6.1-sol) reached 0.10 mm, better than a controller that knows the true dynamics; the Claude models stopped early.</p>
+        <div class="tags"><a href="../robotics/">robotics</a><a href="../evals/">agent evals</a></div>
+      </li>
+      <li>
+        <a class="thumb" href="../posts/terrain-bench/" tabindex="-1" aria-hidden="true"><video src="../posts/terrain-bench/thumb.mp4" poster="../posts/terrain-bench/thumb.jpg" muted autoplay loop playsinline preload="metadata"></video></a>
+        <time datetime="2026-11-13">November 13, 2026</time>
+        <a href="../posts/terrain-bench/">Can a coding agent design a car and drive it?</a>
+        <p>Seven coding agents got 30 minutes and 1,000 attempts to design and drive a 2D car over rough terrain, through a socket; GPT-6.1 Sol, Opus 5.5 and GPT-6.1 Terra went about 2.4 km, Haiku 5.5 about 0.4 km.</p>
+        <div class="tags"><a href="../robotics/">robotics</a><a href="../evals/">agent evals</a></div>
+      </li>
+      <li>
+        <a class="thumb" href="../posts/trolley-bench/" tabindex="-1" aria-hidden="true"><video src="../posts/trolley-bench/thumb.mp4" poster="../posts/trolley-bench/thumb.jpg" muted autoplay loop playsinline preload="metadata"></video></a>
+        <time datetime="2026-11-13">November 13, 2026</time>
+        <a href="../posts/trolley-bench/">Which school of ethics does your AI model follow?</a>
+        <p>Haiku is a deontologist, Opus follows the Doctrine of Double Effect, and the other five AI models are utilitarians.</p>
+        <div class="tags"><a href="../evals/">agent evals</a></div>
+      </li>
+      <li>
+        <a class="thumb" href="../posts/cad-finger-benchmark/" tabindex="-1" aria-hidden="true"><video src="../posts/cad-finger-benchmark/thumb.mp4" poster="../posts/cad-finger-benchmark/thumb.jpg" muted autoplay loop playsinline preload="metadata"></video></a>
+        <time datetime="2026-10-13">October 13, 2026</time>
+        <a href="../posts/cad-finger-benchmark/">Can a coding agent CAD a robot finger from pictures?</a>
+        <p>Five coding agents got five pictures of a robot gripper finger and 20 minutes to rebuild it in CAD; Opus and Haiku matched a careful hand-built model, and most quit within six minutes.</p>
+        <div class="tags"><a href="../evals/">agent evals</a></div>
+      </li>
+      <li>
+        <a class="thumb" href="../posts/real2sim-case-packing-cell/" tabindex="-1" aria-hidden="true"><video src="../posts/real2sim-case-packing-cell/thumb.mp4" poster="../posts/real2sim-case-packing-cell/thumb.jpg" muted autoplay loop playsinline preload="metadata"></video></a>
+        <time datetime="2026-10-13">October 13, 2026</time>
+        <a href="../posts/real2sim-case-packing-cell/">Real2sim with a coding agent</a>
+        <p>A coding agent rebuilt a bottle case-packing cell in MuJoCo from the robot&#x27;s own cameras in about an hour and a half, iterating until its renders matched the real footage.</p>
+        <div class="tags"><a href="../robotics/">robotics</a><a href="../evals/">agent evals</a></div>
+      </li>
+    </ul>
+  </section>
+</main>
+</html>

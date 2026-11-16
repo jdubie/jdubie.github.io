@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Robotics · Jack Dubie</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@600;700&family=Public+Sans:wght@400;500&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+:root{--bg:#f3f4f5;--ink:#1b1f23;--muted:#5d6670;--rule:#d9dde1;--accent:#a3271b;
+  --display:"Archivo Narrow","Arial Narrow",Arial,sans-serif;--body:"Public Sans",system-ui,sans-serif;--mono:"JetBrains Mono",ui-monospace,monospace}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#15181b;--ink:#e7eaed;--muted:#9aa4ae;--rule:#2f353b;--accent:#e2614f;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#15181b;--ink:#e7eaed;--muted:#9aa4ae;--rule:#2f353b;--accent:#e2614f;color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font:400 16px/1.6 var(--body);margin:0;padding:48px 16px 64px}
+main{max-width:960px;margin:0 auto;display:grid;gap:40px}
+h1{font:700 clamp(32px,6vw,44px)/1.05 var(--display);margin:0}
+h2{font:500 12px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+ul{list-style:none;margin:0;padding:0}
+li{border-top:1px solid var(--rule);padding:20px 0;display:grid;grid-template-columns:336px 1fr;grid-template-rows:auto auto auto 1fr;gap:4px 24px;align-content:start}
+li>*{grid-column:2}
+li .thumb{grid-column:1;grid-row:1/span 4;display:block;aspect-ratio:16/9;overflow:hidden;border-radius:4px;background:var(--rule)}
+li .thumb img,li .thumb video{width:100%;height:100%;object-fit:cover;display:block}
+@media (max-width:720px){li{grid-template-columns:1fr;grid-template-rows:none;gap:4px}li>*,li .thumb{grid-column:1}li .thumb{grid-row:auto;margin-bottom:10px}li a{font-size:20px}}
+li a{font:600 22px/1.2 var(--display);color:var(--ink);text-decoration:none}
+li a:hover{color:var(--accent)}
+time{font:500 12px/1 var(--mono);color:var(--muted)}
+li p{margin:0;color:var(--muted)}
+.top{display:grid;gap:10px}
+.links{display:flex;flex-wrap:wrap;gap:6px 10px;font:500 14px/1.4 var(--mono);color:var(--muted)}
+.links a{color:var(--ink);text-decoration:underline;text-decoration-color:var(--accent);text-underline-offset:3px}
+.links a:hover{color:var(--accent)}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;align-self:start;align-items:flex-start}
+.tags a,.filter a{font:500 11px/1 var(--mono);letter-spacing:.04em;color:var(--muted);border:1px solid var(--rule);border-radius:999px;padding:5px 10px;text-decoration:none}
+.tags a:hover,.filter a:hover{color:var(--accent);border-color:var(--accent)}
+.more{display:inline-block;margin-top:12px;font:500 14px/1.4 var(--mono);color:var(--ink);text-decoration:underline;text-decoration-color:var(--accent);text-underline-offset:3px}
+.more:hover{color:var(--accent)}
+section>p.lede{margin:0 0 12px;color:var(--muted);max-width:640px}
+li .thumb .ph{display:flex;align-items:center;justify-content:center;height:100%;padding:12px;text-align:center;font:700 18px/1.2 var(--display);color:var(--muted)}
+.back{font:500 13px/1 var(--mono);color:var(--muted);text-decoration:none}.back:hover{color:var(--accent)}
+</style>
+<main>
+  <header class="top">
+    <a class="back" href="../">← Jack Dubie</a>
+    <h1>Robotics</h1>
+    <nav class="links"><a href="mailto:jack.dubie@gmail.com">jack.dubie@gmail.com</a><span>·</span><a href="https://www.linkedin.com/in/jackdubie/">LinkedIn</a><span>·</span><a href="../Jack_Dubie_Resume.pdf">Resume</a></nav>
+  </header>
+  <section>
+    <p class="lede">Robot learning in production: policies, data collection, and a fleet at a customer site.</p>
+    <ul>
+      <li>
+        <a class="thumb" href="../posts/yam-track-env/" tabindex="-1" aria-hidden="true"><video src="../posts/yam-track-env/thumb.mp4" poster="../posts/yam-track-env/thumb.jpg" muted autoplay loop playsinline preload="metadata"></video></a>
+        <time datetime="2026-11-14">November 14, 2026</time>
+        <a href="../posts/yam-track-env/">How good are agents at robotic control?</a>
+        <p>An agent benchmark where models get 8 minutes and a socket to a simulated YAM arm whose dynamics are hidden, and must make it follow 14 trajectories. Sol (gpt-6.1-sol) reached 0.10 mm, better than a controller that knows the true dynamics; the Claude models stopped early.</p>
+        <div class="tags"><a href="../robotics/">robotics</a><a href="../evals/">agent evals</a></div>
+      </li>
+      <li>
+        <a class="thumb" href="../posts/pi-api-beta/" tabindex="-1" aria-hidden="true"><video src="../posts/pi-api-beta/thumb.mp4" poster="../posts/pi-api-beta/thumb.jpg" muted autoplay loop playsinline preload="metadata"></video></a>
+        <time datetime="2026-10-13">October 13, 2026</time>
+        <a href="../posts/pi-api-beta/">Physical Intelligence featured our robot</a>
+        <p>Physical Intelligence featured Frontier Machines in their Pi API beta launch. Their base model is really impressive.</p>
+        <div class="tags"><a href="../robotics/">robotics</a></div>
+      </li>
+      <li>
+        <a class="thumb" href="../posts/pi0-zero-robot-data/" tabindex="-1" aria-hidden="true"><video src="../posts/pi0-zero-robot-data/thumb.mp4" poster="../posts/pi0-zero-robot-data/thumb.jpg" muted autoplay loop playsinline preload="metadata"></video></a>
+        <time datetime="2025-12-12">December 12, 2025</time>
+        <a href="../posts/pi0-zero-robot-data/">Fine-tuning π0 with zero robot data</a>
+        <p>Policies fine-tuned only on exoskeleton demonstrations, retargeted to the robot with offline iterative learning control, with zero robot-collected samples: a cube in November, a pile of bags in December.</p>
+        <div class="tags"><a href="../robotics/">robotics</a></div>
+      </li>
+      <li>
+        <a class="thumb" href="../posts/terrain-bench/" tabindex="-1" aria-hidden="true"><video src="../posts/terrain-bench/thumb.mp4" poster="../posts/terrain-bench/thumb.jpg" muted autoplay loop playsinline preload="metadata"></video></a>
+        <time datetime="2026-11-13">November 13, 2026</time>
+        <a href="../posts/terrain-bench/">Can a coding agent design a car and drive it?</a>
+        <p>Seven coding agents got 30 minutes and 1,000 attempts to design and drive a 2D car over rough terrain, through a socket; GPT-6.1 Sol, Opus 5.5 and GPT-6.1 Terra went about 2.4 km, Haiku 5.5 about 0.4 km.</p>
+        <div class="tags"><a href="../robotics/">robotics</a><a href="../evals/">agent evals</a></div>
+      </li>
+      <li>
+        <a class="thumb" href="../posts/eight-robots/" tabindex="-1" aria-hidden="true"><video src="../posts/eight-robots/thumb.mp4" poster="../posts/eight-robots/thumb.jpg" muted autoplay loop playsinline preload="metadata"></video></a>
+        <time datetime="2026-11-11">November 11, 2026</time>
+        <a href="../posts/eight-robots/">Eight robots running 97.6% autonomously</a>
+        <p>Eight robots packing at a customer site, running 97.6% autonomously. They have packed over 45,000 bags for our customer.</p>
+        <div class="tags"><a href="../robotics/">robotics</a></div>
+      </li>
+      <li>
+        <a class="thumb" href="../posts/block-stacking-benchmark/" tabindex="-1" aria-hidden="true"><video src="../posts/block-stacking-benchmark/thumb.mp4" poster="../posts/block-stacking-benchmark/thumb.jpg" muted autoplay loop playsinline preload="metadata"></video></a>
+        <time datetime="2026-11-10">November 10, 2026</time>
+        <a href="../posts/block-stacking-benchmark/">Coding agents stacking blocks with a robot arm</a>
+        <p>Six coding agents each got 20 minutes and a 300 Hz socket to a simulated YAM arm; Opus 5.5 and GPT-6.1 Sol both stacked all eight blocks.</p>
+        <div class="tags"><a href="../robotics/">robotics</a><a href="../evals/">agent evals</a></div>
+      </li>
+      <li>
+        <a class="thumb" href="../posts/real2sim-case-packing-cell/" tabindex="-1" aria-hidden="true"><video src="../posts/real2sim-case-packing-cell/thumb.mp4" poster="../posts/real2sim-case-packing-cell/thumb.jpg" muted autoplay loop playsinline preload="metadata"></video></a>
+        <time datetime="2026-10-13">October 13, 2026</time>
+        <a href="../posts/real2sim-case-packing-cell/">Real2sim with a coding agent</a>
+        <p>A coding agent rebuilt a bottle case-packing cell in MuJoCo from the robot&#x27;s own cameras in about an hour and a half, iterating until its renders matched the real footage.</p>
+        <div class="tags"><a href="../robotics/">robotics</a><a href="../evals/">agent evals</a></div>
+      </li>
+      <li>
+        <a class="thumb" href="../posts/realtime-action-chunking/" tabindex="-1" aria-hidden="true"><video src="../posts/realtime-action-chunking/thumb.mp4" poster="../posts/realtime-action-chunking/thumb.jpg" muted autoplay loop playsinline preload="metadata"></video></a>
+        <time datetime="2026-06-28">June 28, 2026</time>
+        <a href="../posts/realtime-action-chunking/">Implementing training-time RTC in π0.5</a>
+        <p>Implementing training-time realtime action chunking in π0.5: a small change to training and inference that made rollouts smooth, stateful and about 99% autonomous on 14 hours of teleop data.</p>
+        <div class="tags"><a href="../robotics/">robotics</a></div>
+      </li>
+      <li>
+        <a class="thumb" href="../posts/led-tracking-accuracy/" tabindex="-1" aria-hidden="true"><video src="../posts/led-tracking-accuracy/thumb.mp4" poster="../posts/led-tracking-accuracy/thumb.jpg" muted autoplay loop playsinline preload="metadata"></video></a>
+        <time datetime="2026-01-23">January 23, 2026</time>
+        <a href="../posts/led-tracking-accuracy/">Meta Quest 3S UMI implementation</a>
+        <p>Replacing an $8,000 exoskeleton with a $500 Meta Quest 3S for data collection: 20% lower tracking error, and a policy picking at 4.4 seconds per pick with zero robot data.</p>
+        <div class="tags"><a href="../robotics/">robotics</a></div>
+      </li>
+      <li>
+        <a class="thumb" href="../posts/dsrl-libero/" tabindex="-1" aria-hidden="true"><video src="../posts/dsrl-libero/thumb.mp4" poster="../posts/dsrl-libero/thumb.jpg" muted autoplay loop playsinline preload="metadata"></video></a>
+        <time datetime="2025-10-10">October 10, 2025</time>
+        <a href="../posts/dsrl-libero/">Reproducing DSRL: latent-space RL on pi0, from sim to a real robot</a>
+        <p>Reproducing DSRL, latent-space RL on pi0: it took a sim cube pick from 50% to about 95% and a LIBERO task from 30% to 100%, then lifted a real arm&#x27;s candy-bar toss from 16% to 41%.</p>
+        <div class="tags"><a href="../robotics/">robotics</a></div>
+      </li>
+      <li>
+        <a class="thumb" href="../posts/remote-toy-cleanup/" tabindex="-1" aria-hidden="true"><video src="../posts/remote-toy-cleanup/thumb.mp4" poster="../posts/remote-toy-cleanup/thumb.jpg" muted autoplay loop playsinline preload="metadata"></video></a>
+        <time datetime="2024-03-19">March 19, 2024</time>
+        <a href="../posts/remote-toy-cleanup/">Cleaning up toys from 7,000 miles away</a>
+        <p>A home robot with under $1k of parts, leader-follower arms and an internet teleop link, picking up toys while I drove it from 7,000 miles away.</p>
+        <div class="tags"><a href="../robotics/">robotics</a></div>
+      </li>
+    </ul>
+  </section>
+</main>
+</html>
