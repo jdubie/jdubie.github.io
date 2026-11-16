@@ -1,0 +1,12 @@
+{
+ "summary": {
+  "sql": 1.0,
+  "protocol": 1.0,
+  "durability": 1.0,
+  "reward": 1.0,
+  "sql_perfect": "60/60",
+  "protocol_perfect": "50/50",
+  "durability_runs": "14/14"
+ },
+ "oracle_version": 2
+}

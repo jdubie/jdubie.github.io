@@ -5,7 +5,7 @@ seeded translating proxy), then build one that answers byte for byte the same an
 Brief: `BRIEF.md`; task as the model sees it: `task/PROMPT.md`. Lives at `~/blackbox-db-env` (symlink
 here). Page on :8951 (unit bbx-site), regenerate with `python3 make_page.py` (prose in `site/notes.json`).
 
-## Where it stands, 2026-11-16 12:50am PT
+## Where it stands, 2026-11-16 1:40am PT
 
 Done:
 - Oracle (`oracle/variant.py`, `oracle/proxy.py`, images bbx-oracle:1 and :2), sandbox bbx-sandbox:1,
@@ -19,6 +19,14 @@ Done:
   key, which v1 gave no way to discover. Benchmark bug; v2 adds HINTs (startup keys; dialect spellings
   of PostgreSQL words the client used). Grading defaults to v2; BBX_ORACLE_VERSION=1 for v1.
 
+- Run 2 (approved by Jack): Opus 5.5, 20 min, oracle v2, fresh private seeds (`secret/`, gitignored: seeds,
+  spec, run scripts, calibration). Calibration on those seeds: oracle 1.000, stock PostgreSQL 0.033.
+  Final 0.336 (sql 0.346, protocol 0.723, durability 0): logged in at ~3 min via the v2 hints, 500-line
+  server. Durability 0 because verify queries use casts it never implemented (grader coupling).
+  Seed-free summaries in `results/opus20v2`; its server and transcript are not committed (they spell out the
+  secret variant).
+
 Not done:
-- Any model run on v2 (Jack's call; `run_opus.sh` with a new --tag).
-- Rotating seeds 7101/90210 before any sweep (both public in this repo).
+- Heavier semantic layer (wire + dialect + memorised PostgreSQL = 0.744).
+- Decouple durability verify queries from casts, then regrade both runs.
+- Further runs: Jack's call.

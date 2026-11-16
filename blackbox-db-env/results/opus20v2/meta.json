@@ -1,0 +1,297 @@
+{
+ "model": "opus",
+ "rep": 0,
+ "minutes": 20,
+ "seconds": 1142.5,
+ "segments": [
+  {
+   "segment": 0,
+   "start_s": 0.0,
+   "end_s": 349.9,
+   "exit": 0
+  },
+  {
+   "segment": 1,
+   "start_s": 349.9,
+   "end_s": 478.9,
+   "exit": 0
+  },
+  {
+   "segment": 2,
+   "start_s": 478.9,
+   "end_s": 557.0,
+   "exit": 0
+  },
+  {
+   "segment": 3,
+   "start_s": 557.0,
+   "end_s": 619.9,
+   "exit": 0
+  },
+  {
+   "segment": 4,
+   "start_s": 619.9,
+   "end_s": 658.9,
+   "exit": 0
+  },
+  {
+   "segment": 5,
+   "start_s": 658.9,
+   "end_s": 698.9,
+   "exit": 0
+  },
+  {
+   "segment": 6,
+   "start_s": 698.9,
+   "end_s": 732.2,
+   "exit": 0
+  },
+  {
+   "segment": 7,
+   "start_s": 732.2,
+   "end_s": 766.1,
+   "exit": 0
+  },
+  {
+   "segment": 8,
+   "start_s": 766.1,
+   "end_s": 806.0,
+   "exit": 0
+  },
+  {
+   "segment": 9,
+   "start_s": 806.0,
+   "end_s": 848.1,
+   "exit": 0
+  },
+  {
+   "segment": 10,
+   "start_s": 848.1,
+   "end_s": 888.9,
+   "exit": 0
+  },
+  {
+   "segment": 11,
+   "start_s": 888.9,
+   "end_s": 929.4,
+   "exit": 0
+  },
+  {
+   "segment": 12,
+   "start_s": 929.4,
+   "end_s": 943.4,
+   "exit": 0
+  },
+  {
+   "segment": 13,
+   "start_s": 943.4,
+   "end_s": 957.4,
+   "exit": 0
+  },
+  {
+   "segment": 14,
+   "start_s": 957.4,
+   "end_s": 960.6,
+   "exit": 0
+  },
+  {
+   "segment": 15,
+   "start_s": 960.6,
+   "end_s": 965.7,
+   "exit": 0
+  },
+  {
+   "segment": 16,
+   "start_s": 965.7,
+   "end_s": 969.5,
+   "exit": 0
+  },
+  {
+   "segment": 17,
+   "start_s": 969.5,
+   "end_s": 975.0,
+   "exit": 0
+  },
+  {
+   "segment": 18,
+   "start_s": 975.0,
+   "end_s": 977.7,
+   "exit": 0
+  },
+  {
+   "segment": 19,
+   "start_s": 977.7,
+   "end_s": 1000.2,
+   "exit": 0
+  },
+  {
+   "segment": 20,
+   "start_s": 1000.2,
+   "end_s": 1014.1,
+   "exit": 0
+  },
+  {
+   "segment": 21,
+   "start_s": 1014.1,
+   "end_s": 1036.8,
+   "exit": 0
+  },
+  {
+   "segment": 22,
+   "start_s": 1036.8,
+   "end_s": 1039.4,
+   "exit": 0
+  },
+  {
+   "segment": 23,
+   "start_s": 1039.4,
+   "end_s": 1042.5,
+   "exit": 0
+  },
+  {
+   "segment": 24,
+   "start_s": 1042.5,
+   "end_s": 1045.4,
+   "exit": 0
+  },
+  {
+   "segment": 25,
+   "start_s": 1045.4,
+   "end_s": 1048.6,
+   "exit": 0
+  },
+  {
+   "segment": 26,
+   "start_s": 1048.6,
+   "end_s": 1071.5,
+   "exit": 0
+  },
+  {
+   "segment": 27,
+   "start_s": 1071.5,
+   "end_s": 1084.6,
+   "exit": 0
+  },
+  {
+   "segment": 28,
+   "start_s": 1084.6,
+   "end_s": 1087.9,
+   "exit": 0
+  },
+  {
+   "segment": 29,
+   "start_s": 1087.9,
+   "end_s": 1090.4,
+   "exit": 0
+  },
+  {
+   "segment": 30,
+   "start_s": 1090.4,
+   "end_s": 1093.4,
+   "exit": 0
+  },
+  {
+   "segment": 31,
+   "start_s": 1093.4,
+   "end_s": 1096.0,
+   "exit": 0
+  },
+  {
+   "segment": 32,
+   "start_s": 1096.0,
+   "end_s": 1098.7,
+   "exit": 0
+  },
+  {
+   "segment": 33,
+   "start_s": 1098.7,
+   "end_s": 1101.6,
+   "exit": 0
+  },
+  {
+   "segment": 34,
+   "start_s": 1101.6,
+   "end_s": 1104.1,
+   "exit": 0
+  },
+  {
+   "segment": 35,
+   "start_s": 1104.1,
+   "end_s": 1106.4,
+   "exit": 0
+  },
+  {
+   "segment": 36,
+   "start_s": 1106.4,
+   "end_s": 1109.1,
+   "exit": 0
+  },
+  {
+   "segment": 37,
+   "start_s": 1109.2,
+   "end_s": 1112.2,
+   "exit": 0
+  },
+  {
+   "segment": 38,
+   "start_s": 1112.2,
+   "end_s": 1118.7,
+   "exit": 0
+  },
+  {
+   "segment": 39,
+   "start_s": 1118.7,
+   "end_s": 1121.3,
+   "exit": 0
+  },
+  {
+   "segment": 40,
+   "start_s": 1121.3,
+   "end_s": 1124.0,
+   "exit": 0
+  },
+  {
+   "segment": 41,
+   "start_s": 1124.0,
+   "end_s": 1126.4,
+   "exit": 0
+  },
+  {
+   "segment": 42,
+   "start_s": 1126.4,
+   "end_s": 1128.8,
+   "exit": 0
+  },
+  {
+   "segment": 43,
+   "start_s": 1128.8,
+   "end_s": 1131.5,
+   "exit": 0
+  },
+  {
+   "segment": 44,
+   "start_s": 1131.5,
+   "end_s": 1134.0,
+   "exit": 0
+  },
+  {
+   "segment": 45,
+   "start_s": 1134.0,
+   "end_s": 1136.3,
+   "exit": 0
+  },
+  {
+   "segment": 46,
+   "start_s": 1136.3,
+   "end_s": 1139.2,
+   "exit": 0
+  },
+  {
+   "segment": 47,
+   "start_s": 1139.2,
+   "end_s": 1142.0,
+   "exit": 0
+  }
+ ],
+ "seed": "private"
+}

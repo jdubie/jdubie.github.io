@@ -62,15 +62,16 @@ def variant_rows() -> str:
     return head + rows
 
 
-def timeline() -> list[dict]:
-    tl = load(ROOT / "results/opus20/timeline.json") or []
+def timeline(tag: str = "opus20") -> list[dict]:
+    tl = load(ROOT / "results" / tag / "timeline.json") or []
     pts = [{"t": x["t_min"], "name": x["snapshot"], **{k: x.get(k, 0) for k in ("reward", "sql", "protocol", "durability")},
             "sqlp": x.get("sql_perfect"), "pp": x.get("protocol_perfect"), "dr": x.get("durability_runs")} for x in tl]
     pts.sort(key=lambda x: x["t"])
     return pts
 
 
-def chart(pts: list[dict]) -> str:
+def chart(pts: list[dict], series: list | None = None, aria: str = "Opus 5.5 reward and components over 20 minutes") -> str:
+    """series: (key or (run index, key), label, colour, width); default = one run's reward and components."""
     if not pts:
         return "<p>Not graded yet.</p>"
     W, H, L, R, T, B = 720, 320, 40, 150, 16, 42
@@ -83,13 +84,15 @@ def chart(pts: list[dict]) -> str:
     for t in range(0, 21, 4):
         g += f'<text x="{X(t):.1f}" y="{H - B + 18}" text-anchor="middle">{t}</text>'
     g += f'<text x="{(L + W - R) / 2:.0f}" y="{H - 6}" text-anchor="middle">minutes into the run</text>'
-    series = [("reward", "reward", "var(--fg)", 2.6)] + [(k, k, c, 2) for k, _, c in COMPS]
+    runs = pts if pts and isinstance(pts[0], list) else [pts]
+    series = series or [((0, "reward"), "reward", "var(--fg)", 2.6)] + [((0, k), k, c, 2) for k, _, c in COMPS]
     ends = []
-    full = [{"t": 0, "reward": 0, "sql": 0, "protocol": 0, "durability": 0}] + pts
-    for key, label, col, wdt in series:
+    for (ri, key), label, col, wdt in series:
+        rp = runs[ri]
+        full = [{"t": 0, "reward": 0, "sql": 0, "protocol": 0, "durability": 0}] + rp
         d = " ".join(f"{'M' if i == 0 else 'L'}{X(p['t']):.1f},{Y(p[key]):.1f}" for i, p in enumerate(full))
         g += f'<path d="{d}" fill="none" stroke="{col}" stroke-width="{wdt}" stroke-linejoin="round"/>'
-        for p in pts:
+        for p in rp:
             g += f'<circle cx="{X(p["t"]):.1f}" cy="{Y(p[key]):.1f}" r="{4 if key == "reward" else 3}" fill="{col}" stroke="var(--bg)" stroke-width="1.5"/>'
         ends.append([Y(full[-1][key]), label, col, full[-1][key]])
     ends.sort()
@@ -98,11 +101,11 @@ def chart(pts: list[dict]) -> str:
     for y, label, col, v in ends:
         g += f'<line x1="{W - R + 2}" x2="{W - R + 14}" y1="{y:.1f}" y2="{y:.1f}" stroke="{col}" stroke-width="3"/>'
         g += f'<text x="{W - R + 18}" y="{y + 4:.1f}" class=n>{E(label)} {v:.3f}</text>'
-    # hover targets: one column per snapshot
-    for p in pts:
+    # hover targets: one column per snapshot (of the last run drawn)
+    for p in runs[-1]:
         tip = f"{p['name']}: reward {p['reward']:.3f} · sql {p['sql']:.3f} ({p['sqlp']} exact) · protocol {p['protocol']:.3f} ({p['pp']}) · durability {p['durability']:.3f} ({p['dr']})"
         g += f'<rect x="{X(p["t"]) - 9:.1f}" y="{T}" width="18" height="{H - T - B}" class=hit><title>{E(tip)}</title></rect>'
-    return f'<div class=chart><svg viewBox="0 0 {W} {H}" role=img aria-label="Opus 5.5 reward and components over 20 minutes">{g}</svg></div>'
+    return f'<div class=chart><svg viewBox="0 0 {W} {H}" role=img aria-label="{E(aria)}">{g}</svg></div>'
 
 
 def table(pts: list[dict]) -> str:
@@ -117,6 +120,15 @@ def table(pts: list[dict]) -> str:
 def main() -> None:
     notes = load(SITE / "notes.json") or {}
     pts = timeline()
+    pts2 = timeline("opus20v2")
+    cal2 = "".join(
+        f"<tr><td>{E(lbl)}</td><td class=n><b>{f3(g['summary'].get('reward'))}</b></td>"
+        + "".join(f"<td class=n>{f3(g['summary'].get(k))}</td>" for k, _, _ in COMPS)
+        + f"<td class=n>{g['summary'].get('sql_perfect')} · {g['summary'].get('protocol_perfect')} · {g['summary'].get('durability_runs')}</td></tr>"
+        for d, lbl in (("oracle", "The oracle itself"), ("postgres", "Stock PostgreSQL 16"))
+        if (g := load(ROOT / "results/opus20v2/calib" / d / "summary.json")))
+    compare = chart([pts, pts2], [((0, "reward"), "run 1 (v1)", "var(--mut)", 2), ((1, "reward"), "run 2 (v2)", "var(--fg)", 2.6)],
+                    "Reward over time, both Opus runs") if pts2 else ""
     (SITE / "specs").mkdir(parents=True, exist_ok=True)
     for p in (ROOT / "specs").glob("seed-*.json"):
         shutil.copy(p, SITE / "specs" / p.name)
@@ -159,13 +171,24 @@ Columns are oracle v2 (the current benchmark); the last column is the same serve
 <th>durability<div class=sub>×0.30</div></th><th>exact / exact / passed</th><th>reward on oracle v1</th></tr>{calib_rows()}</table></div>
 {notes.get('calibration', '')}
 
-<h2>Opus 5.5, 20 minutes</h2>
+<h2>Opus 5.5, 20 minutes: two runs</h2>
+<p>Both runs: same harness, same prompt, 20 minutes, every 2-minute snapshot of <code>/work</code> graded with the full hidden grader
+(the last point is the final <code>/work</code>). Hover a column for the numbers.</p>
+{compare}
+<h3>Run 2: oracle v2 (discovery hints), fresh seeds</h3>
+<p>A new variant seed and a new workload seed, drawn at random and kept off the repo (7101 and 90210 are public on the drafts branch).
+The variant comes from the same generator as the table below, but its spec is not published. Calibration on these seeds, before
+grading the run:</p>
+<div class=wrap><table><tr><th>server graded</th><th>reward</th><th>sql</th><th>protocol</th><th>durability</th><th>exact / exact / passed</th></tr>{cal2}</table></div>
+{notes.get('opus2', '<p>Running.</p>')}
+{chart(pts2, aria="Opus 5.5 run 2 reward and components over 20 minutes")}
+{table(pts2)}
+{notes.get('probing2', '')}
+<h3>Run 1: oracle v1 (no discovery channel), seed 7101</h3>
 {notes.get('opus', '<p>Not run yet.</p>')}
-<p>Each 2-minute snapshot of <code>/work</code> graded with the full hidden grader; the last point is the final <code>/work</code>.
-Hover a column for the numbers.</p>
-{chart(pts)}
+{chart(pts, aria="Opus 5.5 run 1 reward and components over 20 minutes")}
 {table(pts)}
-<h3>How it probed</h3>
+<h4>How it probed</h4>
 {notes.get('probing', '<p>–</p>')}
 
 <h2>What each seed changes</h2>

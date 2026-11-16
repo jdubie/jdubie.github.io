@@ -20,6 +20,7 @@ def main() -> None:
     ap.add_argument("run")
     ap.add_argument("--jobs", type=int, default=2)
     ap.add_argument("--seed", type=int, default=7101)
+    ap.add_argument("--wseed", type=int, default=90210)
     a = ap.parse_args()
     run = Path(a.run)
     todo = [(p.name, p) for p in sorted((run / "snapshots").iterdir())] + [("final", run / "work")]
@@ -31,7 +32,7 @@ def main() -> None:
             return
         out.mkdir(parents=True, exist_ok=True)
         with open(out / "grade.log", "w") as log:
-            subprocess.run([sys.executable, str(ROOT / "grader/grade.py"), "--work", str(work), str(out), "--seed", str(a.seed)],
+            subprocess.run([sys.executable, str(ROOT / "grader/grade.py"), "--work", str(work), str(out), "--seed", str(a.seed), "--wseed", str(a.wseed)],
                            stdout=log, stderr=log, timeout=4 * 3600)
         print(name, "done", flush=True)
 
