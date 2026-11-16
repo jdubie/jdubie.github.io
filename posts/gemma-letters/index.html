@@ -61,6 +61,13 @@ details pre{white-space:pre-wrap;font:12.5px/1.5 var(--mono);margin:6px 0 0}
 .small{font-size:13px;color:var(--muted)}
 @media (max-width:560px){.pair{grid-template-columns:1fr}}
 
+.trio{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.trio>div{background:var(--surface);border-radius:6px;padding:10px 12px;min-width:0}
+.trio pre{white-space:pre-wrap;font:12px/1.5 var(--mono);margin:6px 0 0}.trio b,.pair b{font:500 12px var(--mono);color:var(--muted);text-transform:uppercase;display:block}
+.score{display:inline-block;margin-top:4px;font:500 12px var(--mono);padding:1px 7px;border-radius:999px}
+.score.ok{background:color-mix(in srgb,#1f8a4c 16%,transparent);color:#1f7a44}.score.bad{background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--accent)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .score.ok{color:#5fd08f}}:root[data-theme="dark"] .score.ok{color:#5fd08f}
+.qline{margin-bottom:-14px}
+@media (max-width:640px){.trio{grid-template-columns:1fr}}
 </style>
 <main>
   <header>
@@ -107,8 +114,100 @@ Answer: 5</pre></div><div><b>After SFT (spelled out)</b><pre>Spelling out &#x27;
 8. s &lt;- &#x27;s&#x27; #2
 The letter &#x27;s&#x27; appears 2 times.
 Answer: 2</pre></div></div><p class="small">Question: How many times does the letter &#x27;s&#x27; appear in the word &#x27;surfaces&#x27;? Correct answer: 2.</p>
-  <h2>The strawberry problem</h2><p>The famous question is a different story. Asked “How many r's are in strawberry?” 16 times, base Gemma answered 3 16 of 16 times. It has almost certainly seen this exact question in training. The fine-tuned model got it right 0 of 16 times. It spells <code>s-t-r-a-w-b-e-r</code> and stops, dropping the final “ry” and with it the third r.</p><p>That points at the fine-tuned model's real weakness: spelling long words. On test words of eight letters or more it spells the whole word exactly right only about 40% of the time. It still counts correctly about 80% of the time, because most spelling slips miss the letter being counted. Strawberry is unlucky: the slip lands on an r.</p><h2>Fixing the spelling</h2><p>So I trained one more model aimed at that weakness: 8,000 counting examples with word lengths spread evenly from 4 to 12+ letters, plus 4,000 pure spelling examples (“Spell the word X”), all on training words. It counts letters correctly 90% of the time on the held-out words (95% interval 86%–93%), and it gets strawberry right 16 of 16 times. It now writes out all three r's, though it still drops the final y.</p>
+  <h2>The strawberry problem</h2><p>The famous question is a different story. Asked “How many r's are in strawberry?” 16 times, base Gemma answered 3 16 of 16 times. It has almost certainly seen this exact question in training. The fine-tuned model got it right 0 of 16 times. It spells <code>s-t-r-a-w-b-e-r-y</code>, writing the double r as a single r, and with it loses one of the three.</p><p>That points at the fine-tuned model's real weakness: spelling long words. On test words of eight letters or more it spells the whole word exactly right only about 40% of the time. It still counts correctly about 80% of the time, because most spelling slips miss the letter being counted. Strawberry is unlucky: the slip lands on an r.</p><h2>Fixing the spelling</h2><p>So I trained one more model aimed at that weakness: 8,000 counting examples with word lengths spread evenly from 4 to 12+ letters, plus 4,000 pure spelling examples (“Spell the word X”), all on training words. It counts letters correctly 90% of the time on the held-out words (95% interval 86%–93%), and it gets strawberry right 16 of 16 times. It now writes out all three r's, though it still drops the final y.</p><div class="pair"><div><b>Spelled out</b><span class="score bad">0/16 right</span><pre>Spelling out &#x27;strawberry&#x27; letter by letter:
+1. s
+2. t
+3. r &lt;- &#x27;r&#x27; #1
+4. a
+5. w
+6. b
+7. e
+8. r &lt;- &#x27;r&#x27; #2
+9. y
+The letter &#x27;r&#x27; appears 2 times.
+Answer: 2</pre></div><div><b>Spelled out + spelling practice</b><span class="score ok">16/16 right</span><pre>Spelling out &#x27;strawberry&#x27; letter by letter:
+1. s
+2. t
+3. r &lt;- &#x27;r&#x27; #1
+4. a
+5. w
+6. b
+7. e
+8. r &lt;- &#x27;r&#x27; #2
+9. r &lt;- &#x27;r&#x27; #3
+The letter &#x27;r&#x27; appears 3 times.
+Answer: 3</pre></div></div><p class="small">How many r's are in strawberry? Correct answer: 3. Scores are out of 16 samples.</p>
 
+  <h2>The three models side by side</h2><p>The same held-out questions, answered by each fine-tuned model. All three saw the same counting questions in training; they differ only in what the target response looked like.</p>
+  <p class="qline"><b>How many times does the letter &#x27;s&#x27; appear in the word &#x27;simpsons&#x27;?</b> Correct answer: 3.</p>
+  <div class="trio"><div><b>Answer only</b><span class="score bad">0/8 right</span><pre>Answer: 0</pre></div><div><b>Spelled out</b><span class="score ok">8/8 right</span><pre>Spelling out &#x27;simpsons&#x27; letter by letter:
+1. s &lt;- &#x27;s&#x27; #1
+2. i
+3. m
+4. p
+5. s &lt;- &#x27;s&#x27; #2
+6. o
+7. n
+8. s &lt;- &#x27;s&#x27; #3
+The letter &#x27;s&#x27; appears 3 times.
+Answer: 3</pre></div><div><b>Spelled out + spelling practice</b><span class="score ok">8/8 right</span><pre>Spelling out &#x27;simpsons&#x27; letter by letter:
+1. s &lt;- &#x27;s&#x27; #1
+2. i
+3. m
+4. p
+5. s &lt;- &#x27;s&#x27; #2
+6. o
+7. n
+8. s &lt;- &#x27;s&#x27; #3
+The letter &#x27;s&#x27; appears 3 times.
+Answer: 3</pre></div></div>
+  <p class="small">The answer-only model has no way to look at the letters, so it guesses. This time it guessed 0 on all eight tries. Both spelled-out models find all three s&#x27;s. Scores are out of 8 samples at temperature 1.0; the reply shown is the first sample.</p>
+  <p class="qline"><b>How many times does the letter &#x27;a&#x27; appear in the word &#x27;thesaurus&#x27;?</b> Correct answer: 1.</p>
+  <div class="trio"><div><b>Answer only</b><span class="score bad">2/8 right</span><pre>Answer: 0</pre></div><div><b>Spelled out</b><span class="score bad">0/8 right</span><pre>Spelling out &#x27;thesaurus&#x27; letter by letter:
+1. t
+2. h
+3. e
+4. s
+5. a &lt;- &#x27;a&#x27; #1
+6. r
+7. a &lt;- &#x27;a&#x27; #2
+8. s
+The letter &#x27;a&#x27; appears 2 times.
+Answer: 2</pre></div><div><b>Spelled out + spelling practice</b><span class="score ok">8/8 right</span><pre>Spelling out &#x27;thesaurus&#x27; letter by letter:
+1. t
+2. h
+3. e
+4. s
+5. a &lt;- &#x27;a&#x27; #1
+6. r
+7. u
+8. s
+The letter &#x27;a&#x27; appears 1 time.
+Answer: 1</pre></div></div>
+  <p class="small">The spelled-out model misspells the word, turning “saurus” into “saras”, and counts the extra a it invented. After spelling practice the spelling is still not perfect (it drops one u), but the a&#x27;s are right on all eight tries. Scores are out of 8 samples at temperature 1.0; the reply shown is the first sample.</p>
+  <p class="qline"><b>How many times does the letter &#x27;s&#x27; appear in the word &#x27;consensus&#x27;?</b> Correct answer: 3.</p>
+  <div class="trio"><div><b>Answer only</b><span class="score ok">5/8 right</span><pre>Answer: 3</pre></div><div><b>Spelled out</b><span class="score ok">5/8 right</span><pre>Spelling out &#x27;consensus&#x27; letter by letter:
+1. c
+2. o
+3. n
+4. s &lt;- &#x27;s&#x27; #1
+5. e
+6. n
+7. s &lt;- &#x27;s&#x27; #2
+8. s &lt;- &#x27;s&#x27; #3
+The letter &#x27;s&#x27; appears 3 times.
+Answer: 3</pre></div><div><b>Spelled out + spelling practice</b><span class="score bad">0/8 right</span><pre>Spelling out &#x27;consensus&#x27; letter by letter:
+1. c
+2. o
+3. n
+4. s &lt;- &#x27;s&#x27; #1
+5. e
+6. n
+7. s &lt;- &#x27;s&#x27; #2
+8. t
+The letter &#x27;s&#x27; appears 2 times.
+Answer: 2</pre></div></div>
+  <p class="small">Spelling practice is not a fix for everything. Here it misspells “consensus” on every try and loses the last s, while the other two models get it right more often than not. Scores are out of 8 samples at temperature 1.0; the reply shown is the first sample.</p>
   <h2>What this shows</h2>
   <ul class="plain">
     <li><b>SFT teaches procedures, not just answers.</b> The answer-only model saw exactly the same questions and correct counts. Without the intermediate steps it had nothing to imitate except a guess.</li>
