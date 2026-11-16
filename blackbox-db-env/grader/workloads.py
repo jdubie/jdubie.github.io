@@ -199,10 +199,12 @@ def S_connect():
     return [("connect",)]
 
 
-def S_login(user="guest", app=None, db="main", pw=None):
-    p = {"user": user, "database": db}
-    if app:
-        p["application_name"] = app
+def appname(rng: random.Random) -> str:
+    return rng.choice(["app", "svc", "job", "cli", "web"]) + "-" + "".join(rng.choice("abcdefghjkmnpqrstuvwxyz23456789") for _ in range(6))
+
+
+def S_login(rng: random.Random, user="guest", db="main", pw=None):
+    p = {"user": user, "database": db, "application_name": appname(rng)}
     st = [("connect",), ("startup", p, "Z" if pw is None else "count1")]
     if pw is not None:
         st.append(("password", pw))
@@ -210,48 +212,48 @@ def S_login(user="guest", app=None, db="main", pw=None):
 
 
 def P_guest(rng):
-    return S_login(app=word(rng).replace("'", "").replace(" ", "")) + [("query", "SELECT 1 AS one"), ("terminate",)]
+    return S_login(rng) + [("query", f"SELECT {rng.randint(1, 999)} AS one"), ("terminate",)]
 
 
 def P_admin(rng):
-    return S_login("admin", pw=ADMIN_PW) + [("query", "SELECT current_user, session_user"), ("terminate",)]
+    return S_login(rng, "admin", pw=ADMIN_PW) + [("query", f"SELECT current_user, session_user, {rng.randint(1, 999)}"), ("terminate",)]
 
 
 def P_admin_badpw(rng):
-    return [("connect",), ("startup", {"user": "admin", "database": "main"}, "count1"), ("password", "wrong" + str(rng.randint(1, 99)))]
+    return [("connect",), ("startup", {"user": "admin", "database": "main", "application_name": appname(rng)}, "count1"), ("password", "wrong" + str(rng.randint(1, 999)))]
 
 
 def P_unknown_user(rng):
-    return [("connect",), ("startup", {"user": "nobody" + str(rng.randint(1, 99)), "database": "main"}, "close")]
+    return [("connect",), ("startup", {"user": "nobody" + str(rng.randint(1, 999)), "database": "main", "application_name": appname(rng)}, "close")]
 
 
 def P_unknown_db(rng):
-    return [("connect",), ("startup", {"user": "guest", "database": "nodb" + str(rng.randint(1, 99))}, "close")]
+    return [("connect",), ("startup", {"user": "guest", "database": "nodb" + str(rng.randint(1, 999)), "application_name": appname(rng)}, "close")]
 
 
 def P_no_user(rng):
-    return [("connect",), ("startup", {"database": "main"}, "close")]
+    return [("connect",), ("startup", {"database": "main", "application_name": appname(rng)}, "close")]
 
 
 def P_default_db(rng):
-    return [("connect",), ("startup", {"user": "guest"}, "close")]  # database defaults to the user name
+    return [("connect",), ("startup", {"user": "guest", "application_name": appname(rng)}, "close")]  # database defaults to the user name
 
 
 def P_bad_magic(rng):
-    return [("connect",), ("startup_magic", rng.choice([196608, 1234, rng.randint(1, 2**31)]), {"user": "guest"}), ("terminate",)]
+    return [("connect",), ("startup_magic", rng.choice([196608, rng.randint(1, 9999), rng.randint(1, 2**31)]), {"user": "guest", "application_name": appname(rng)}), ("terminate",)]
 
 
 def P_bad_key(rng):
-    return [("connect",), ("startup_rawkeys", {"user_raw": "guest", "colour": "blue"}), ("terminate",)]
+    return [("connect",), ("startup_rawkeys", {"user_raw": "guest", rng.choice(["colour", "user", "database", "role", "db"]): appname(rng)}), ("terminate",)]
 
 
 def P_ssl(rng):
-    return [("connect",), ("ssl",)] + S_login(app="s" + str(rng.randint(1, 9)))[1:] + [("query", "SELECT 2"), ("terminate",)]
+    return [("connect",), ("ssl",)] + S_login(rng)[1:] + [("query", f"SELECT {rng.randint(1, 999)}"), ("terminate",)]
 
 
 def P_ext_basic(rng):
     a, b = rng.randint(1, 1000), word(rng)
-    return S_login() + [("ext", [("parse", "", "SELECT $1::integer + 1 AS n, $2::text AS s, $1::integer * 2", []),
+    return S_login(rng) + [("ext", [("parse", "", "SELECT $1::integer + 1 AS n, $2::text AS s, $1::integer * 2", []),
                                   ("bind", "", "", [str(a), b]), ("describe", "P", ""), ("execute", "", 0), ("sync",)]),
                          ("terminate",)]
 
@@ -259,7 +261,7 @@ def P_ext_basic(rng):
 def P_ext_named(rng):
     t = tname(rng)
     rows = [(i, word(rng), rng.randint(0, 99)) for i in range(1, rng.randint(4, 7))]
-    steps = S_login() + [("query", f"CREATE TABLE {t} (id integer PRIMARY KEY, name text, v integer)"),
+    steps = S_login(rng) + [("query", f"CREATE TABLE {t} (id integer PRIMARY KEY, name text, v integer)"),
                          ("ext", [("parse", "ins", f"INSERT INTO {t} VALUES ($1, $2, $3)", [OID["int4"], OID["text"], OID["int4"]]),
                                   ("describe", "S", "ins"), ("sync",)])]
     for r in rows:
@@ -273,7 +275,7 @@ def P_ext_named(rng):
 
 def P_ext_suspend(rng):
     n, k = rng.randint(6, 12), rng.randint(2, 4)
-    return S_login() + [("query", "BEGIN"),
+    return S_login(rng) + [("query", "BEGIN"),
                         ("ext", [("parse", "g", f"SELECT x, x * x AS sq FROM generate_series(1, {n}) AS x", []),
                                  ("bind", "cur", "g", []), ("execute", "cur", k), ("execute", "cur", k), ("sync",)]),
                         ("ext", [("execute", "cur", 0), ("sync",)]), ("query", "COMMIT"),
@@ -281,7 +283,7 @@ def P_ext_suspend(rng):
 
 
 def P_ext_error(rng):
-    return S_login() + [("ext", [("parse", "", f"SELEC {rng.randint(1, 9)}", []), ("bind", "", "", []), ("execute", "", 0), ("sync",)]),
+    return S_login(rng) + [("ext", [("parse", "", f"SELEC {rng.randint(1, 9)}", []), ("bind", "", "", []), ("execute", "", 0), ("sync",)]),
                         ("ext", [("parse", "", "SELECT $1::integer", []), ("bind", "", "", ["notanint"]), ("execute", "", 0), ("sync",)]),
                         ("ext", [("parse", "", "SELECT 7", []), ("bind", "", "", []), ("execute", "", 0), ("sync",)]),
                         ("terminate",)]
@@ -290,17 +292,17 @@ def P_ext_error(rng):
 def P_ext_pipeline(rng):
     z = rng.randint(1, 9)
     grp = lambda sql: [("parse", "", sql, []), ("bind", "", "", []), ("execute", "", 0), ("sync",)]  # noqa: E731
-    return S_login() + [("ext", grp("SELECT 1") + grp(f"SELECT {z} / 0") + grp("SELECT 3") + grp("SELECT 'p'"), 4), ("terminate",)]
+    return S_login(rng) + [("ext", grp("SELECT 1") + grp(f"SELECT {z} / 0") + grp("SELECT 3") + grp("SELECT 'p'"), 4), ("terminate",)]
 
 
 def P_ext_flush(rng):
-    return S_login() + [("ext_idle", [("parse", "f", f"SELECT {rng.randint(1, 99)} AS v", []), ("bind", "", "f", []), ("flush",)]),
+    return S_login(rng) + [("ext_idle", [("parse", "f", f"SELECT {rng.randint(1, 99)} AS v", []), ("bind", "", "f", []), ("flush",)]),
                         ("ext", [("execute", "", 0), ("sync",)]), ("terminate",)]
 
 
 def P_ext_nodata(rng):
     t = tname(rng)
-    return S_login() + [("query", f"CREATE TABLE {t} (a integer)"),
+    return S_login(rng) + [("query", f"CREATE TABLE {t} (a integer)"),
                         ("ext", [("parse", "w", f"INSERT INTO {t} VALUES ($1)", []), ("describe", "S", "w"), ("bind", "", "w", ["5"]),
                                  ("describe", "P", ""), ("execute", "", 0), ("parse", "", "", []), ("bind", "", "", []),
                                  ("execute", "", 0), ("sync",)]),
@@ -309,39 +311,39 @@ def P_ext_nodata(rng):
 
 
 def P_simple_multi(rng):
-    return S_login() + [("query", f"SELECT 1 AS a; SELECT {rng.randint(2, 9)} AS b, 'x' AS c"),
+    return S_login(rng) + [("query", f"SELECT 1 AS a; SELECT {rng.randint(2, 9)} AS b, 'x' AS c"),
                         ("query", f"SELECT 1; SELECT {rng.randint(1, 9)} / 0; SELECT 3"),
                         ("query", ""), ("query", " ; "), ("query", "-- only a comment"), ("terminate",)]
 
 
 def P_txn_status(rng):
-    return S_login() + [("query", "BEGIN"), ("query", "SELECT 1"), ("query", "SELECT nosuch"), ("query", "SELECT 1"),
+    return S_login(rng) + [("query", "BEGIN"), ("query", "SELECT 1"), ("query", "SELECT nosuch"), ("query", "SELECT 1"),
                         ("query", "ROLLBACK"), ("query", "BEGIN; SELECT 1"), ("query", "COMMIT"), ("query", "ROLLBACK"),
                         ("terminate",)]
 
 
 def P_bad_type(rng):
-    return S_login() + [("query", "SELECT 1"), ("rawtype", rng.randint(0, 255)), ("query", "SELECT 2")]
+    return S_login(rng) + [("query", "SELECT 1"), ("rawtype", rng.randint(0, 255)), ("query", "SELECT 2")]
 
 
 def P_bad_len(rng):
-    return S_login() + [("badlen",)]
+    return S_login(rng) + [("badlen",)]
 
 
 def P_bad_body(rng):
-    return S_login() + [("badbody", rng.choice(["query", "execute", "bind"]))]
+    return S_login(rng) + [("badbody", rng.choice(["query", "execute", "bind"]))]
 
 
 def P_cancel(rng):
-    return S_login() + [("cancel", "SELECT pg_sleep(4)", rng.uniform(0.3, 0.8)), ("query", "SELECT 'after'"), ("terminate",)]
+    return S_login(rng) + [("cancel", "SELECT pg_sleep(4)", rng.uniform(0.3, 0.8)), ("query", "SELECT 'after'"), ("terminate",)]
 
 
 def P_terminate(rng):
-    return S_login() + [("query_terminate", f"SELECT {rng.randint(1, 99)} AS last")]
+    return S_login(rng) + [("query_terminate", f"SELECT {rng.randint(1, 99)} AS last")]
 
 
 def P_paramstatus(rng):
-    return S_login() + [("query", f"SET application_name = 'a{rng.randint(1, 99)}'"), ("query", "SET DateStyle = 'ISO, YMD'"),
+    return S_login(rng) + [("query", f"SET application_name = 'a{rng.randint(1, 99)}'"), ("query", "SET DateStyle = 'ISO, YMD'"),
                         ("query", "SELECT '2020-01-02'::date"), ("query", "RESET DateStyle"), ("query", "SELECT '2020-01-02'::date"),
                         ("terminate",)]
 
@@ -356,7 +358,7 @@ def generate(wseed: int) -> list[dict]:
     wls = []
     for i in range(N_SQL):
         rng = random.Random(f"bbx-sql-{wseed}-{i}")
-        steps = S_login() + [("query", s) for s in sql_session(rng)] + [("terminate",)]
+        steps = S_login(rng) + [("query", s) for s in sql_session(rng)] + [("terminate",)]
         wls.append({"id": f"sql{i:03d}", "kind": "sql", "abstract": steps, "gate": 1, "score_from": 2})
     for j, tpl in enumerate(PROTOCOL):
         for k in range(N_PROTOCOL_PER_TEMPLATE):
