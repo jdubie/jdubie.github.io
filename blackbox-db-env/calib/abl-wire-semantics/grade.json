@@ -1,0 +1,894 @@
+{
+ "summary": {
+  "sql": 0.2227,
+  "protocol": 0.8788,
+  "durability": 0.0,
+  "reward": 0.3199,
+  "sql_perfect": "0/60",
+  "protocol_perfect": "28/50",
+  "durability_runs": "0/14"
+ },
+ "meta": {
+  "seed": 7101,
+  "wseed": 90210,
+  "oracle_version": 2,
+  "target": "oracle seed 7101 layers wire,semantics",
+  "seconds": 64.2
+ },
+ "sql": {
+  "score": 0.22271381893546485,
+  "n": 60,
+  "perfect": 0,
+  "zero": 0
+ },
+ "protocol": {
+  "score": 0.8788007663299672,
+  "n": 50,
+  "perfect": 28,
+  "zero": 0
+ },
+ "per_workload": [
+  {
+   "id": "sql000",
+   "kind": "sql",
+   "score": 0.18096590909090907,
+   "credit": 31.85,
+   "denom": 176
+  },
+  {
+   "id": "sql001",
+   "kind": "sql",
+   "score": 0.20406698564593304,
+   "credit": 42.65,
+   "denom": 209
+  },
+  {
+   "id": "sql002",
+   "kind": "sql",
+   "score": 0.23064102564102568,
+   "credit": 44.975,
+   "denom": 195
+  },
+  {
+   "id": "sql003",
+   "kind": "sql",
+   "score": 0.24128978224455608,
+   "credit": 48.017,
+   "denom": 199
+  },
+  {
+   "id": "sql004",
+   "kind": "sql",
+   "score": 0.22113363363363364,
+   "credit": 49.092,
+   "denom": 222
+  },
+  {
+   "id": "sql005",
+   "kind": "sql",
+   "score": 0.17540816326530612,
+   "credit": 42.975,
+   "denom": 245
+  },
+  {
+   "id": "sql006",
+   "kind": "sql",
+   "score": 0.21320582877959926,
+   "credit": 39.017,
+   "denom": 183
+  },
+  {
+   "id": "sql007",
+   "kind": "sql",
+   "score": 0.24026315789473687,
+   "credit": 45.65,
+   "denom": 190
+  },
+  {
+   "id": "sql008",
+   "kind": "sql",
+   "score": 0.19786821705426355,
+   "credit": 42.542,
+   "denom": 215
+  },
+  {
+   "id": "sql009",
+   "kind": "sql",
+   "score": 0.16850811485642947,
+   "credit": 44.992,
+   "denom": 267
+  },
+  {
+   "id": "sql010",
+   "kind": "sql",
+   "score": 0.25373983739837397,
+   "credit": 52.017,
+   "denom": 205
+  },
+  {
+   "id": "sql011",
+   "kind": "sql",
+   "score": 0.2352765321375187,
+   "credit": 52.467,
+   "denom": 223
+  },
+  {
+   "id": "sql012",
+   "kind": "sql",
+   "score": 0.24012896825396826,
+   "credit": 40.342,
+   "denom": 168
+  },
+  {
+   "id": "sql013",
+   "kind": "sql",
+   "score": 0.2375243664717349,
+   "credit": 40.617,
+   "denom": 171
+  },
+  {
+   "id": "sql014",
+   "kind": "sql",
+   "score": 0.20836864406779662,
+   "credit": 49.175,
+   "denom": 236
+  },
+  {
+   "id": "sql015",
+   "kind": "sql",
+   "score": 0.24459459459459462,
+   "credit": 54.3,
+   "denom": 222
+  },
+  {
+   "id": "sql016",
+   "kind": "sql",
+   "score": 0.20303030303030306,
+   "credit": 42.433,
+   "denom": 209
+  },
+  {
+   "id": "sql017",
+   "kind": "sql",
+   "score": 0.1661572052401747,
+   "credit": 38.05,
+   "denom": 229
+  },
+  {
+   "id": "sql018",
+   "kind": "sql",
+   "score": 0.22160652920962198,
+   "credit": 42.992,
+   "denom": 194
+  },
+  {
+   "id": "sql019",
+   "kind": "sql",
+   "score": 0.22716942148760333,
+   "credit": 54.975,
+   "denom": 242
+  },
+  {
+   "id": "sql020",
+   "kind": "sql",
+   "score": 0.21624649859943978,
+   "credit": 51.467,
+   "denom": 238
+  },
+  {
+   "id": "sql021",
+   "kind": "sql",
+   "score": 0.2214231354642313,
+   "credit": 48.492,
+   "denom": 219
+  },
+  {
+   "id": "sql022",
+   "kind": "sql",
+   "score": 0.2132924335378323,
+   "credit": 34.767,
+   "denom": 163
+  },
+  {
+   "id": "sql023",
+   "kind": "sql",
+   "score": 0.22305068226120858,
+   "credit": 38.142,
+   "denom": 171
+  },
+  {
+   "id": "sql024",
+   "kind": "sql",
+   "score": 0.25405844155844154,
+   "credit": 39.125,
+   "denom": 154
+  },
+  {
+   "id": "sql025",
+   "kind": "sql",
+   "score": 0.20471781305114636,
+   "credit": 38.692,
+   "denom": 189
+  },
+  {
+   "id": "sql026",
+   "kind": "sql",
+   "score": 0.24966666666666665,
+   "credit": 43.692,
+   "denom": 175
+  },
+  {
+   "id": "sql027",
+   "kind": "sql",
+   "score": 0.25769230769230766,
+   "credit": 36.85,
+   "denom": 143
+  },
+  {
+   "id": "sql028",
+   "kind": "sql",
+   "score": 0.2304245283018868,
+   "credit": 48.85,
+   "denom": 212
+  },
+  {
+   "id": "sql029",
+   "kind": "sql",
+   "score": 0.199364406779661,
+   "credit": 47.05,
+   "denom": 236
+  },
+  {
+   "id": "sql030",
+   "kind": "sql",
+   "score": 0.2040448343079922,
+   "credit": 34.892,
+   "denom": 171
+  },
+  {
+   "id": "sql031",
+   "kind": "sql",
+   "score": 0.20435897435897432,
+   "credit": 39.85,
+   "denom": 195
+  },
+  {
+   "id": "sql032",
+   "kind": "sql",
+   "score": 0.23248792270531402,
+   "credit": 48.125,
+   "denom": 207
+  },
+  {
+   "id": "sql033",
+   "kind": "sql",
+   "score": 0.2540873015873016,
+   "credit": 53.358,
+   "denom": 210
+  },
+  {
+   "id": "sql034",
+   "kind": "sql",
+   "score": 0.1896276595744681,
+   "credit": 35.65,
+   "denom": 188
+  },
+  {
+   "id": "sql035",
+   "kind": "sql",
+   "score": 0.2170408163265306,
+   "credit": 53.175,
+   "denom": 245
+  },
+  {
+   "id": "sql036",
+   "kind": "sql",
+   "score": 0.24487500000000004,
+   "credit": 48.975,
+   "denom": 200
+  },
+  {
+   "id": "sql037",
+   "kind": "sql",
+   "score": 0.22623106060606057,
+   "credit": 39.817,
+   "denom": 176
+  },
+  {
+   "id": "sql038",
+   "kind": "sql",
+   "score": 0.19842687074829932,
+   "credit": 38.892,
+   "denom": 196
+  },
+  {
+   "id": "sql039",
+   "kind": "sql",
+   "score": 0.22723665223665224,
+   "credit": 52.492,
+   "denom": 231
+  },
+  {
+   "id": "sql040",
+   "kind": "sql",
+   "score": 0.23687500000000003,
+   "credit": 47.375,
+   "denom": 200
+  },
+  {
+   "id": "sql041",
+   "kind": "sql",
+   "score": 0.20214285714285715,
+   "credit": 42.45,
+   "denom": 210
+  },
+  {
+   "id": "sql042",
+   "kind": "sql",
+   "score": 0.2889520202020202,
+   "credit": 38.142,
+   "denom": 132
+  },
+  {
+   "id": "sql043",
+   "kind": "sql",
+   "score": 0.1859612724757953,
+   "credit": 44.817,
+   "denom": 241
+  },
+  {
+   "id": "sql044",
+   "kind": "sql",
+   "score": 0.20081395348837208,
+   "credit": 43.175,
+   "denom": 215
+  },
+  {
+   "id": "sql045",
+   "kind": "sql",
+   "score": 0.20817901234567898,
+   "credit": 33.725,
+   "denom": 162
+  },
+  {
+   "id": "sql046",
+   "kind": "sql",
+   "score": 0.2885890151515152,
+   "credit": 50.792,
+   "denom": 176
+  },
+  {
+   "id": "sql047",
+   "kind": "sql",
+   "score": 0.2173913043478261,
+   "credit": 50.0,
+   "denom": 230
+  },
+  {
+   "id": "sql048",
+   "kind": "sql",
+   "score": 0.19768518518518519,
+   "credit": 42.7,
+   "denom": 216
+  },
+  {
+   "id": "sql049",
+   "kind": "sql",
+   "score": 0.23659754224270355,
+   "credit": 51.342,
+   "denom": 217
+  },
+  {
+   "id": "sql050",
+   "kind": "sql",
+   "score": 0.2812043795620438,
+   "credit": 38.525,
+   "denom": 137
+  },
+  {
+   "id": "sql051",
+   "kind": "sql",
+   "score": 0.1712033462033462,
+   "credit": 44.342,
+   "denom": 259
+  },
+  {
+   "id": "sql052",
+   "kind": "sql",
+   "score": 0.19999999999999998,
+   "credit": 35.8,
+   "denom": 179
+  },
+  {
+   "id": "sql053",
+   "kind": "sql",
+   "score": 0.22157118055555558,
+   "credit": 42.542,
+   "denom": 192
+  },
+  {
+   "id": "sql054",
+   "kind": "sql",
+   "score": 0.23200483091787438,
+   "credit": 32.017,
+   "denom": 138
+  },
+  {
+   "id": "sql055",
+   "kind": "sql",
+   "score": 0.2515306122448979,
+   "credit": 49.3,
+   "denom": 196
+  },
+  {
+   "id": "sql056",
+   "kind": "sql",
+   "score": 0.2677514792899409,
+   "credit": 45.25,
+   "denom": 169
+  },
+  {
+   "id": "sql057",
+   "kind": "sql",
+   "score": 0.23899456521739126,
+   "credit": 43.975,
+   "denom": 184
+  },
+  {
+   "id": "sql058",
+   "kind": "sql",
+   "score": 0.23370044052863434,
+   "credit": 53.05,
+   "denom": 227
+  },
+  {
+   "id": "sql059",
+   "kind": "sql",
+   "score": 0.22237991266375548,
+   "credit": 50.925,
+   "denom": 229
+  },
+  {
+   "id": "guest0",
+   "kind": "protocol",
+   "score": 0.8333333333333334,
+   "credit": 15.0,
+   "denom": 18
+  },
+  {
+   "id": "guest1",
+   "kind": "protocol",
+   "score": 0.8333333333333334,
+   "credit": 15.0,
+   "denom": 18
+  },
+  {
+   "id": "admin0",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 19.0,
+   "denom": 19
+  },
+  {
+   "id": "admin1",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 19.0,
+   "denom": 19
+  },
+  {
+   "id": "admin_badpw0",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 4.0,
+   "denom": 4
+  },
+  {
+   "id": "admin_badpw1",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 4.0,
+   "denom": 4
+  },
+  {
+   "id": "unknown_user0",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 3.0,
+   "denom": 3
+  },
+  {
+   "id": "unknown_user1",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 3.0,
+   "denom": 3
+  },
+  {
+   "id": "unknown_db0",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 4.0,
+   "denom": 4
+  },
+  {
+   "id": "unknown_db1",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 4.0,
+   "denom": 4
+  },
+  {
+   "id": "no_user0",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 3.0,
+   "denom": 3
+  },
+  {
+   "id": "no_user1",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 3.0,
+   "denom": 3
+  },
+  {
+   "id": "default_db0",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 4.0,
+   "denom": 4
+  },
+  {
+   "id": "default_db1",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 4.0,
+   "denom": 4
+  },
+  {
+   "id": "bad_magic0",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 4.0,
+   "denom": 4
+  },
+  {
+   "id": "bad_magic1",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 4.0,
+   "denom": 4
+  },
+  {
+   "id": "bad_key0",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 4.0,
+   "denom": 4
+  },
+  {
+   "id": "bad_key1",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 4.0,
+   "denom": 4
+  },
+  {
+   "id": "ssl0",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 19.0,
+   "denom": 19
+  },
+  {
+   "id": "ssl1",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 19.0,
+   "denom": 19
+  },
+  {
+   "id": "ext_basic0",
+   "kind": "protocol",
+   "score": 0.75,
+   "credit": 15.0,
+   "denom": 20
+  },
+  {
+   "id": "ext_basic1",
+   "kind": "protocol",
+   "score": 0.75,
+   "credit": 15.0,
+   "denom": 20
+  },
+  {
+   "id": "ext_named0",
+   "kind": "protocol",
+   "score": 0.5348837209302325,
+   "credit": 23.0,
+   "denom": 43
+  },
+  {
+   "id": "ext_named1",
+   "kind": "protocol",
+   "score": 0.4897959183673469,
+   "credit": 24.0,
+   "denom": 49
+  },
+  {
+   "id": "ext_suspend0",
+   "kind": "protocol",
+   "score": 0.4594594594594595,
+   "credit": 17.0,
+   "denom": 37
+  },
+  {
+   "id": "ext_suspend1",
+   "kind": "protocol",
+   "score": 0.5151515151515151,
+   "credit": 17.0,
+   "denom": 33
+  },
+  {
+   "id": "ext_error0",
+   "kind": "protocol",
+   "score": 0.9249999999999999,
+   "credit": 22.2,
+   "denom": 24
+  },
+  {
+   "id": "ext_error1",
+   "kind": "protocol",
+   "score": 0.9249999999999999,
+   "credit": 22.2,
+   "denom": 24
+  },
+  {
+   "id": "ext_pipeline0",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 32.0,
+   "denom": 32
+  },
+  {
+   "id": "ext_pipeline1",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 32.0,
+   "denom": 32
+  },
+  {
+   "id": "ext_flush0",
+   "kind": "protocol",
+   "score": 0.6842105263157895,
+   "credit": 13.0,
+   "denom": 19
+  },
+  {
+   "id": "ext_flush1",
+   "kind": "protocol",
+   "score": 0.6842105263157895,
+   "credit": 13.0,
+   "denom": 19
+  },
+  {
+   "id": "ext_nodata0",
+   "kind": "protocol",
+   "score": 0.6666666666666666,
+   "credit": 20.0,
+   "denom": 30
+  },
+  {
+   "id": "ext_nodata1",
+   "kind": "protocol",
+   "score": 0.6666666666666666,
+   "credit": 20.0,
+   "denom": 30
+  },
+  {
+   "id": "simple_multi0",
+   "kind": "protocol",
+   "score": 0.8125,
+   "credit": 26.0,
+   "denom": 32
+  },
+  {
+   "id": "simple_multi1",
+   "kind": "protocol",
+   "score": 0.8125,
+   "credit": 26.0,
+   "denom": 32
+  },
+  {
+   "id": "txn_status0",
+   "kind": "protocol",
+   "score": 0.5526315789473685,
+   "credit": 21.0,
+   "denom": 38
+  },
+  {
+   "id": "txn_status1",
+   "kind": "protocol",
+   "score": 0.5526315789473685,
+   "credit": 21.0,
+   "denom": 38
+  },
+  {
+   "id": "bad_type0",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 20.0,
+   "denom": 20
+  },
+  {
+   "id": "bad_type1",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 20.0,
+   "denom": 20
+  },
+  {
+   "id": "bad_len0",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 15.0,
+   "denom": 15
+  },
+  {
+   "id": "bad_len1",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 15.0,
+   "denom": 15
+  },
+  {
+   "id": "bad_body0",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 15.0,
+   "denom": 15
+  },
+  {
+   "id": "bad_body1",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 15.0,
+   "denom": 15
+  },
+  {
+   "id": "cancel0",
+   "kind": "protocol",
+   "score": 0.9126984126984126,
+   "credit": 19.167,
+   "denom": 21
+  },
+  {
+   "id": "cancel1",
+   "kind": "protocol",
+   "score": 0.9126984126984126,
+   "credit": 19.167,
+   "denom": 21
+  },
+  {
+   "id": "terminate0",
+   "kind": "protocol",
+   "score": 0.8333333333333334,
+   "credit": 15.0,
+   "denom": 18
+  },
+  {
+   "id": "terminate1",
+   "kind": "protocol",
+   "score": 0.8333333333333334,
+   "credit": 15.0,
+   "denom": 18
+  },
+  {
+   "id": "paramstatus0",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 30.0,
+   "denom": 30
+  },
+  {
+   "id": "paramstatus1",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 30.0,
+   "denom": 30
+  }
+ ],
+ "starts": 1,
+ "durability": {
+  "score": 0.0,
+  "passed": 0,
+  "total": 14,
+  "runs": [
+   {
+    "scenario": "seq_insert",
+    "seed": 0,
+    "ok": false,
+    "why": "setup failed: ['error', '54601']"
+   },
+   {
+    "scenario": "seq_insert",
+    "seed": 1,
+    "ok": false,
+    "why": "setup failed: ['error', '54601']"
+   },
+   {
+    "scenario": "seq_mixed",
+    "seed": 0,
+    "ok": false,
+    "why": "setup failed: ['error', '54601']"
+   },
+   {
+    "scenario": "seq_mixed",
+    "seed": 1,
+    "ok": false,
+    "why": "setup failed: ['error', '54601']"
+   },
+   {
+    "scenario": "txn_batches",
+    "seed": 0,
+    "ok": false,
+    "why": "setup failed: ['error', '54601']"
+   },
+   {
+    "scenario": "txn_batches",
+    "seed": 1,
+    "ok": false,
+    "why": "setup failed: ['error', '54601']"
+   },
+   {
+    "scenario": "transfer",
+    "seed": 0,
+    "ok": false,
+    "why": "setup failed: ['error', '54601']"
+   },
+   {
+    "scenario": "transfer",
+    "seed": 1,
+    "ok": false,
+    "why": "setup failed: ['error', '54601']"
+   },
+   {
+    "scenario": "uncommitted",
+    "seed": 0,
+    "ok": false,
+    "why": "setup failed: ['error', '54601']"
+   },
+   {
+    "scenario": "uncommitted",
+    "seed": 1,
+    "ok": false,
+    "why": "setup failed: ['error', '54601']"
+   },
+   {
+    "scenario": "ddl",
+    "seed": 0,
+    "ok": false,
+    "why": "setup failed: ['error', '54601']"
+   },
+   {
+    "scenario": "ddl",
+    "seed": 1,
+    "ok": false,
+    "why": "setup failed: ['error', '54601']"
+   },
+   {
+    "scenario": "two_crashes",
+    "seed": 0,
+    "ok": false,
+    "why": "setup failed: ['error', '54601']"
+   },
+   {
+    "scenario": "two_crashes",
+    "seed": 1,
+    "ok": false,
+    "why": "setup failed: ['error', '54601']"
+   }
+  ]
+ }
+}

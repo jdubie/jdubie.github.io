@@ -1,0 +1,894 @@
+{
+ "summary": {
+  "sql": 0.2087,
+  "protocol": 0.68,
+  "durability": 0.0,
+  "reward": 0.2639,
+  "sql_perfect": "0/60",
+  "protocol_perfect": "0/50",
+  "durability_runs": "0/14"
+ },
+ "meta": {
+  "seed": 7101,
+  "wseed": 90210,
+  "oracle_version": 2,
+  "target": "oracle seed 7101 layers wire",
+  "seconds": 63.4
+ },
+ "sql": {
+  "score": 0.20866537530626741,
+  "n": 60,
+  "perfect": 0,
+  "zero": 0
+ },
+ "protocol": {
+  "score": 0.6799999991458725,
+  "n": 50,
+  "perfect": 0,
+  "zero": 0
+ },
+ "per_workload": [
+  {
+   "id": "sql000",
+   "kind": "sql",
+   "score": 0.1715909090909091,
+   "credit": 30.2,
+   "denom": 176
+  },
+  {
+   "id": "sql001",
+   "kind": "sql",
+   "score": 0.19677033492822968,
+   "credit": 41.125,
+   "denom": 209
+  },
+  {
+   "id": "sql002",
+   "kind": "sql",
+   "score": 0.22115384615384615,
+   "credit": 43.125,
+   "denom": 195
+  },
+  {
+   "id": "sql003",
+   "kind": "sql",
+   "score": 0.22738693467336685,
+   "credit": 45.25,
+   "denom": 199
+  },
+  {
+   "id": "sql004",
+   "kind": "sql",
+   "score": 0.20135135135135138,
+   "credit": 44.7,
+   "denom": 222
+  },
+  {
+   "id": "sql005",
+   "kind": "sql",
+   "score": 0.17142857142857143,
+   "credit": 42.0,
+   "denom": 245
+  },
+  {
+   "id": "sql006",
+   "kind": "sql",
+   "score": 0.19503642987249542,
+   "credit": 35.692,
+   "denom": 183
+  },
+  {
+   "id": "sql007",
+   "kind": "sql",
+   "score": 0.22342105263157896,
+   "credit": 42.45,
+   "denom": 190
+  },
+  {
+   "id": "sql008",
+   "kind": "sql",
+   "score": 0.18755813953488373,
+   "credit": 40.325,
+   "denom": 215
+  },
+  {
+   "id": "sql009",
+   "kind": "sql",
+   "score": 0.15914481897627966,
+   "credit": 42.492,
+   "denom": 267
+  },
+  {
+   "id": "sql010",
+   "kind": "sql",
+   "score": 0.23231707317073172,
+   "credit": 47.625,
+   "denom": 205
+  },
+  {
+   "id": "sql011",
+   "kind": "sql",
+   "score": 0.21748878923766815,
+   "credit": 48.5,
+   "denom": 223
+  },
+  {
+   "id": "sql012",
+   "kind": "sql",
+   "score": 0.22837301587301587,
+   "credit": 38.367,
+   "denom": 168
+  },
+  {
+   "id": "sql013",
+   "kind": "sql",
+   "score": 0.2190058479532164,
+   "credit": 37.45,
+   "denom": 171
+  },
+  {
+   "id": "sql014",
+   "kind": "sql",
+   "score": 0.19597457627118645,
+   "credit": 46.25,
+   "denom": 236
+  },
+  {
+   "id": "sql015",
+   "kind": "sql",
+   "score": 0.22364864864864864,
+   "credit": 49.65,
+   "denom": 222
+  },
+  {
+   "id": "sql016",
+   "kind": "sql",
+   "score": 0.18512759170653906,
+   "credit": 38.692,
+   "denom": 209
+  },
+  {
+   "id": "sql017",
+   "kind": "sql",
+   "score": 0.1615720524017467,
+   "credit": 37.0,
+   "denom": 229
+  },
+  {
+   "id": "sql018",
+   "kind": "sql",
+   "score": 0.21284364261168387,
+   "credit": 41.292,
+   "denom": 194
+  },
+  {
+   "id": "sql019",
+   "kind": "sql",
+   "score": 0.20588842975206612,
+   "credit": 49.825,
+   "denom": 242
+  },
+  {
+   "id": "sql020",
+   "kind": "sql",
+   "score": 0.20038515406162466,
+   "credit": 47.692,
+   "denom": 238
+  },
+  {
+   "id": "sql021",
+   "kind": "sql",
+   "score": 0.2041095890410959,
+   "credit": 44.7,
+   "denom": 219
+  },
+  {
+   "id": "sql022",
+   "kind": "sql",
+   "score": 0.19371165644171778,
+   "credit": 31.575,
+   "denom": 163
+  },
+  {
+   "id": "sql023",
+   "kind": "sql",
+   "score": 0.21223196881091616,
+   "credit": 36.292,
+   "denom": 171
+  },
+  {
+   "id": "sql024",
+   "kind": "sql",
+   "score": 0.2358766233766234,
+   "credit": 36.325,
+   "denom": 154
+  },
+  {
+   "id": "sql025",
+   "kind": "sql",
+   "score": 0.1921957671957672,
+   "credit": 36.325,
+   "denom": 189
+  },
+  {
+   "id": "sql026",
+   "kind": "sql",
+   "score": 0.2315714285714286,
+   "credit": 40.525,
+   "denom": 175
+  },
+  {
+   "id": "sql027",
+   "kind": "sql",
+   "score": 0.2403846153846154,
+   "credit": 34.375,
+   "denom": 143
+  },
+  {
+   "id": "sql028",
+   "kind": "sql",
+   "score": 0.21462264150943397,
+   "credit": 45.5,
+   "denom": 212
+  },
+  {
+   "id": "sql029",
+   "kind": "sql",
+   "score": 0.19120762711864406,
+   "credit": 45.125,
+   "denom": 236
+  },
+  {
+   "id": "sql030",
+   "kind": "sql",
+   "score": 0.19883040935672514,
+   "credit": 34.0,
+   "denom": 171
+  },
+  {
+   "id": "sql031",
+   "kind": "sql",
+   "score": 0.1914102564102564,
+   "credit": 37.325,
+   "denom": 195
+  },
+  {
+   "id": "sql032",
+   "kind": "sql",
+   "score": 0.22282608695652173,
+   "credit": 46.125,
+   "denom": 207
+  },
+  {
+   "id": "sql033",
+   "kind": "sql",
+   "score": 0.23662698412698413,
+   "credit": 49.692,
+   "denom": 210
+  },
+  {
+   "id": "sql034",
+   "kind": "sql",
+   "score": 0.17726063829787236,
+   "credit": 33.325,
+   "denom": 188
+  },
+  {
+   "id": "sql035",
+   "kind": "sql",
+   "score": 0.20183673469387756,
+   "credit": 49.45,
+   "denom": 245
+  },
+  {
+   "id": "sql036",
+   "kind": "sql",
+   "score": 0.2275,
+   "credit": 45.5,
+   "denom": 200
+  },
+  {
+   "id": "sql037",
+   "kind": "sql",
+   "score": 0.20804924242424247,
+   "credit": 36.617,
+   "denom": 176
+  },
+  {
+   "id": "sql038",
+   "kind": "sql",
+   "score": 0.18979591836734697,
+   "credit": 37.2,
+   "denom": 196
+  },
+  {
+   "id": "sql039",
+   "kind": "sql",
+   "score": 0.21352813852813854,
+   "credit": 49.325,
+   "denom": 231
+  },
+  {
+   "id": "sql040",
+   "kind": "sql",
+   "score": 0.225625,
+   "credit": 45.125,
+   "denom": 200
+  },
+  {
+   "id": "sql041",
+   "kind": "sql",
+   "score": 0.1882142857142857,
+   "credit": 39.525,
+   "denom": 210
+  },
+  {
+   "id": "sql042",
+   "kind": "sql",
+   "score": 0.2683080808080808,
+   "credit": 35.417,
+   "denom": 132
+  },
+  {
+   "id": "sql043",
+   "kind": "sql",
+   "score": 0.17593360995850624,
+   "credit": 42.4,
+   "denom": 241
+  },
+  {
+   "id": "sql044",
+   "kind": "sql",
+   "score": 0.19534883720930232,
+   "credit": 42.0,
+   "denom": 215
+  },
+  {
+   "id": "sql045",
+   "kind": "sql",
+   "score": 0.19382716049382714,
+   "credit": 31.4,
+   "denom": 162
+  },
+  {
+   "id": "sql046",
+   "kind": "sql",
+   "score": 0.26983901515151515,
+   "credit": 47.492,
+   "denom": 176
+  },
+  {
+   "id": "sql047",
+   "kind": "sql",
+   "score": 0.19869565217391305,
+   "credit": 45.7,
+   "denom": 230
+  },
+  {
+   "id": "sql048",
+   "kind": "sql",
+   "score": 0.19074074074074077,
+   "credit": 41.2,
+   "denom": 216
+  },
+  {
+   "id": "sql049",
+   "kind": "sql",
+   "score": 0.2196620583717358,
+   "credit": 47.667,
+   "denom": 217
+  },
+  {
+   "id": "sql050",
+   "kind": "sql",
+   "score": 0.2651459854014599,
+   "credit": 36.325,
+   "denom": 137
+  },
+  {
+   "id": "sql051",
+   "kind": "sql",
+   "score": 0.16357786357786355,
+   "credit": 42.367,
+   "denom": 259
+  },
+  {
+   "id": "sql052",
+   "kind": "sql",
+   "score": 0.1910614525139665,
+   "credit": 34.2,
+   "denom": 179
+  },
+  {
+   "id": "sql053",
+   "kind": "sql",
+   "score": 0.2061197916666667,
+   "credit": 39.575,
+   "denom": 192
+  },
+  {
+   "id": "sql054",
+   "kind": "sql",
+   "score": 0.21884057971014492,
+   "credit": 30.2,
+   "denom": 138
+  },
+  {
+   "id": "sql055",
+   "kind": "sql",
+   "score": 0.24043367346938777,
+   "credit": 47.125,
+   "denom": 196
+  },
+  {
+   "id": "sql056",
+   "kind": "sql",
+   "score": 0.2507396449704142,
+   "credit": 42.375,
+   "denom": 169
+  },
+  {
+   "id": "sql057",
+   "kind": "sql",
+   "score": 0.21535326086956522,
+   "credit": 39.625,
+   "denom": 184
+  },
+  {
+   "id": "sql058",
+   "kind": "sql",
+   "score": 0.21420704845814978,
+   "credit": 48.625,
+   "denom": 227
+  },
+  {
+   "id": "sql059",
+   "kind": "sql",
+   "score": 0.2072052401746725,
+   "credit": 47.45,
+   "denom": 229
+  },
+  {
+   "id": "guest0",
+   "kind": "protocol",
+   "score": 0.75,
+   "credit": 13.5,
+   "denom": 18
+  },
+  {
+   "id": "guest1",
+   "kind": "protocol",
+   "score": 0.75,
+   "credit": 13.5,
+   "denom": 18
+  },
+  {
+   "id": "admin0",
+   "kind": "protocol",
+   "score": 0.8881578947368421,
+   "credit": 16.875,
+   "denom": 19
+  },
+  {
+   "id": "admin1",
+   "kind": "protocol",
+   "score": 0.8881578947368421,
+   "credit": 16.875,
+   "denom": 19
+  },
+  {
+   "id": "admin_badpw0",
+   "kind": "protocol",
+   "score": 0.59375,
+   "credit": 2.375,
+   "denom": 4
+  },
+  {
+   "id": "admin_badpw1",
+   "kind": "protocol",
+   "score": 0.59375,
+   "credit": 2.375,
+   "denom": 4
+  },
+  {
+   "id": "unknown_user0",
+   "kind": "protocol",
+   "score": 0.4583333333333333,
+   "credit": 1.375,
+   "denom": 3
+  },
+  {
+   "id": "unknown_user1",
+   "kind": "protocol",
+   "score": 0.4583333333333333,
+   "credit": 1.375,
+   "denom": 3
+  },
+  {
+   "id": "unknown_db0",
+   "kind": "protocol",
+   "score": 0.59375,
+   "credit": 2.375,
+   "denom": 4
+  },
+  {
+   "id": "unknown_db1",
+   "kind": "protocol",
+   "score": 0.59375,
+   "credit": 2.375,
+   "denom": 4
+  },
+  {
+   "id": "no_user0",
+   "kind": "protocol",
+   "score": 0.45,
+   "credit": 1.35,
+   "denom": 3
+  },
+  {
+   "id": "no_user1",
+   "kind": "protocol",
+   "score": 0.45,
+   "credit": 1.35,
+   "denom": 3
+  },
+  {
+   "id": "default_db0",
+   "kind": "protocol",
+   "score": 0.59375,
+   "credit": 2.375,
+   "denom": 4
+  },
+  {
+   "id": "default_db1",
+   "kind": "protocol",
+   "score": 0.59375,
+   "credit": 2.375,
+   "denom": 4
+  },
+  {
+   "id": "bad_magic0",
+   "kind": "protocol",
+   "score": 0.59375,
+   "credit": 2.375,
+   "denom": 4
+  },
+  {
+   "id": "bad_magic1",
+   "kind": "protocol",
+   "score": 0.59375,
+   "credit": 2.375,
+   "denom": 4
+  },
+  {
+   "id": "bad_key0",
+   "kind": "protocol",
+   "score": 0.6125,
+   "credit": 2.45,
+   "denom": 4
+  },
+  {
+   "id": "bad_key1",
+   "kind": "protocol",
+   "score": 0.6125,
+   "credit": 2.45,
+   "denom": 4
+  },
+  {
+   "id": "ssl0",
+   "kind": "protocol",
+   "score": 0.881578947368421,
+   "credit": 16.75,
+   "denom": 19
+  },
+  {
+   "id": "ssl1",
+   "kind": "protocol",
+   "score": 0.881578947368421,
+   "credit": 16.75,
+   "denom": 19
+  },
+  {
+   "id": "ext_basic0",
+   "kind": "protocol",
+   "score": 0.675,
+   "credit": 13.5,
+   "denom": 20
+  },
+  {
+   "id": "ext_basic1",
+   "kind": "protocol",
+   "score": 0.675,
+   "credit": 13.5,
+   "denom": 20
+  },
+  {
+   "id": "ext_named0",
+   "kind": "protocol",
+   "score": 0.4796511627906977,
+   "credit": 20.625,
+   "denom": 43
+  },
+  {
+   "id": "ext_named1",
+   "kind": "protocol",
+   "score": 0.4413265306122449,
+   "credit": 21.625,
+   "denom": 49
+  },
+  {
+   "id": "ext_suspend0",
+   "kind": "protocol",
+   "score": 0.3952702702702703,
+   "credit": 14.625,
+   "denom": 37
+  },
+  {
+   "id": "ext_suspend1",
+   "kind": "protocol",
+   "score": 0.4431818181818182,
+   "credit": 14.625,
+   "denom": 33
+  },
+  {
+   "id": "ext_error0",
+   "kind": "protocol",
+   "score": 0.7895833333333333,
+   "credit": 18.95,
+   "denom": 24
+  },
+  {
+   "id": "ext_error1",
+   "kind": "protocol",
+   "score": 0.7895833333333333,
+   "credit": 18.95,
+   "denom": 24
+  },
+  {
+   "id": "ext_pipeline0",
+   "kind": "protocol",
+   "score": 0.87890625,
+   "credit": 28.125,
+   "denom": 32
+  },
+  {
+   "id": "ext_pipeline1",
+   "kind": "protocol",
+   "score": 0.87890625,
+   "credit": 28.125,
+   "denom": 32
+  },
+  {
+   "id": "ext_flush0",
+   "kind": "protocol",
+   "score": 0.6052631578947368,
+   "credit": 11.5,
+   "denom": 19
+  },
+  {
+   "id": "ext_flush1",
+   "kind": "protocol",
+   "score": 0.6052631578947368,
+   "credit": 11.5,
+   "denom": 19
+  },
+  {
+   "id": "ext_nodata0",
+   "kind": "protocol",
+   "score": 0.5583333333333333,
+   "credit": 16.75,
+   "denom": 30
+  },
+  {
+   "id": "ext_nodata1",
+   "kind": "protocol",
+   "score": 0.5583333333333333,
+   "credit": 16.75,
+   "denom": 30
+  },
+  {
+   "id": "simple_multi0",
+   "kind": "protocol",
+   "score": 0.71484375,
+   "credit": 22.875,
+   "denom": 32
+  },
+  {
+   "id": "simple_multi1",
+   "kind": "protocol",
+   "score": 0.71484375,
+   "credit": 22.875,
+   "denom": 32
+  },
+  {
+   "id": "txn_status0",
+   "kind": "protocol",
+   "score": 0.47236842105263155,
+   "credit": 17.95,
+   "denom": 38
+  },
+  {
+   "id": "txn_status1",
+   "kind": "protocol",
+   "score": 0.47236842105263155,
+   "credit": 17.95,
+   "denom": 38
+  },
+  {
+   "id": "bad_type0",
+   "kind": "protocol",
+   "score": 0.84375,
+   "credit": 16.875,
+   "denom": 20
+  },
+  {
+   "id": "bad_type1",
+   "kind": "protocol",
+   "score": 0.84375,
+   "credit": 16.875,
+   "denom": 20
+  },
+  {
+   "id": "bad_len0",
+   "kind": "protocol",
+   "score": 0.8416666666666667,
+   "credit": 12.625,
+   "denom": 15
+  },
+  {
+   "id": "bad_len1",
+   "kind": "protocol",
+   "score": 0.8416666666666667,
+   "credit": 12.625,
+   "denom": 15
+  },
+  {
+   "id": "bad_body0",
+   "kind": "protocol",
+   "score": 0.8416666666666667,
+   "credit": 12.625,
+   "denom": 15
+  },
+  {
+   "id": "bad_body1",
+   "kind": "protocol",
+   "score": 0.8416666666666667,
+   "credit": 12.625,
+   "denom": 15
+  },
+  {
+   "id": "cancel0",
+   "kind": "protocol",
+   "score": 0.8333333333333334,
+   "credit": 17.5,
+   "denom": 21
+  },
+  {
+   "id": "cancel1",
+   "kind": "protocol",
+   "score": 0.8333333333333334,
+   "credit": 17.5,
+   "denom": 21
+  },
+  {
+   "id": "terminate0",
+   "kind": "protocol",
+   "score": 0.75,
+   "credit": 13.5,
+   "denom": 18
+  },
+  {
+   "id": "terminate1",
+   "kind": "protocol",
+   "score": 0.75,
+   "credit": 13.5,
+   "denom": 18
+  },
+  {
+   "id": "paramstatus0",
+   "kind": "protocol",
+   "score": 0.9,
+   "credit": 27.0,
+   "denom": 30
+  },
+  {
+   "id": "paramstatus1",
+   "kind": "protocol",
+   "score": 0.9,
+   "credit": 27.0,
+   "denom": 30
+  }
+ ],
+ "starts": 1,
+ "durability": {
+  "score": 0.0,
+  "passed": 0,
+  "total": 14,
+  "runs": [
+   {
+    "scenario": "seq_insert",
+    "seed": 0,
+    "ok": false,
+    "why": "setup failed: ['error', '42601']"
+   },
+   {
+    "scenario": "seq_insert",
+    "seed": 1,
+    "ok": false,
+    "why": "setup failed: ['error', '42601']"
+   },
+   {
+    "scenario": "seq_mixed",
+    "seed": 0,
+    "ok": false,
+    "why": "setup failed: ['error', '42601']"
+   },
+   {
+    "scenario": "seq_mixed",
+    "seed": 1,
+    "ok": false,
+    "why": "setup failed: ['error', '42601']"
+   },
+   {
+    "scenario": "txn_batches",
+    "seed": 0,
+    "ok": false,
+    "why": "setup failed: ['error', '42601']"
+   },
+   {
+    "scenario": "txn_batches",
+    "seed": 1,
+    "ok": false,
+    "why": "setup failed: ['error', '42601']"
+   },
+   {
+    "scenario": "transfer",
+    "seed": 0,
+    "ok": false,
+    "why": "setup failed: ['error', '42601']"
+   },
+   {
+    "scenario": "transfer",
+    "seed": 1,
+    "ok": false,
+    "why": "setup failed: ['error', '42601']"
+   },
+   {
+    "scenario": "uncommitted",
+    "seed": 0,
+    "ok": false,
+    "why": "setup failed: ['error', '42601']"
+   },
+   {
+    "scenario": "uncommitted",
+    "seed": 1,
+    "ok": false,
+    "why": "setup failed: ['error', '42601']"
+   },
+   {
+    "scenario": "ddl",
+    "seed": 0,
+    "ok": false,
+    "why": "setup failed: ['error', '42601']"
+   },
+   {
+    "scenario": "ddl",
+    "seed": 1,
+    "ok": false,
+    "why": "setup failed: ['error', '42601']"
+   },
+   {
+    "scenario": "two_crashes",
+    "seed": 0,
+    "ok": false,
+    "why": "setup failed: ['error', '42601']"
+   },
+   {
+    "scenario": "two_crashes",
+    "seed": 1,
+    "ok": false,
+    "why": "setup failed: ['error', '42601']"
+   }
+  ]
+ }
+}

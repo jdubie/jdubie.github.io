@@ -42,11 +42,13 @@ def calib_rows() -> str:
     out = []
     for d, label, what in CALIB:
         g = load(ROOT / "calib" / d / "grade.json")
+        g1 = load(ROOT / "calib/v1" / d / "grade.json")
         s = g["summary"] if g else {}
+        s1 = g1["summary"] if g1 else {}
         cells = "".join(f"<td class=n>{f3(s.get(k))}</td>" for k, _, _ in COMPS)
-        detail = f"{s.get('sql_perfect', '–')} · {s.get('protocol_perfect', '–')} · {s.get('durability_runs', '–')}"
+        detail = f"{s.get('sql_perfect', '–')} · {s.get('protocol_perfect', '–')} · {s.get('durability_runs', '–')}" if s else "–"
         out.append(f"<tr><td><b>{E(label)}</b><div class=sub>{E(what)}</div></td><td class=n><b>{f3(s.get('reward'))}</b></td>"
-                   f"{cells}<td class=n>{detail}</td></tr>")
+                   f"{cells}<td class=n>{detail}</td><td class=n>{f3(s1.get('reward'))}</td></tr>")
     return "".join(out)
 
 
@@ -61,15 +63,10 @@ def variant_rows() -> str:
 
 
 def timeline() -> list[dict]:
-    pts = []
-    for p in sorted((RUN / "grades").glob("*/grade.json")) if RUN.exists() else []:
-        name = p.parent.name
-        m = re.match(r"t(\d+)min", name)
-        t = int(m.group(1)) if m else 20.0
-        s = load(p)["summary"]
-        pts.append({"t": t, "name": name, **{k: s.get(k, 0) for k in ("reward", "sql", "protocol", "durability")},
-                    "sqlp": s.get("sql_perfect"), "pp": s.get("protocol_perfect"), "dr": s.get("durability_runs")})
-    pts.sort(key=lambda x: (x["t"], x["name"] == "final"))
+    tl = load(ROOT / "results/opus20/timeline.json") or []
+    pts = [{"t": x["t_min"], "name": x["snapshot"], **{k: x.get(k, 0) for k in ("reward", "sql", "protocol", "durability")},
+            "sqlp": x.get("sql_perfect"), "pp": x.get("protocol_perfect"), "dr": x.get("durability_runs")} for x in tl]
+    pts.sort(key=lambda x: x["t"])
     return pts
 
 
@@ -156,9 +153,10 @@ devalue. Full prompt: <a href="PROMPT.md">PROMPT.md</a>.</p>
 
 <h2>Calibration</h2>
 <p>reward = 0.45 sql + 0.25 protocol + 0.30 durability. Last column: SQL sessions answered exactly (of 60) · protocol workloads
-exactly (of 50) · crash runs passed (of 14). All graded on variant 7101 with the hidden workload seed unless the row says otherwise.</p>
+exactly (of 50) · crash runs passed (of 14). All graded on variant 7101 with the hidden workload seed unless the row says otherwise.
+Columns are oracle v2 (the current benchmark); the last column is the same server graded against oracle v1, the version the Opus run saw.</p>
 <div class=wrap><table><tr><th>server graded</th><th>reward</th><th>sql<div class=sub>×0.45</div></th><th>protocol<div class=sub>×0.25</div></th>
-<th>durability<div class=sub>×0.30</div></th><th>exact / exact / passed</th></tr>{calib_rows()}</table></div>
+<th>durability<div class=sub>×0.30</div></th><th>exact / exact / passed</th><th>reward on oracle v1</th></tr>{calib_rows()}</table></div>
 {notes.get('calibration', '')}
 
 <h2>Opus 5.5, 20 minutes</h2>

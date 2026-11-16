@@ -1,0 +1,922 @@
+{
+ "summary": {
+  "sql": 1.0,
+  "protocol": 1.0,
+  "durability": 1.0,
+  "reward": 1.0,
+  "sql_perfect": "60/60",
+  "protocol_perfect": "50/50",
+  "durability_runs": "14/14"
+ },
+ "meta": {
+  "seed": 7101,
+  "wseed": 90210,
+  "oracle_version": 2,
+  "target": "oracle seed 7101 layers wire,dialect,semantics",
+  "seconds": 89.4
+ },
+ "sql": {
+  "score": 1.0,
+  "n": 60,
+  "perfect": 60,
+  "zero": 0
+ },
+ "protocol": {
+  "score": 1.0,
+  "n": 50,
+  "perfect": 50,
+  "zero": 0
+ },
+ "per_workload": [
+  {
+   "id": "sql000",
+   "kind": "sql",
+   "score": 1.0,
+   "credit": 176.0,
+   "denom": 176
+  },
+  {
+   "id": "sql001",
+   "kind": "sql",
+   "score": 1.0,
+   "credit": 209.0,
+   "denom": 209
+  },
+  {
+   "id": "sql002",
+   "kind": "sql",
+   "score": 1.0,
+   "credit": 195.0,
+   "denom": 195
+  },
+  {
+   "id": "sql003",
+   "kind": "sql",
+   "score": 1.0,
+   "credit": 199.0,
+   "denom": 199
+  },
+  {
+   "id": "sql004",
+   "kind": "sql",
+   "score": 1.0,
+   "credit": 220.0,
+   "denom": 220
+  },
+  {
+   "id": "sql005",
+   "kind": "sql",
+   "score": 1.0,
+   "credit": 245.0,
+   "denom": 245
+  },
+  {
+   "id": "sql006",
+   "kind": "sql",
+   "score": 1.0,
+   "credit": 183.0,
+   "denom": 183
+  },
+  {
+   "id": "sql007",
+   "kind": "sql",
+   "score": 1.0,
+   "credit": 190.0,
+   "denom": 190
+  },
+  {
+   "id": "sql008",
+   "kind": "sql",
+   "score": 1.0,
+   "credit": 215.0,
+   "denom": 215
+  },
+  {
+   "id": "sql009",
+   "kind": "sql",
+   "score": 1.0,
+   "credit": 267.0,
+   "denom": 267
+  },
+  {
+   "id": "sql010",
+   "kind": "sql",
+   "score": 1.0,
+   "credit": 203.0,
+   "denom": 203
+  },
+  {
+   "id": "sql011",
+   "kind": "sql",
+   "score": 1.0,
+   "credit": 221.0,
+   "denom": 221
+  },
+  {
+   "id": "sql012",
+   "kind": "sql",
+   "score": 1.0,
+   "credit": 168.0,
+   "denom": 168
+  },
+  {
+   "id": "sql013",
+   "kind": "sql",
+   "score": 1.0,
+   "credit": 171.0,
+   "denom": 171
+  },
+  {
+   "id": "sql014",
+   "kind": "sql",
+   "score": 1.0,
+   "credit": 236.0,
+   "denom": 236
+  },
+  {
+   "id": "sql015",
+   "kind": "sql",
+   "score": 1.0,
+   "credit": 222.0,
+   "denom": 222
+  },
+  {
+   "id": "sql016",
+   "kind": "sql",
+   "score": 1.0,
+   "credit": 209.0,
+   "denom": 209
+  },
+  {
+   "id": "sql017",
+   "kind": "sql",
+   "score": 1.0,
+   "credit": 229.0,
+   "denom": 229
+  },
+  {
+   "id": "sql018",
+   "kind": "sql",
+   "score": 1.0,
+   "credit": 194.0,
+   "denom": 194
+  },
+  {
+   "id": "sql019",
+   "kind": "sql",
+   "score": 1.0,
+   "credit": 240.0,
+   "denom": 240
+  },
+  {
+   "id": "sql020",
+   "kind": "sql",
+   "score": 1.0,
+   "credit": 238.0,
+   "denom": 238
+  },
+  {
+   "id": "sql021",
+   "kind": "sql",
+   "score": 1.0,
+   "credit": 217.0,
+   "denom": 217
+  },
+  {
+   "id": "sql022",
+   "kind": "sql",
+   "score": 1.0,
+   "credit": 161.0,
+   "denom": 161
+  },
+  {
+   "id": "sql023",
+   "kind": "sql",
+   "score": 1.0,
+   "credit": 171.0,
+   "denom": 171
+  },
+  {
+   "id": "sql024",
+   "kind": "sql",
+   "score": 1.0,
+   "credit": 154.0,
+   "denom": 154
+  },
+  {
+   "id": "sql025",
+   "kind": "sql",
+   "score": 1.0,
+   "credit": 189.0,
+   "denom": 189
+  },
+  {
+   "id": "sql026",
+   "kind": "sql",
+   "score": 1.0,
+   "credit": 175.0,
+   "denom": 175
+  },
+  {
+   "id": "sql027",
+   "kind": "sql",
+   "score": 1.0,
+   "credit": 141.0,
+   "denom": 141
+  },
+  {
+   "id": "sql028",
+   "kind": "sql",
+   "score": 1.0,
+   "credit": 210.0,
+   "denom": 210
+  },
+  {
+   "id": "sql029",
+   "kind": "sql",
+   "score": 1.0,
+   "credit": 236.0,
+   "denom": 236
+  },
+  {
+   "id": "sql030",
+   "kind": "sql",
+   "score": 1.0,
+   "credit": 171.0,
+   "denom": 171
+  },
+  {
+   "id": "sql031",
+   "kind": "sql",
+   "score": 1.0,
+   "credit": 195.0,
+   "denom": 195
+  },
+  {
+   "id": "sql032",
+   "kind": "sql",
+   "score": 1.0,
+   "credit": 207.0,
+   "denom": 207
+  },
+  {
+   "id": "sql033",
+   "kind": "sql",
+   "score": 1.0,
+   "credit": 210.0,
+   "denom": 210
+  },
+  {
+   "id": "sql034",
+   "kind": "sql",
+   "score": 1.0,
+   "credit": 188.0,
+   "denom": 188
+  },
+  {
+   "id": "sql035",
+   "kind": "sql",
+   "score": 1.0,
+   "credit": 245.0,
+   "denom": 245
+  },
+  {
+   "id": "sql036",
+   "kind": "sql",
+   "score": 1.0,
+   "credit": 198.0,
+   "denom": 198
+  },
+  {
+   "id": "sql037",
+   "kind": "sql",
+   "score": 1.0,
+   "credit": 176.0,
+   "denom": 176
+  },
+  {
+   "id": "sql038",
+   "kind": "sql",
+   "score": 1.0,
+   "credit": 196.0,
+   "denom": 196
+  },
+  {
+   "id": "sql039",
+   "kind": "sql",
+   "score": 1.0,
+   "credit": 231.0,
+   "denom": 231
+  },
+  {
+   "id": "sql040",
+   "kind": "sql",
+   "score": 1.0,
+   "credit": 200.0,
+   "denom": 200
+  },
+  {
+   "id": "sql041",
+   "kind": "sql",
+   "score": 1.0,
+   "credit": 210.0,
+   "denom": 210
+  },
+  {
+   "id": "sql042",
+   "kind": "sql",
+   "score": 1.0,
+   "credit": 132.0,
+   "denom": 132
+  },
+  {
+   "id": "sql043",
+   "kind": "sql",
+   "score": 1.0,
+   "credit": 241.0,
+   "denom": 241
+  },
+  {
+   "id": "sql044",
+   "kind": "sql",
+   "score": 1.0,
+   "credit": 215.0,
+   "denom": 215
+  },
+  {
+   "id": "sql045",
+   "kind": "sql",
+   "score": 1.0,
+   "credit": 162.0,
+   "denom": 162
+  },
+  {
+   "id": "sql046",
+   "kind": "sql",
+   "score": 1.0,
+   "credit": 176.0,
+   "denom": 176
+  },
+  {
+   "id": "sql047",
+   "kind": "sql",
+   "score": 1.0,
+   "credit": 228.0,
+   "denom": 228
+  },
+  {
+   "id": "sql048",
+   "kind": "sql",
+   "score": 1.0,
+   "credit": 216.0,
+   "denom": 216
+  },
+  {
+   "id": "sql049",
+   "kind": "sql",
+   "score": 1.0,
+   "credit": 215.0,
+   "denom": 215
+  },
+  {
+   "id": "sql050",
+   "kind": "sql",
+   "score": 1.0,
+   "credit": 137.0,
+   "denom": 137
+  },
+  {
+   "id": "sql051",
+   "kind": "sql",
+   "score": 1.0,
+   "credit": 259.0,
+   "denom": 259
+  },
+  {
+   "id": "sql052",
+   "kind": "sql",
+   "score": 1.0,
+   "credit": 179.0,
+   "denom": 179
+  },
+  {
+   "id": "sql053",
+   "kind": "sql",
+   "score": 1.0,
+   "credit": 190.0,
+   "denom": 190
+  },
+  {
+   "id": "sql054",
+   "kind": "sql",
+   "score": 1.0,
+   "credit": 138.0,
+   "denom": 138
+  },
+  {
+   "id": "sql055",
+   "kind": "sql",
+   "score": 1.0,
+   "credit": 196.0,
+   "denom": 196
+  },
+  {
+   "id": "sql056",
+   "kind": "sql",
+   "score": 1.0,
+   "credit": 167.0,
+   "denom": 167
+  },
+  {
+   "id": "sql057",
+   "kind": "sql",
+   "score": 1.0,
+   "credit": 182.0,
+   "denom": 182
+  },
+  {
+   "id": "sql058",
+   "kind": "sql",
+   "score": 1.0,
+   "credit": 225.0,
+   "denom": 225
+  },
+  {
+   "id": "sql059",
+   "kind": "sql",
+   "score": 1.0,
+   "credit": 229.0,
+   "denom": 229
+  },
+  {
+   "id": "guest0",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 18.0,
+   "denom": 18
+  },
+  {
+   "id": "guest1",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 18.0,
+   "denom": 18
+  },
+  {
+   "id": "admin0",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 19.0,
+   "denom": 19
+  },
+  {
+   "id": "admin1",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 19.0,
+   "denom": 19
+  },
+  {
+   "id": "admin_badpw0",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 4.0,
+   "denom": 4
+  },
+  {
+   "id": "admin_badpw1",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 4.0,
+   "denom": 4
+  },
+  {
+   "id": "unknown_user0",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 3.0,
+   "denom": 3
+  },
+  {
+   "id": "unknown_user1",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 3.0,
+   "denom": 3
+  },
+  {
+   "id": "unknown_db0",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 4.0,
+   "denom": 4
+  },
+  {
+   "id": "unknown_db1",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 4.0,
+   "denom": 4
+  },
+  {
+   "id": "no_user0",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 3.0,
+   "denom": 3
+  },
+  {
+   "id": "no_user1",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 3.0,
+   "denom": 3
+  },
+  {
+   "id": "default_db0",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 4.0,
+   "denom": 4
+  },
+  {
+   "id": "default_db1",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 4.0,
+   "denom": 4
+  },
+  {
+   "id": "bad_magic0",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 4.0,
+   "denom": 4
+  },
+  {
+   "id": "bad_magic1",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 4.0,
+   "denom": 4
+  },
+  {
+   "id": "bad_key0",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 4.0,
+   "denom": 4
+  },
+  {
+   "id": "bad_key1",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 4.0,
+   "denom": 4
+  },
+  {
+   "id": "ssl0",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 19.0,
+   "denom": 19
+  },
+  {
+   "id": "ssl1",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 19.0,
+   "denom": 19
+  },
+  {
+   "id": "ext_basic0",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 20.0,
+   "denom": 20
+  },
+  {
+   "id": "ext_basic1",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 20.0,
+   "denom": 20
+  },
+  {
+   "id": "ext_named0",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 43.0,
+   "denom": 43
+  },
+  {
+   "id": "ext_named1",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 49.0,
+   "denom": 49
+  },
+  {
+   "id": "ext_suspend0",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 37.0,
+   "denom": 37
+  },
+  {
+   "id": "ext_suspend1",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 33.0,
+   "denom": 33
+  },
+  {
+   "id": "ext_error0",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 24.0,
+   "denom": 24
+  },
+  {
+   "id": "ext_error1",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 24.0,
+   "denom": 24
+  },
+  {
+   "id": "ext_pipeline0",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 32.0,
+   "denom": 32
+  },
+  {
+   "id": "ext_pipeline1",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 32.0,
+   "denom": 32
+  },
+  {
+   "id": "ext_flush0",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 19.0,
+   "denom": 19
+  },
+  {
+   "id": "ext_flush1",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 19.0,
+   "denom": 19
+  },
+  {
+   "id": "ext_nodata0",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 30.0,
+   "denom": 30
+  },
+  {
+   "id": "ext_nodata1",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 30.0,
+   "denom": 30
+  },
+  {
+   "id": "simple_multi0",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 32.0,
+   "denom": 32
+  },
+  {
+   "id": "simple_multi1",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 32.0,
+   "denom": 32
+  },
+  {
+   "id": "txn_status0",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 36.0,
+   "denom": 36
+  },
+  {
+   "id": "txn_status1",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 36.0,
+   "denom": 36
+  },
+  {
+   "id": "bad_type0",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 20.0,
+   "denom": 20
+  },
+  {
+   "id": "bad_type1",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 20.0,
+   "denom": 20
+  },
+  {
+   "id": "bad_len0",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 15.0,
+   "denom": 15
+  },
+  {
+   "id": "bad_len1",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 15.0,
+   "denom": 15
+  },
+  {
+   "id": "bad_body0",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 15.0,
+   "denom": 15
+  },
+  {
+   "id": "bad_body1",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 15.0,
+   "denom": 15
+  },
+  {
+   "id": "cancel0",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 21.0,
+   "denom": 21
+  },
+  {
+   "id": "cancel1",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 21.0,
+   "denom": 21
+  },
+  {
+   "id": "terminate0",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 18.0,
+   "denom": 18
+  },
+  {
+   "id": "terminate1",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 18.0,
+   "denom": 18
+  },
+  {
+   "id": "paramstatus0",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 30.0,
+   "denom": 30
+  },
+  {
+   "id": "paramstatus1",
+   "kind": "protocol",
+   "score": 1.0,
+   "credit": 30.0,
+   "denom": 30
+  }
+ ],
+ "starts": 1,
+ "durability": {
+  "score": 1.0,
+  "passed": 14,
+  "total": 14,
+  "runs": [
+   {
+    "scenario": "seq_insert",
+    "seed": 0,
+    "ok": true,
+    "acked": 74,
+    "inflight": 0,
+    "states_allowed": 1
+   },
+   {
+    "scenario": "seq_insert",
+    "seed": 1,
+    "ok": true,
+    "acked": 289,
+    "inflight": 0,
+    "states_allowed": 1
+   },
+   {
+    "scenario": "seq_mixed",
+    "seed": 0,
+    "ok": true,
+    "acked": 550,
+    "inflight": 0,
+    "states_allowed": 1
+   },
+   {
+    "scenario": "seq_mixed",
+    "seed": 1,
+    "ok": true,
+    "acked": 175,
+    "inflight": 0,
+    "states_allowed": 1
+   },
+   {
+    "scenario": "txn_batches",
+    "seed": 0,
+    "ok": true,
+    "acked": 155,
+    "inflight": 0,
+    "states_allowed": 1
+   },
+   {
+    "scenario": "txn_batches",
+    "seed": 1,
+    "ok": true,
+    "acked": 326,
+    "inflight": 0,
+    "states_allowed": 1
+   },
+   {
+    "scenario": "transfer",
+    "seed": 0,
+    "ok": true,
+    "acked": 178,
+    "inflight": 0,
+    "states_allowed": 1
+   },
+   {
+    "scenario": "transfer",
+    "seed": 1,
+    "ok": true,
+    "acked": 630,
+    "inflight": 0,
+    "states_allowed": 1
+   },
+   {
+    "scenario": "uncommitted",
+    "seed": 0,
+    "ok": true,
+    "acked": 61,
+    "inflight": 0,
+    "states_allowed": 1
+   },
+   {
+    "scenario": "uncommitted",
+    "seed": 1,
+    "ok": true,
+    "acked": 61,
+    "inflight": 0,
+    "states_allowed": 1
+   },
+   {
+    "scenario": "ddl",
+    "seed": 0,
+    "ok": true,
+    "acked": 8,
+    "inflight": 0,
+    "states_allowed": 1
+   },
+   {
+    "scenario": "ddl",
+    "seed": 1,
+    "ok": true,
+    "acked": 8,
+    "inflight": 0,
+    "states_allowed": 1
+   },
+   {
+    "scenario": "two_crashes",
+    "seed": 0,
+    "ok": true,
+    "acked": 610,
+    "inflight": 0,
+    "states_allowed": 1
+   },
+   {
+    "scenario": "two_crashes",
+    "seed": 1,
+    "ok": true,
+    "acked": 287,
+    "inflight": 0,
+    "states_allowed": 1
+   }
+  ]
+ }
+}

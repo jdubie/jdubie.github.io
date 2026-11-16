@@ -1,0 +1,953 @@
+{
+ "summary": {
+  "sql": 0.0,
+  "protocol": 0.1306,
+  "durability": 0.0,
+  "reward": 0.0327,
+  "sql_perfect": "0/60",
+  "protocol_perfect": "0/50",
+  "durability_runs": "0/14"
+ },
+ "meta": {
+  "seed": 7101,
+  "wseed": 90210,
+  "target": "stock PostgreSQL 16",
+  "seconds": 773.0
+ },
+ "sql": {
+  "score": 0.0,
+  "n": 60,
+  "perfect": 0,
+  "zero": 60
+ },
+ "protocol": {
+  "score": 0.13062932095831203,
+  "n": 50,
+  "perfect": 0,
+  "zero": 0
+ },
+ "per_workload": [
+  {
+   "id": "sql000",
+   "kind": "sql",
+   "score": 0.0,
+   "credit": 0.0,
+   "denom": 176,
+   "gated": true
+  },
+  {
+   "id": "sql001",
+   "kind": "sql",
+   "score": 0.0,
+   "credit": 0.0,
+   "denom": 209,
+   "gated": true
+  },
+  {
+   "id": "sql002",
+   "kind": "sql",
+   "score": 0.0,
+   "credit": 0.0,
+   "denom": 195,
+   "gated": true
+  },
+  {
+   "id": "sql003",
+   "kind": "sql",
+   "score": 0.0,
+   "credit": 0.0,
+   "denom": 199,
+   "gated": true
+  },
+  {
+   "id": "sql004",
+   "kind": "sql",
+   "score": 0.0,
+   "credit": 0.0,
+   "denom": 220,
+   "gated": true
+  },
+  {
+   "id": "sql005",
+   "kind": "sql",
+   "score": 0.0,
+   "credit": 0.0,
+   "denom": 245,
+   "gated": true
+  },
+  {
+   "id": "sql006",
+   "kind": "sql",
+   "score": 0.0,
+   "credit": 0.0,
+   "denom": 183,
+   "gated": true
+  },
+  {
+   "id": "sql007",
+   "kind": "sql",
+   "score": 0.0,
+   "credit": 0.0,
+   "denom": 190,
+   "gated": true
+  },
+  {
+   "id": "sql008",
+   "kind": "sql",
+   "score": 0.0,
+   "credit": 0.0,
+   "denom": 215,
+   "gated": true
+  },
+  {
+   "id": "sql009",
+   "kind": "sql",
+   "score": 0.0,
+   "credit": 0.0,
+   "denom": 267,
+   "gated": true
+  },
+  {
+   "id": "sql010",
+   "kind": "sql",
+   "score": 0.0,
+   "credit": 0.0,
+   "denom": 203,
+   "gated": true
+  },
+  {
+   "id": "sql011",
+   "kind": "sql",
+   "score": 0.0,
+   "credit": 0.0,
+   "denom": 221,
+   "gated": true
+  },
+  {
+   "id": "sql012",
+   "kind": "sql",
+   "score": 0.0,
+   "credit": 0.0,
+   "denom": 168,
+   "gated": true
+  },
+  {
+   "id": "sql013",
+   "kind": "sql",
+   "score": 0.0,
+   "credit": 0.0,
+   "denom": 171,
+   "gated": true
+  },
+  {
+   "id": "sql014",
+   "kind": "sql",
+   "score": 0.0,
+   "credit": 0.0,
+   "denom": 236,
+   "gated": true
+  },
+  {
+   "id": "sql015",
+   "kind": "sql",
+   "score": 0.0,
+   "credit": 0.0,
+   "denom": 222,
+   "gated": true
+  },
+  {
+   "id": "sql016",
+   "kind": "sql",
+   "score": 0.0,
+   "credit": 0.0,
+   "denom": 209,
+   "gated": true
+  },
+  {
+   "id": "sql017",
+   "kind": "sql",
+   "score": 0.0,
+   "credit": 0.0,
+   "denom": 229,
+   "gated": true
+  },
+  {
+   "id": "sql018",
+   "kind": "sql",
+   "score": 0.0,
+   "credit": 0.0,
+   "denom": 194,
+   "gated": true
+  },
+  {
+   "id": "sql019",
+   "kind": "sql",
+   "score": 0.0,
+   "credit": 0.0,
+   "denom": 240,
+   "gated": true
+  },
+  {
+   "id": "sql020",
+   "kind": "sql",
+   "score": 0.0,
+   "credit": 0.0,
+   "denom": 238,
+   "gated": true
+  },
+  {
+   "id": "sql021",
+   "kind": "sql",
+   "score": 0.0,
+   "credit": 0.0,
+   "denom": 217,
+   "gated": true
+  },
+  {
+   "id": "sql022",
+   "kind": "sql",
+   "score": 0.0,
+   "credit": 0.0,
+   "denom": 161,
+   "gated": true
+  },
+  {
+   "id": "sql023",
+   "kind": "sql",
+   "score": 0.0,
+   "credit": 0.0,
+   "denom": 171,
+   "gated": true
+  },
+  {
+   "id": "sql024",
+   "kind": "sql",
+   "score": 0.0,
+   "credit": 0.0,
+   "denom": 154,
+   "gated": true
+  },
+  {
+   "id": "sql025",
+   "kind": "sql",
+   "score": 0.0,
+   "credit": 0.0,
+   "denom": 189,
+   "gated": true
+  },
+  {
+   "id": "sql026",
+   "kind": "sql",
+   "score": 0.0,
+   "credit": 0.0,
+   "denom": 175,
+   "gated": true
+  },
+  {
+   "id": "sql027",
+   "kind": "sql",
+   "score": 0.0,
+   "credit": 0.0,
+   "denom": 141,
+   "gated": true
+  },
+  {
+   "id": "sql028",
+   "kind": "sql",
+   "score": 0.0,
+   "credit": 0.0,
+   "denom": 210,
+   "gated": true
+  },
+  {
+   "id": "sql029",
+   "kind": "sql",
+   "score": 0.0,
+   "credit": 0.0,
+   "denom": 236,
+   "gated": true
+  },
+  {
+   "id": "sql030",
+   "kind": "sql",
+   "score": 0.0,
+   "credit": 0.0,
+   "denom": 171,
+   "gated": true
+  },
+  {
+   "id": "sql031",
+   "kind": "sql",
+   "score": 0.0,
+   "credit": 0.0,
+   "denom": 195,
+   "gated": true
+  },
+  {
+   "id": "sql032",
+   "kind": "sql",
+   "score": 0.0,
+   "credit": 0.0,
+   "denom": 207,
+   "gated": true
+  },
+  {
+   "id": "sql033",
+   "kind": "sql",
+   "score": 0.0,
+   "credit": 0.0,
+   "denom": 210,
+   "gated": true
+  },
+  {
+   "id": "sql034",
+   "kind": "sql",
+   "score": 0.0,
+   "credit": 0.0,
+   "denom": 188,
+   "gated": true
+  },
+  {
+   "id": "sql035",
+   "kind": "sql",
+   "score": 0.0,
+   "credit": 0.0,
+   "denom": 245,
+   "gated": true
+  },
+  {
+   "id": "sql036",
+   "kind": "sql",
+   "score": 0.0,
+   "credit": 0.0,
+   "denom": 198,
+   "gated": true
+  },
+  {
+   "id": "sql037",
+   "kind": "sql",
+   "score": 0.0,
+   "credit": 0.0,
+   "denom": 176,
+   "gated": true
+  },
+  {
+   "id": "sql038",
+   "kind": "sql",
+   "score": 0.0,
+   "credit": 0.0,
+   "denom": 196,
+   "gated": true
+  },
+  {
+   "id": "sql039",
+   "kind": "sql",
+   "score": 0.0,
+   "credit": 0.0,
+   "denom": 231,
+   "gated": true
+  },
+  {
+   "id": "sql040",
+   "kind": "sql",
+   "score": 0.0,
+   "credit": 0.0,
+   "denom": 200,
+   "gated": true
+  },
+  {
+   "id": "sql041",
+   "kind": "sql",
+   "score": 0.0,
+   "credit": 0.0,
+   "denom": 210,
+   "gated": true
+  },
+  {
+   "id": "sql042",
+   "kind": "sql",
+   "score": 0.0,
+   "credit": 0.0,
+   "denom": 132,
+   "gated": true
+  },
+  {
+   "id": "sql043",
+   "kind": "sql",
+   "score": 0.0,
+   "credit": 0.0,
+   "denom": 241,
+   "gated": true
+  },
+  {
+   "id": "sql044",
+   "kind": "sql",
+   "score": 0.0,
+   "credit": 0.0,
+   "denom": 215,
+   "gated": true
+  },
+  {
+   "id": "sql045",
+   "kind": "sql",
+   "score": 0.0,
+   "credit": 0.0,
+   "denom": 162,
+   "gated": true
+  },
+  {
+   "id": "sql046",
+   "kind": "sql",
+   "score": 0.0,
+   "credit": 0.0,
+   "denom": 176,
+   "gated": true
+  },
+  {
+   "id": "sql047",
+   "kind": "sql",
+   "score": 0.0,
+   "credit": 0.0,
+   "denom": 228,
+   "gated": true
+  },
+  {
+   "id": "sql048",
+   "kind": "sql",
+   "score": 0.0,
+   "credit": 0.0,
+   "denom": 216,
+   "gated": true
+  },
+  {
+   "id": "sql049",
+   "kind": "sql",
+   "score": 0.0,
+   "credit": 0.0,
+   "denom": 215,
+   "gated": true
+  },
+  {
+   "id": "sql050",
+   "kind": "sql",
+   "score": 0.0,
+   "credit": 0.0,
+   "denom": 137,
+   "gated": true
+  },
+  {
+   "id": "sql051",
+   "kind": "sql",
+   "score": 0.0,
+   "credit": 0.0,
+   "denom": 259,
+   "gated": true
+  },
+  {
+   "id": "sql052",
+   "kind": "sql",
+   "score": 0.0,
+   "credit": 0.0,
+   "denom": 179,
+   "gated": true
+  },
+  {
+   "id": "sql053",
+   "kind": "sql",
+   "score": 0.0,
+   "credit": 0.0,
+   "denom": 190,
+   "gated": true
+  },
+  {
+   "id": "sql054",
+   "kind": "sql",
+   "score": 0.0,
+   "credit": 0.0,
+   "denom": 138,
+   "gated": true
+  },
+  {
+   "id": "sql055",
+   "kind": "sql",
+   "score": 0.0,
+   "credit": 0.0,
+   "denom": 196,
+   "gated": true
+  },
+  {
+   "id": "sql056",
+   "kind": "sql",
+   "score": 0.0,
+   "credit": 0.0,
+   "denom": 167,
+   "gated": true
+  },
+  {
+   "id": "sql057",
+   "kind": "sql",
+   "score": 0.0,
+   "credit": 0.0,
+   "denom": 182,
+   "gated": true
+  },
+  {
+   "id": "sql058",
+   "kind": "sql",
+   "score": 0.0,
+   "credit": 0.0,
+   "denom": 225,
+   "gated": true
+  },
+  {
+   "id": "sql059",
+   "kind": "sql",
+   "score": 0.0,
+   "credit": 0.0,
+   "denom": 229,
+   "gated": true
+  },
+  {
+   "id": "guest0",
+   "kind": "protocol",
+   "score": 0.05555555555555555,
+   "credit": 1.0,
+   "denom": 18
+  },
+  {
+   "id": "guest1",
+   "kind": "protocol",
+   "score": 0.05555555555555555,
+   "credit": 1.0,
+   "denom": 18
+  },
+  {
+   "id": "admin0",
+   "kind": "protocol",
+   "score": 0.05263157894736842,
+   "credit": 1.0,
+   "denom": 19
+  },
+  {
+   "id": "admin1",
+   "kind": "protocol",
+   "score": 0.05263157894736842,
+   "credit": 1.0,
+   "denom": 19
+  },
+  {
+   "id": "admin_badpw0",
+   "kind": "protocol",
+   "score": 0.25,
+   "credit": 1.0,
+   "denom": 4
+  },
+  {
+   "id": "admin_badpw1",
+   "kind": "protocol",
+   "score": 0.25,
+   "credit": 1.0,
+   "denom": 4
+  },
+  {
+   "id": "unknown_user0",
+   "kind": "protocol",
+   "score": 0.3333333333333333,
+   "credit": 1.0,
+   "denom": 3
+  },
+  {
+   "id": "unknown_user1",
+   "kind": "protocol",
+   "score": 0.3333333333333333,
+   "credit": 1.0,
+   "denom": 3
+  },
+  {
+   "id": "unknown_db0",
+   "kind": "protocol",
+   "score": 0.25,
+   "credit": 1.0,
+   "denom": 4
+  },
+  {
+   "id": "unknown_db1",
+   "kind": "protocol",
+   "score": 0.25,
+   "credit": 1.0,
+   "denom": 4
+  },
+  {
+   "id": "no_user0",
+   "kind": "protocol",
+   "score": 0.3333333333333333,
+   "credit": 1.0,
+   "denom": 3
+  },
+  {
+   "id": "no_user1",
+   "kind": "protocol",
+   "score": 0.3333333333333333,
+   "credit": 1.0,
+   "denom": 3
+  },
+  {
+   "id": "default_db0",
+   "kind": "protocol",
+   "score": 0.25,
+   "credit": 1.0,
+   "denom": 4
+  },
+  {
+   "id": "default_db1",
+   "kind": "protocol",
+   "score": 0.25,
+   "credit": 1.0,
+   "denom": 4
+  },
+  {
+   "id": "bad_magic0",
+   "kind": "protocol",
+   "score": 0.5,
+   "credit": 2.0,
+   "denom": 4
+  },
+  {
+   "id": "bad_magic1",
+   "kind": "protocol",
+   "score": 0.5,
+   "credit": 2.0,
+   "denom": 4
+  },
+  {
+   "id": "bad_key0",
+   "kind": "protocol",
+   "score": 0.5,
+   "credit": 2.0,
+   "denom": 4
+  },
+  {
+   "id": "bad_key1",
+   "kind": "protocol",
+   "score": 0.5,
+   "credit": 2.0,
+   "denom": 4
+  },
+  {
+   "id": "ssl0",
+   "kind": "protocol",
+   "score": 0.05263157894736842,
+   "credit": 1.0,
+   "denom": 19
+  },
+  {
+   "id": "ssl1",
+   "kind": "protocol",
+   "score": 0.05263157894736842,
+   "credit": 1.0,
+   "denom": 19
+  },
+  {
+   "id": "ext_basic0",
+   "kind": "protocol",
+   "score": 0.05,
+   "credit": 1.0,
+   "denom": 20
+  },
+  {
+   "id": "ext_basic1",
+   "kind": "protocol",
+   "score": 0.05,
+   "credit": 1.0,
+   "denom": 20
+  },
+  {
+   "id": "ext_named0",
+   "kind": "protocol",
+   "score": 0.023255813953488372,
+   "credit": 1.0,
+   "denom": 43
+  },
+  {
+   "id": "ext_named1",
+   "kind": "protocol",
+   "score": 0.02040816326530612,
+   "credit": 1.0,
+   "denom": 49
+  },
+  {
+   "id": "ext_suspend0",
+   "kind": "protocol",
+   "score": 0.02702702702702703,
+   "credit": 1.0,
+   "denom": 37
+  },
+  {
+   "id": "ext_suspend1",
+   "kind": "protocol",
+   "score": 0.030303030303030304,
+   "credit": 1.0,
+   "denom": 33
+  },
+  {
+   "id": "ext_error0",
+   "kind": "protocol",
+   "score": 0.041666666666666664,
+   "credit": 1.0,
+   "denom": 24
+  },
+  {
+   "id": "ext_error1",
+   "kind": "protocol",
+   "score": 0.041666666666666664,
+   "credit": 1.0,
+   "denom": 24
+  },
+  {
+   "id": "ext_pipeline0",
+   "kind": "protocol",
+   "score": 0.03125,
+   "credit": 1.0,
+   "denom": 32
+  },
+  {
+   "id": "ext_pipeline1",
+   "kind": "protocol",
+   "score": 0.03125,
+   "credit": 1.0,
+   "denom": 32
+  },
+  {
+   "id": "ext_flush0",
+   "kind": "protocol",
+   "score": 0.05263157894736842,
+   "credit": 1.0,
+   "denom": 19
+  },
+  {
+   "id": "ext_flush1",
+   "kind": "protocol",
+   "score": 0.05263157894736842,
+   "credit": 1.0,
+   "denom": 19
+  },
+  {
+   "id": "ext_nodata0",
+   "kind": "protocol",
+   "score": 0.03333333333333333,
+   "credit": 1.0,
+   "denom": 30
+  },
+  {
+   "id": "ext_nodata1",
+   "kind": "protocol",
+   "score": 0.03333333333333333,
+   "credit": 1.0,
+   "denom": 30
+  },
+  {
+   "id": "simple_multi0",
+   "kind": "protocol",
+   "score": 0.03125,
+   "credit": 1.0,
+   "denom": 32
+  },
+  {
+   "id": "simple_multi1",
+   "kind": "protocol",
+   "score": 0.03125,
+   "credit": 1.0,
+   "denom": 32
+  },
+  {
+   "id": "txn_status0",
+   "kind": "protocol",
+   "score": 0.027777777777777776,
+   "credit": 1.0,
+   "denom": 36
+  },
+  {
+   "id": "txn_status1",
+   "kind": "protocol",
+   "score": 0.027777777777777776,
+   "credit": 1.0,
+   "denom": 36
+  },
+  {
+   "id": "bad_type0",
+   "kind": "protocol",
+   "score": 0.1,
+   "credit": 2.0,
+   "denom": 20
+  },
+  {
+   "id": "bad_type1",
+   "kind": "protocol",
+   "score": 0.1,
+   "credit": 2.0,
+   "denom": 20
+  },
+  {
+   "id": "bad_len0",
+   "kind": "protocol",
+   "score": 0.06666666666666667,
+   "credit": 1.0,
+   "denom": 15
+  },
+  {
+   "id": "bad_len1",
+   "kind": "protocol",
+   "score": 0.06666666666666667,
+   "credit": 1.0,
+   "denom": 15
+  },
+  {
+   "id": "bad_body0",
+   "kind": "protocol",
+   "score": 0.06666666666666667,
+   "credit": 1.0,
+   "denom": 15
+  },
+  {
+   "id": "bad_body1",
+   "kind": "protocol",
+   "score": 0.06666666666666667,
+   "credit": 1.0,
+   "denom": 15
+  },
+  {
+   "id": "cancel0",
+   "kind": "protocol",
+   "score": 0.047619047619047616,
+   "credit": 1.0,
+   "denom": 21
+  },
+  {
+   "id": "cancel1",
+   "kind": "protocol",
+   "score": 0.047619047619047616,
+   "credit": 1.0,
+   "denom": 21
+  },
+  {
+   "id": "terminate0",
+   "kind": "protocol",
+   "score": 0.05555555555555555,
+   "credit": 1.0,
+   "denom": 18
+  },
+  {
+   "id": "terminate1",
+   "kind": "protocol",
+   "score": 0.05555555555555555,
+   "credit": 1.0,
+   "denom": 18
+  },
+  {
+   "id": "paramstatus0",
+   "kind": "protocol",
+   "score": 0.03333333333333333,
+   "credit": 1.0,
+   "denom": 30
+  },
+  {
+   "id": "paramstatus1",
+   "kind": "protocol",
+   "score": 0.03333333333333333,
+   "credit": 1.0,
+   "denom": 30
+  }
+ ],
+ "starts": 1,
+ "durability": {
+  "score": 0.0,
+  "passed": 0,
+  "total": 14,
+  "runs": [
+   {
+    "scenario": "seq_insert",
+    "seed": 0,
+    "ok": false,
+    "why": "login failed"
+   },
+   {
+    "scenario": "seq_insert",
+    "seed": 1,
+    "ok": false,
+    "why": "login failed"
+   },
+   {
+    "scenario": "seq_mixed",
+    "seed": 0,
+    "ok": false,
+    "why": "login failed"
+   },
+   {
+    "scenario": "seq_mixed",
+    "seed": 1,
+    "ok": false,
+    "why": "login failed"
+   },
+   {
+    "scenario": "txn_batches",
+    "seed": 0,
+    "ok": false,
+    "why": "login failed"
+   },
+   {
+    "scenario": "txn_batches",
+    "seed": 1,
+    "ok": false,
+    "why": "login failed"
+   },
+   {
+    "scenario": "transfer",
+    "seed": 0,
+    "ok": false,
+    "why": "login failed"
+   },
+   {
+    "scenario": "transfer",
+    "seed": 1,
+    "ok": false,
+    "why": "login failed"
+   },
+   {
+    "scenario": "uncommitted",
+    "seed": 0,
+    "ok": false,
+    "why": "login failed"
+   },
+   {
+    "scenario": "uncommitted",
+    "seed": 1,
+    "ok": false,
+    "why": "login failed"
+   },
+   {
+    "scenario": "ddl",
+    "seed": 0,
+    "ok": false,
+    "why": "login failed"
+   },
+   {
+    "scenario": "ddl",
+    "seed": 1,
+    "ok": false,
+    "why": "login failed"
+   },
+   {
+    "scenario": "two_crashes",
+    "seed": 0,
+    "ok": false,
+    "why": "login failed"
+   },
+   {
+    "scenario": "two_crashes",
+    "seed": 1,
+    "ok": false,
+    "why": "login failed"
+   }
+  ]
+ }
+}
