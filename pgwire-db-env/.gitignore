@@ -13,3 +13,4 @@ grader/crashpoint/supervise
 # Copy of pgsrc's regress sql/data, written by build_task.py
 task/public/regress/
 __pycache__/
+docs-build/

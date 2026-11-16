@@ -10,12 +10,20 @@ Writes (all regenerable; task/tools/pgproto.py and pgwire.py are the hand-writte
   task/public/regress/                     upstream src/test/regress: sql/, data/, parallel_schedule
   task/public/expected/                    conformance.json (public subset); regress.json comes from
                                            `make_reference.py public_regress`
+  docs-build/docs/{html,txt}               the PostgreSQL 16.16 manual (the HTML shipped in the source
+                                           tarball, plus a plain-text copy); run_agents.py mounts it
+                                           read-only at /work/docs (v2.1). Manual only: no source, no
+                                           regress expected output.
 Never copies hidden expected answers, crashpoint code or the reference servers.
 """
 
 from __future__ import annotations
 
 import ast
+import re
+import subprocess
+import tempfile
+from html.parser import HTMLParser
 import json
 import shutil
 from pathlib import Path
@@ -49,6 +57,66 @@ def strip_tests(src: str, keep: set[str]) -> str:
     out = "".join(lines)
     ast.parse(out)
     return out
+
+
+class _Text(HTMLParser):
+    SKIP = {"script", "style", "head"}
+    BLOCK = {"p", "div", "br", "tr", "li", "h1", "h2", "h3", "h4", "h5", "dt", "dd", "pre", "table", "title"}
+
+    def __init__(self):
+        super().__init__()
+        self.out, self.skip, self.pre = [], 0, 0
+
+    def handle_starttag(self, tag, attrs):
+        if tag in self.SKIP:
+            self.skip += 1
+        if tag == "pre":
+            self.pre += 1
+        if tag in self.BLOCK:
+            self.out.append("\n")
+        if tag == "td":
+            self.out.append(" | ")
+
+    def handle_endtag(self, tag):
+        if tag in self.SKIP:
+            self.skip -= 1
+        if tag == "pre":
+            self.pre -= 1
+        if tag in self.BLOCK:
+            self.out.append("\n")
+
+    def handle_data(self, data):
+        if not self.skip:
+            self.out.append(data if self.pre else re.sub(r"\s+", " ", data))
+
+    def text(self) -> str:
+        t = "".join(self.out)
+        return re.sub(r"\n[ \t]*\n(\s*\n)+", "\n\n", t).strip() + "\n"
+
+
+def build_docs() -> None:
+    """The manual from the release tarball (it ships built HTML), plus plain text for grep."""
+    out = ROOT / "docs-build/docs"
+    if out.exists():
+        for p in [out, *out.rglob("*")]:
+            p.chmod(0o755 if p.is_dir() else 0o644)
+        shutil.rmtree(out)
+    with tempfile.TemporaryDirectory() as tmp:
+        subprocess.run(["tar", "xjf", str(ROOT / "pgsrc/pg16.tar.bz2"), "-C", tmp, "postgresql-16.16/doc/src/sgml/html"], check=True)
+        shutil.copytree(Path(tmp) / "postgresql-16.16/doc/src/sgml/html", out / "html")
+    (out / "txt").mkdir()
+    for h in sorted((out / "html").glob("*.html")):
+        p = _Text()
+        p.feed(h.read_text(errors="replace"))
+        (out / "txt" / (h.stem + ".txt")).write_text(p.text())
+    (out / "README.txt").write_text(
+        "The PostgreSQL 16.16 manual, read-only. html/ is the HTML shipped in the release tarball (open index.html);\n"
+        "txt/ is the same pages as plain text, one file per page, for grep. Start with: protocol.txt and\n"
+        "protocol-message-formats.txt, sasl-authentication.txt, protocol-flow.txt (COPY, cancel), errcodes-appendix.txt,\n"
+        "sql-commands.txt (then sql-<command>.txt), datatype*.txt, functions*.txt.\n")
+    for p in out.rglob("*"):
+        p.chmod(0o555 if p.is_dir() else 0o444)
+    out.chmod(0o555)
 
 
 def main() -> None:
@@ -94,6 +162,8 @@ def main() -> None:
 
     if not (PUB / "expected/regress.json").exists():
         print("WARNING: task/public/expected/regress.json missing; run `python3 make_reference.py public_regress`")
+    build_docs()
+    print("docs:", sum(1 for _ in (ROOT / "docs-build/docs/txt").glob("*.txt")), "pages")
     print("kit built:", sorted(p.name for p in TOOLS.iterdir() if p.name != "__pycache__"))
 
 

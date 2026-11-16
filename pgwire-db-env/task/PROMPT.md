@@ -138,6 +138,7 @@ directory exists.
 - `public/regress/sql/` holds **all** upstream regression files, `public/regress/data/` their data and
   `public/regress/parallel_schedule` the order; `public/expected/regress.json` holds PostgreSQL's
   per-statement output for the public subset, `public/expected/conformance.json` its protocol transcripts.
+- `/work/docs/` (read-only): the PostgreSQL 16.16 manual, as HTML (`docs/html/`) and plain text (`docs/txt/`, one file per page; see `docs/README.txt`).
 - psql and pgbench (16.16) are on PATH; `/opt/clients/venv/bin/python` has psycopg 3.2.3;
   `node` with `/opt/clients/node/node_modules/pg`; `java -cp /opt/clients/postgresql-42.7.4.jar File.java`.
 

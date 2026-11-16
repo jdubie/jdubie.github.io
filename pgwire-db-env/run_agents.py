@@ -25,6 +25,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent / "grader"))
 
 ROOT = Path(__file__).resolve().parent
 TASK = ROOT / "task"
+DOCS = ROOT / "docs-build/docs"  # the PostgreSQL manual, mounted read-only at /work/docs (v2.1); built by build_task.py
 IMAGE, GEMINI_IMAGE = "pgw-sandbox:1", "pgw-gemini:1"
 NET, PROXY = "cadenv-agents", "cadenv-proxy"
 CLAUDE_BIN = Path.home() / ".local/share/claude/versions/2.1.322"
@@ -38,8 +39,9 @@ OPENAI_MODELS = {"sol": "gpt-6.1-sol", "terra": "gpt-6.1-terra"}
 LAUNCH = "Read PROMPT.md in the current directory and do what it says."
 NUDGE = "You have about {m} minutes left. Keep working on the task in PROMPT.md."
 RESUME_MIN_S = 60
-SNAPSHOT_EVERY_S = 900
+SNAPSHOT_EVERY_S = 120
 TOKEN_MARGIN_MIN = 5
+NO_GRADE = False
 
 
 def claude_token(minutes: int) -> str:
@@ -131,7 +133,7 @@ def run_agent(tag: str, model: str, rep: int, minutes: int) -> dict:
                 "--read-only", "--user", f"{os.getuid()}:{os.getgid()}", "--network", NET, "--tmpfs", "/tmp:size=4g,exec",
                 "--cpus", "4", "--memory", "8g", "--memory-swap", "8g", "--pids-limit", "2048",
                 "-v", f"{work.resolve()}:/work", "-v", f"{home.resolve()}:/home/agent", "-v", f"{passwd.resolve()}:/etc/passwd:ro",
-                "-w", "/work", "-e", "HOME=/home/agent"]
+                "-v", f"{DOCS}:/work/docs:ro", "-w", "/work", "-e", "HOME=/home/agent"]
         for var in ("HTTPS_PROXY", "https_proxy", "HTTP_PROXY", "http_proxy"):
             argv += ["-e", f"{var}=http://{PROXY}:3128"]
         argv += [x for k in secret for x in ("-e", k)]  # secrets travel by name only, never on the command line
@@ -148,7 +150,11 @@ def run_agent(tag: str, model: str, rep: int, minutes: int) -> dict:
         if time.time() >= deadline - 1:
             break
     stop.set()
-    meta = {"model": model, "rep": rep, "minutes": minutes, "seconds": round(time.time() - t0, 1), "segments": segments}
+    meta = {"docs": DOCS.exists(), "model": model, "rep": rep, "minutes": minutes, "seconds": round(time.time() - t0, 1), "segments": segments}
+    if NO_GRADE:  # graded later by grade_runs.py, together with the snapshots
+        (run / "meta.json").write_text(json.dumps(meta, indent=1))
+        print(json.dumps({k: meta.get(k) for k in ("model", "rep", "seconds")} | {"sessions": len(segments)}), flush=True)
+        return meta
     subprocess.run([sys.executable, str(ROOT / "grader/grade.py"), str(work), str(run / "grade"), "--jobs", "4"],
                    capture_output=True, timeout=4 * 3600)
     g = json.loads((run / "grade/grade.json").read_text()) if (run / "grade/grade.json").exists() else {"summary": {"reward": 0.0}}
@@ -166,7 +172,10 @@ def main() -> None:
     ap.add_argument("--minutes", type=int, default=60)
     ap.add_argument("--concurrency", type=int, default=3)
     ap.add_argument("--tag", required=True)
+    ap.add_argument("--no-grade", action="store_true", help="leave grading to grade_runs.py")
     a = ap.parse_args()
+    global NO_GRADE
+    NO_GRADE = a.no_grade
     jobs = [(a.tag, m, k, a.minutes) for k in range(a.reps) for m in a.models.split(",")]
     print(f"{len(jobs)} runs, concurrency {a.concurrency}", flush=True)
     gate = threading.Semaphore(a.concurrency)
