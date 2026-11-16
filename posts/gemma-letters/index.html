@@ -96,7 +96,7 @@ details pre{white-space:pre-wrap;font:12.5px/1.5 var(--mono);margin:6px 0 0}
 4. h &lt;- 'h' #1
 The letter 'h' appears 1 time.
 Answer: 1</pre>
-  <p>As a control, I trained a second model on the same 4,000 questions with the target being only <code>Answer: 1</code>. Both runs use LoRA (rank 64, all linear layers) on Gemma 3 1B instruct, two epochs, learning rate 1e-4, on one L4 GPU.</p>
+  <p>As a control, I trained a second model on the same 4,000 questions with the target being only <code>Answer: 1</code>. The two models are trained separately, not one after the other: each starts from the same instruction-tuned Gemma 3 1B checkpoint (<code>gemma-3-1b-it</code>), the same checkpoint scored as “base” below, with identical settings (LoRA rank 64 on all linear layers, two epochs, learning rate 1e-4, one L4 GPU). The only difference between them is the target text.</p>
 
   <h2>Results</h2>
   <p>On 200 held-out questions (50 for each answer from 0 to 3) with 8 samples each, accuracy went from 20% (95% interval 15%–25%) to 84% (80%–88%) with spelled-out training, and to 49% with answer-only training. Training on answers alone more than doubles accuracy, but look at how: given eight tries, the answer-only model gets 95% of questions right at least once, yet only 49% on a single try. It has learned which counts are plausible and guesses among them. The spelled-out model gets 84% on the first try.</p>
