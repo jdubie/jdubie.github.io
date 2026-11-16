@@ -3,7 +3,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Teaching Gemma 1B Wordle</title>
-<meta name="description" content="Pretrained Gemma 3 1B goes from 0% to 57% at Wordle with SFT; RL in progress.">
+<meta name="description" content="Pretrained Gemma 3 1B goes from 0% to 80% at Wordle with SFT, and to 85% with RL on top.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@600;700&family=Public+Sans:wght@400;500&family=JetBrains+Mono:wght@500&display=swap">
 <style>
@@ -52,55 +52,73 @@ details pre{white-space:pre-wrap;font:12.5px/1.5 var(--mono);margin:6px 0 0}
 .turn b{font:500 12px var(--mono);color:var(--muted);text-transform:uppercase}
 .trace{background:var(--surface);border-radius:6px;padding:12px 14px;font:13px/1.5 var(--mono);margin:0;white-space:pre-wrap}
 
+:root{--l1:#86b6ef;--l2:#3987e5;--l3:#1c5cab;--l4:#0d366b}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--l1:#3a5f8f;--l2:#3987e5;--l3:#86b6ef;--l4:#cde2fb}}
+:root[data-theme="dark"]{--l1:#3a5f8f;--l2:#3987e5;--l3:#86b6ef;--l4:#cde2fb}
+.s-l1{fill:var(--l1);background:var(--l1)}.s-l2{fill:var(--l2);background:var(--l2)}.s-l3{fill:var(--l3);background:var(--l3)}.s-l4{fill:var(--l4);background:var(--l4)}
 .pair{display:grid;grid-template-columns:1fr 1fr;gap:12px}.pair>div{background:var(--surface);border-radius:6px;padding:10px 12px;min-width:0}
-.pair pre{white-space:pre-wrap;font:12.5px/1.5 var(--mono);margin:6px 0 0;max-height:420px;overflow:auto}.pair b{font:500 12px var(--mono);color:var(--muted);text-transform:uppercase}
+.pair pre{white-space:pre-wrap;font:12.5px/1.5 var(--mono);margin:6px 0 0}.pair b{font:500 12px var(--mono);color:var(--muted);text-transform:uppercase}
 .small{font-size:13px;color:var(--muted)}
-.chart .curve{fill:none;stroke:var(--s-rl);stroke-width:2}
-.chart .dot{fill:var(--s-rl);stroke:var(--surface);stroke-width:2}
-.chart .baseline{stroke:var(--muted);stroke-width:1.5;stroke-dasharray:4 4}
-.legend .sw.dash{background:none;border-top:2px dashed var(--muted);height:0;width:14px;vertical-align:3px}
 @media (max-width:560px){.pair{grid-template-columns:1fr}}
 
+.trio{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.trio>div{background:var(--surface);border-radius:6px;padding:10px 12px;min-width:0}
+.trio pre{white-space:pre-wrap;font:12px/1.5 var(--mono);margin:6px 0 0}.trio b,.pair b{font:500 12px var(--mono);color:var(--muted);text-transform:uppercase;display:block}
+.score{display:inline-block;margin-top:4px;font:500 12px var(--mono);padding:1px 7px;border-radius:999px}
+.score.ok{background:color-mix(in srgb,#1f8a4c 16%,transparent);color:#1f7a44}.score.bad{background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--accent)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .score.ok{color:#5fd08f}}:root[data-theme="dark"] .score.ok{color:#5fd08f}
+.qline{margin-bottom:-14px}
+@media (max-width:640px){.trio{grid-template-columns:1fr}}
 .series{background:var(--surface);border-radius:6px;padding:12px 16px;font-size:14px}.series a{font-weight:500}
 .card{display:grid;gap:6px;background:var(--surface);border-radius:6px;padding:16px 18px;text-decoration:none;color:var(--ink)}.card:hover h3{color:var(--accent)}
 .card h3{font:700 21px/1.2 var(--display);margin:0}.card .stat{font:500 13px var(--mono);color:var(--accent)}
 .tag{font:500 11px var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
 td.num,th.num{text-align:right}
+.trace{background:var(--surface);border-radius:6px;padding:12px 14px;font:13px/1.5 var(--mono);margin:0;white-space:pre-wrap}
+.chart .mark.rl rect.s-sft{fill:var(--s-rl)}
 </style>
 <main>
 
   <header>
     <a class="back" href="../gemma-1b/">← Teaching Gemma 1B</a>
-    <div class="eyebrow">Work in progress · November 16, 2026</div>
+    <div class="eyebrow">Experiment · November 16, 2026</div>
     <h1>Teaching Gemma 1B Wordle: SFT for the rules, RL for the strategy</h1>
     <p class="dek">Starting from the raw pretrained checkpoint, which has never been taught to follow instructions.</p>
   </header>
   <p class="series">Part of <a href="../gemma-1b/">Teaching Gemma 1B</a>, a series of small post-training experiments on one 1B model.</p>
-  <p class="lede"><b>The pretrained Gemma 3 1B won 1 of 500 Wordle games. After supervised fine-tuning on 16,000 games where each move first writes out what is known so far, it wins 57%.</b> Reinforcement learning on top of that is running now.</p>
+  <p class="lede"><b>The pretrained Gemma 3 1B won 1 of 500 Wordle games. Supervised fine-tuning on 64,000 games, where each move first writes out what is known so far, took it to 80%. Reinforcement learning on top took it to 85%.</b></p>
 
-  <figure><div class="legend"><span><i class="sw s-sft"></i>Win rate on 500 held-out answer words</span></div><svg viewBox="0 0 600 140" class="chart" role="img"><line x1="190.0" x2="190.0" y1="0" y2="118" class="grid"/><text x="190.0" y="134" class="tick" text-anchor="middle">0%</text><line x1="280.0" x2="280.0" y1="0" y2="118" class="grid"/><text x="280.0" y="134" class="tick" text-anchor="middle">25%</text><line x1="370.0" x2="370.0" y1="0" y2="118" class="grid"/><text x="370.0" y="134" class="tick" text-anchor="middle">50%</text><line x1="460.0" x2="460.0" y1="0" y2="118" class="grid"/><text x="460.0" y="134" class="tick" text-anchor="middle">75%</text><line x1="550.0" x2="550.0" y1="0" y2="118" class="grid"/><text x="550.0" y="134" class="tick" text-anchor="middle">100%</text><text x="180" y="15.0" class="rowlabel" text-anchor="end">Base, 3 example games</text><g class="mark" data-tip="Base, 3 example games · Win rate: 0.2%"><rect x="190" y="4" width="1.0" height="12" class="s-sft"/><text x="195.7" y="14" class="val">0.2%</text><rect x="0" y="2" width="600" height="16" class="hit"/></g><text x="180" y="43.0" class="rowlabel" text-anchor="end">SFT, guess only, 4k</text><g class="mark" data-tip="SFT, guess only, 4k · Win rate: 16%"><rect x="190" y="32" width="57.6" height="12" class="s-sft"/><text x="252.6" y="42" class="val">16%</text><rect x="0" y="30" width="600" height="16" class="hit"/></g><text x="180" y="71.0" class="rowlabel" text-anchor="end">SFT, state tracking, 4k</text><g class="mark" data-tip="SFT, state tracking, 4k · Win rate: 33.2%"><rect x="190" y="60" width="119.5" height="12" class="s-sft"/><text x="314.5" y="70" class="val">33.2%</text><rect x="0" y="58" width="600" height="16" class="hit"/></g><text x="180" y="99.0" class="rowlabel" text-anchor="end">SFT, state tracking, 16k</text><g class="mark" data-tip="SFT, state tracking, 16k · Win rate: 56.8%"><rect x="190" y="88" width="204.5" height="12" class="s-sft"/><text x="399.5" y="98" class="val">56.8%</text><rect x="0" y="86" width="600" height="16" class="hit"/></g></svg>
-  <figcaption>Each game allows six guesses. Answer words used for testing never appear in training.</figcaption></figure>
+  <figure><svg viewBox="0 0 600 224" class="chart" role="img"><line x1="190.0" x2="190.0" y1="0" y2="202" class="grid"/><text x="190.0" y="218" class="tick" text-anchor="middle">0%</text><line x1="280.0" x2="280.0" y1="0" y2="202" class="grid"/><text x="280.0" y="218" class="tick" text-anchor="middle">25%</text><line x1="370.0" x2="370.0" y1="0" y2="202" class="grid"/><text x="370.0" y="218" class="tick" text-anchor="middle">50%</text><line x1="460.0" x2="460.0" y1="0" y2="202" class="grid"/><text x="460.0" y="218" class="tick" text-anchor="middle">75%</text><line x1="550.0" x2="550.0" y1="0" y2="202" class="grid"/><text x="550.0" y="218" class="tick" text-anchor="middle">100%</text><text x="180" y="15.0" class="rowlabel" text-anchor="end">Base Gemma 3 1B</text><g class="mark" data-tip="Base Gemma 3 1B · Win rate: 0.2%"><rect x="190" y="4" width="1.0" height="12" class="s-sft"/><text x="195.7" y="14" class="val">0.2%</text><rect x="0" y="2" width="600" height="16" class="hit"/></g><text x="180" y="43.0" class="rowlabel" text-anchor="end">SFT, guess only, 4k games</text><g class="mark" data-tip="SFT, guess only, 4k games · Win rate: 16%"><rect x="190" y="32" width="57.6" height="12" class="s-sft"/><text x="252.6" y="42" class="val">16%</text><rect x="0" y="30" width="600" height="16" class="hit"/></g><text x="180" y="71.0" class="rowlabel" text-anchor="end">SFT, state tracking, 4k</text><g class="mark" data-tip="SFT, state tracking, 4k · Win rate: 33.2%"><rect x="190" y="60" width="119.5" height="12" class="s-sft"/><text x="314.5" y="70" class="val">33.2%</text><rect x="0" y="58" width="600" height="16" class="hit"/></g><text x="180" y="99.0" class="rowlabel" text-anchor="end">SFT, state tracking, 16k</text><g class="mark" data-tip="SFT, state tracking, 16k · Win rate: 58.2%"><rect x="190" y="88" width="209.5" height="12" class="s-sft"/><text x="404.5" y="98" class="val">58.2%</text><rect x="0" y="86" width="600" height="16" class="hit"/></g><text x="180" y="127.0" class="rowlabel" text-anchor="end">  + RL</text><g class="mark rl" data-tip="+ RL · Win rate: 64.6%"><rect x="190" y="116" width="232.6" height="12" class="s-sft"/><text x="427.6" y="126" class="val">64.6%</text><rect x="0" y="114" width="600" height="16" class="hit"/></g><text x="180" y="155.0" class="rowlabel" text-anchor="end">SFT, state tracking, 64k</text><g class="mark" data-tip="SFT, state tracking, 64k · Win rate: 80.2%"><rect x="190" y="144" width="288.7" height="12" class="s-sft"/><text x="483.7" y="154" class="val">80.2%</text><rect x="0" y="142" width="600" height="16" class="hit"/></g><text x="180" y="183.0" class="rowlabel" text-anchor="end">  + RL</text><g class="mark rl" data-tip="+ RL · Win rate: 85%"><rect x="190" y="172" width="306.0" height="12" class="s-sft"/><text x="501.0" y="182" class="val">85%</text><rect x="0" y="170" width="600" height="16" class="hit"/></g></svg>
+  <figcaption>Win rate on 500 held-out answer words, six guesses per game. The 16k and 64k SFT models train on word set A only, so RL can play on words they have never seen as answers (see below). The answer words used for testing never appear in training.</figcaption></figure>
 
   <h2>The plan</h2>
-  <p>Wordle splits neatly into two skills. The <b>rules</b>: reply in the right format, guess real five-letter words, and only guess words that fit the colored feedback so far. The <b>strategy</b>: choose guesses that narrow the field fastest. Imitation is a good fit for the rules, since there is one right way to read the feedback. Reinforcement learning is a better fit for strategy, since the model can discover what works from its own games.</p>
-  <p>So SFT imitates a simple solver that guesses a random word consistent with everything seen so far. That solver plays correctly but not cleverly. SFT stops once the model wins roughly half its games, so that RL sees a mix of wins and losses to learn from.</p>
+  <p>Wordle splits into two skills. The <b>rules</b>: reply in the right format, guess real five-letter words, and only guess words that fit the colored feedback so far. The <b>strategy</b>: choose guesses that narrow the field fastest. Imitation fits the rules, since there is one right way to read the feedback. Reinforcement learning fits strategy, since the model can learn from its own games what works.</p>
+  <p>So SFT imitates a simple solver that guesses a random word consistent with everything seen so far: correct, but not clever. Neither the pretrained model nor the instruction-tuned Gemma 3 1B can play at all; given three example games, the instruction-tuned model won 0 of 500, often replying with guesses like “RACE”.</p>
 
-  <h2>Writing out the state helps a lot</h2>
+  <h2>Writing out the state doubles the win rate</h2>
   <p>Two SFT targets were compared. One is just the guess. The other first writes the current state, then the guess:</p>
   <pre class="trace">Pattern: _ A R _ _
 Must include: A (not spot 3), R (not spot 2)
 Ruled out: C E M T Y
 Guess: PARKA</pre>
-  <p>With the same 4,000 training games, the state-tracking version won twice as often (33% vs 16%). A 1B model has trouble keeping track of the feedback from earlier turns when it has to do so silently; writing it down makes each guess a much easier step.</p>
+  <p>With the same 4,000 training games, the state-tracking version won twice as often (33% vs 16%). A 1B model has trouble keeping track of earlier feedback silently; writing it down makes each guess an easy step. More games kept helping: 15% at 1,000 games (dev), 33% at 4,000, 58% at 16,000 and 80% at 64,000.</p>
   <div class="tablewrap"><table>
-    <tr><th>Model</th><th class="num">Win rate</th><th class="num">Guesses per win</th><th class="num">Valid words</th><th class="num">Guesses fit feedback</th></tr>
-    <tr><td>Base, 3 example games</td><td class=num>0.2%</td><td class=num>–</td><td class=num>100%</td><td class=num>17%</td></tr><tr><td>SFT, guess only, 4k games</td><td class=num>16.0%</td><td class=num>4.03</td><td class=num>96%</td><td class=num>40%</td></tr><tr><td>SFT, state tracking, 4k games</td><td class=num>33.2%</td><td class=num>3.89</td><td class=num>88%</td><td class=num>50%</td></tr><tr><td>SFT, state tracking, 16k games</td><td class=num>56.8%</td><td class=num>4.07</td><td class=num>95%</td><td class=num>67%</td></tr>
+    <tr><th>Model</th><th class="num">Win rate</th><th class="num">Guesses/win</th><th class="num">Valid</th><th class="num">Fits feedback</th></tr>
+    <tr><td>Base, 3 example games</td><td class=num>0.2%</td><td class=num>–</td><td class=num>100%</td><td class=num>17%</td></tr><tr><td>SFT, guess only, 4k games</td><td class=num>16.0%</td><td class=num>4.03</td><td class=num>96%</td><td class=num>40%</td></tr><tr><td>SFT, state tracking, 4k</td><td class=num>33.2%</td><td class=num>3.89</td><td class=num>88%</td><td class=num>50%</td></tr><tr><td>SFT, state tracking, 16k</td><td class=num>58.2%</td><td class=num>4.15</td><td class=num>96%</td><td class=num>67%</td></tr><tr><td>&nbsp;&nbsp;+ RL</td><td class=num>64.6%</td><td class=num>4.24</td><td class=num>98%</td><td class=num>69%</td></tr><tr><td>SFT, state tracking, 64k</td><td class=num>80.2%</td><td class=num>4.08</td><td class=num>98%</td><td class=num>82%</td></tr><tr><td>&nbsp;&nbsp;+ RL</td><td class=num>85.0%</td><td class=num>3.98</td><td class=num>99%</td><td class=num>84%</td></tr>
   </table></div>
-  <p>More data keeps helping: 1k games 15% (dev), 4k 33%, 16k 57%. A 64k-game run is training now to see where it levels off.</p>
 
-  <h2>RL: in progress</h2>
-  <p>GRPO starts from the 16k SFT checkpoint: 32 answer words per step, 8 games each, reward for winning in fewer guesses, a small KL penalty to the SFT model. After 22 steps, win rate on training games has risen from about 70% to 82%, but held-out dev win rate has not moved (57.5% at step 0, 54.5% at step 20). That is too early to call; the run goes to 200 steps.</p>
-  <p class="small">Budget for the whole project is under $100; about $15 spent so far.</p>
+  <h2>RL: the first run memorized the answers</h2>
+  <p>RL uses GRPO: 32 answer words per step, 8 games each, a reward for winning in fewer guesses (1 + 0.2 for each guess left, minus 0.1 per invalid guess), and a small KL penalty toward the SFT model.</p>
+  <p>The first run drew its answer words from the same list the SFT data used. Win rate on its training games rose from 72% to 85%, but on held-out dev words it stayed flat (57.5% to 58%): it was learning which words tend to be answers, not how to play. So I split the training words in two. SFT only uses set A (1,015 words), and RL only plays games whose answers are in set B (600 words the model has never seen as an answer). Test words are a third, separate set.</p>
+  <p>With that split, RL helped on top of both SFT models: from 58.2% to 64.6% after 16k SFT games (+6.4 points, standard error 2.5) and from 80.2% to 85.0% after 64k (+4.8, standard error 2.0), each checkpoint picked on dev after 180 steps. Most of the gain came from more guesses fitting the feedback, not from shorter games: guesses per win barely changed. Rewarding consistent guesses directly, with a bonus on every turn, did worse (61.6%).</p>
+
+  <h2>What I took away</h2>
+  <ul class="plain">
+    <li><b>SFT for the rules, then RL, works even from a raw pretrained model.</b> 0% to 80% with SFT, then 85% with RL.</li>
+    <li><b>Make the model write its state down.</b> Same games, twice the wins.</li>
+    <li><b>Keep RL prompts away from SFT data.</b> When RL replayed the SFT answer words, it memorized them; on unseen words it generalized.</li>
+    <li><b>RL here improved reliability more than strategy.</b> The model won more often by making fewer rule mistakes, not by finding the answer in fewer guesses.</li>
+  </ul>
+  <p class="small">Gemma 3 1B pretrained checkpoint, LoRA, one TPU v6e chip. Sampling at temperature 1.0. Total spend about $60, including idle time.</p>
 
 </main>
 <div id="tip" role="tooltip" hidden></div>
