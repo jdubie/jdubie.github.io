@@ -3,10 +3,10 @@ logs/
 runs/
 cache/
 # grading output: keep grade.json, drop per-workload transcripts and copied code
-calib/*/transcripts/
-calib/*/code/
-calib/*/build.log
+calib/**/transcripts/
+calib/**/code/
+calib/**/build.log
 # the replay cheat's recorded cache (MBs, regenerable with cheat/make_cheat.py)
-cheat/work/
+cheat/work*/
 site/runs/
 secret/
