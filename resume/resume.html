@@ -33,6 +33,7 @@ li::marker{color:var(--muted)}
     <ul>
       <li>Built a GRPO trainer from scratch in JAX/Flax NNX: Qwen3 with a KV-cache sampler checked against HF transformers, Dr.GRPO/DAPO token-level loss with truncated importance sampling, multi-turn Wordle, MBPP and tool-call environments, and a hand-rolled multi-host gradient all-reduce.</li>
       <li>Post-trained Gemma 3 1B (Tunix, LoRA): GRPO with a string-match checker took <a href="https://jdubie.github.io/posts/gemma-puzzles/">transitive-reasoning puzzles</a> from 59% to 99.8%, and harder versions it never trained on from 34% to 93%; SFT that writes out the game state, then RL, took <a href="https://jdubie.github.io/posts/gemma-wordle/">Wordle</a> from 0% to 85%, after catching and fixing an RL run that memorized the answer set.</li>
+      <li>Scaled the puzzle GRPO run from one TPU chip to a 4-host, 16-chip v5e slice in JAX (data-parallel samplers with an FSDP learner, and tensor-parallel samplers), matching single-chip accuracy with <a href="https://jdubie.github.io/posts/gemma-puzzles/">3.1× faster steps</a>.</li>
       <li>Designed 10+ coding-agent RL environments with graders that resist reward hacking: <a href="https://jdubie.github.io/posts/test-speedup-env/">test-speedup</a> rewards a faster suite only if it still catches 24 hidden bugs, which zeroed one model's rate-limit hack; <a href="https://jdubie.github.io/posts/find-duplicates/">find-duplicates</a> seeds 23 hidden test trees with traps (hard links, symlink loops, weak-checksum collisions, a 3 GiB sparse file) that punish fast-but-wrong finders. Benchmarked Claude, GPT, Gemini and Grok agents headless in Docker sandboxes.</li>
       <li>Analyzed model behavior: <a href="https://jdubie.github.io/posts/gemma-self-correction/">Gemma 1B resubmits identical failing code</a> 95% of the time; fresh attempts are right 34% of the time vs 1% for retries with feedback, and RL made recovery worse.</li>
     </ul>
@@ -68,7 +69,7 @@ li::marker{color:var(--muted)}
     <h2>Skills</h2>
     <div><b>ML</b> · JAX, Flax NNX, Optax, PyTorch, Tunix/LoRA on TPU, HF transformers, openpi (π0/π0.5/π0.7), LeRobot, jaxrl2, MuJoCo, W&amp;B</div>
     <div><b>Methods</b> · GRPO, SFT, DAgger, DSRL, real-time chunking, inverse dynamics, ILC, RL environments and graders</div>
-    <div><b>Infra</b> · Python, Docker sandboxes, multi-host training, Vertex AI H100 training, GCP</div>
+    <div><b>Infra</b> · Python, JAX sharding (FSDP, tensor parallel) on multi-host TPU v5e/v6e, Docker sandboxes, Vertex AI H100 training, GCP</div>
   </section>
 
   <section>
