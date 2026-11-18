@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>Jack Dubie — Resume</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap">
+<style>
+@page{size:letter;margin:0}
+:root{--bg:#262624;--ink:#faf9f5;--body:#c2c0b6;--muted:#8e8d88;--accent:#d97757;--rule:#3d3d3a}
+html,body{margin:0;background:var(--bg)}
+body{font:400 8.3pt/1.38 Inter,sans-serif;color:var(--body);-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.page{width:8.5in;height:11in;box-sizing:border-box;padding:0.4in 0.6in 0.3in;overflow:hidden}
+h1{font:600 22pt/1.1 Inter,sans-serif;color:var(--ink);margin:0 0 6pt}
+.contact{color:var(--body);font-size:9pt;margin-bottom:12pt}
+a{color:var(--ink);text-decoration:underline;text-decoration-color:var(--accent);text-decoration-thickness:1.2pt;text-underline-offset:2pt}
+h2{font:600 10.5pt/1 Inter,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--body);margin:0 0 8pt;padding-bottom:5pt;border-bottom:1px solid var(--rule)}
+section{margin-bottom:8pt}
+.role{margin:7pt 0 2pt;color:var(--muted)}
+.role b{font-weight:600;color:var(--ink)}
+ul{margin:0;padding-left:13pt}
+li{margin:0 0 2.4pt;padding-left:2pt}
+li::marker{color:var(--muted)}
+.edu b,.skills b{font-weight:600;color:var(--ink)}
+.edu{color:var(--muted)}
+.skills div{margin:0 0 2.4pt}
+</style>
+<div class="page">
+  <h1>Jack Dubie</h1>
+  <div class="contact"><a href="mailto:jack.dubie@gmail.com">jack.dubie@gmail.com</a> · <a href="https://www.linkedin.com/in/jackdubie/">LinkedIn</a> · <a href="https://jdubie.github.io/">jdubie.github.io</a></div>
+
+  <section>
+    <h2>Experience</h2>
+    <div class="role"><b>Independent Research</b> — Agent Evals &amp; LLM Post-Training · 2026</div>
+    <ul>
+      <li>Built a GRPO trainer from scratch in JAX/Flax NNX: Qwen3 with a KV-cache sampler checked against HF transformers, Dr.GRPO/DAPO token-level loss with truncated importance sampling, multi-turn Wordle, MBPP and tool-call environments, and a hand-rolled multi-host gradient all-reduce.</li>
+      <li>Post-trained Gemma 3 1B (Tunix, LoRA): GRPO with a string-match checker took <a href="https://jdubie.github.io/posts/gemma-puzzles/">transitive-reasoning puzzles</a> from 59% to 99.8%, and harder versions it never trained on from 34% to 93%; SFT that writes out the game state, then RL, took <a href="https://jdubie.github.io/posts/gemma-wordle/">Wordle</a> from 0% to 85%, after catching and fixing an RL run that memorized the answer set.</li>
+      <li>Designed 10+ coding-agent RL environments with graders that resist reward hacking: <a href="https://jdubie.github.io/posts/test-speedup-env/">test-speedup</a> rewards a faster suite only if it still catches 24 hidden bugs, which zeroed one model's rate-limit hack; <a href="https://jdubie.github.io/posts/find-duplicates/">find-duplicates</a> seeds 23 hidden test trees with traps (hard links, symlink loops, weak-checksum collisions, a 3 GiB sparse file) that punish fast-but-wrong finders. Benchmarked Claude, GPT, Gemini and Grok agents headless in Docker sandboxes.</li>
+      <li>Analyzed model behavior: <a href="https://jdubie.github.io/posts/gemma-self-correction/">Gemma 1B resubmits identical failing code</a> 95% of the time; fresh attempts are right 34% of the time vs 1% for retries with feedback, and RL made recovery worse.</li>
+    </ul>
+
+    <div class="role"><b>Frontier Machines</b> — Co-founder · 2024–2026</div>
+    <ul>
+      <li>Led deployment of <a href="https://jdubie.github.io/posts/eight-robots/">eight pouch-packing robots</a> running π0.7 at a customer site, packing 45,000+ pouches at 97.6% autonomy; featured by Physical Intelligence in its <a href="https://www.pi.website/blog/api-beta">API beta announcement</a>.</li>
+      <li>Built a <a href="https://arxiv.org/abs/1011.0686">DAgger</a> flywheel: one command uploads rig data, builds datasets, trains π0.5 checkpoints, and serves them behind a weighted per-episode router for A/B tests, with loss masked on the frames just before an operator takeover. One round raised zero-intervention episodes 28% and mean time between interventions 15%.</li>
+      <li>Implemented <a href="https://jdubie.github.io/posts/realtime-action-chunking/">real-time chunking</a> for π0/π0.5 in JAX (openpi): first inference-time guided inpainting, then <a href="https://arxiv.org/abs/2512.05964">training-time</a> conditioning on committed action prefixes, cutting p99 jerk 4–5x and taking a jam-prone task to 13/13 at ~99% autonomy.</li>
+      <li>Trained a transformer inverse-dynamics model on MuJoCo-generated data (PyTorch) to retarget pose demos onto compliant YAM arms, reaching 4–7 mm validation error; replaced it with offline iterative learning control, which <a href="https://jdubie.github.io/posts/pi0-zero-robot-data/">fine-tuned π0.5 with zero robot-collected samples</a>.</li>
+      <li><a href="https://jdubie.github.io/posts/dsrl-libero/">Reproduced DSRL</a> (RL that steers a frozen π0 by choosing its diffusion noise) in JAX/jaxrl2 on two sim tasks and a real arm: a MuJoCo cube pick went from 50% to 95% and a LIBERO task from 3/10 to 10/10 in 75 minutes; online RL on a real YAM arm, every trial labelled by hand, raised a candy-bar toss from 16% to 41% (rolling 100) over 362 trials in 90 minutes.</li>
+    </ul>
+
+    <div class="role"><b>Independent Exploration</b> — Robotics · 2023–2024</div>
+    <ul>
+      <li>Built a &lt;$1k home robot, advised by <a href="https://x.com/tonyzzhao">Tony Zhao</a>, with leader-follower arms and an internet teleop link; it <a href="https://x.com/jackdubie/status/1770201499639136656">picked up toys</a> while teleoperated from 7,000 miles away.</li>
+    </ul>
+
+    <div class="role"><b>Ladder</b> — Co-founder · 2015–2023</div>
+    <ul>
+      <li>Built ML training and inference for instant life-insurance underwriting across ~1M applications, predicting mortality from prescription fills, driving history and credit history, providing $113B in coverage to families.</li>
+      <li>Shipped continuous integration, a fast in-memory end-to-end testing framework, and APIs/SDKs powering deep co-branded partner integrations.</li>
+    </ul>
+
+    <div class="role"><b>Dropbox</b> — Software Engineer · 2013–2015</div>
+    <ul>
+      <li>Developed <a href="https://techcrunch.com/2014/04/09/mailbox-android-desktop/">Auto-swipe</a> for Mailbox, which learns from each user's archive and snooze swipes to triage matching future email before it's opened.</li>
+      <li>Co-inventor on 8 granted US patents across 3 patent families: <a href="https://patents.google.com/patent/US9197590B2/en">dynamic email filter generation</a>, <a href="https://patents.google.com/patent/US9253133B2/en">message thread identification</a>, and <a href="https://patents.google.com/patent/US9715534B2/en">shared-folder-backed workspaces</a>.</li>
+    </ul>
+  </section>
+
+  <section class="skills">
+    <h2>Skills</h2>
+    <div><b>ML</b> · JAX, Flax NNX, Optax, PyTorch, Tunix/LoRA on TPU, HF transformers, openpi (π0/π0.5/π0.7), LeRobot, jaxrl2, MuJoCo, W&amp;B</div>
+    <div><b>Methods</b> · GRPO, SFT, DAgger, DSRL, real-time chunking, inverse dynamics, ILC, RL environments and graders</div>
+    <div><b>Infra</b> · Python, Docker sandboxes, multi-host training, Vertex AI H100 training, GCP</div>
+  </section>
+
+  <section>
+    <h2>Education</h2>
+    <div class="edu"><b>Stanford University</b> · MS Computer Science '13 · BS Mathematics '11 · BS Computer Science '11</div>
+  </section>
+</div>
+</html>
