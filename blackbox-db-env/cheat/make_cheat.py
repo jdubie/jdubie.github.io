@@ -29,6 +29,7 @@ def main() -> None:
     ap.add_argument("out")
     ap.add_argument("--seed", type=int, default=7101)
     ap.add_argument("--probe-seeds", default="4242,4243")
+    ap.add_argument("--workloads", type=int, default=2, help="workload generator version (3 for oracle v3)")
     a = ap.parse_args()
     spec = make_spec(a.seed)
     V = Codec(spec)
@@ -37,7 +38,7 @@ def main() -> None:
     try:
         assert box.start(), "oracle did not start"
         for ps in map(int, a.probe_seeds.split(",")):
-            for wl in W.generate(ps):
+            for wl in W.generate(ps, a.workloads):
                 r = W.render(spec, wl)
                 got = run_workload(box.host, PORT, spec, r)
                 for st, res in zip(r["steps"], got):

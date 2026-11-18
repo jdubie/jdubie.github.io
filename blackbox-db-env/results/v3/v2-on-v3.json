@@ -1,0 +1,112 @@
+{
+ "opus-repeat": {
+  "w2": {
+   "reward_exact": 0.4116,
+   "reward_partial": 0.6321,
+   "sql": 0.1269,
+   "protocol": 0.3895,
+   "durability": 0.8571,
+   "sql_perfect": "0/60",
+   "protocol_perfect": "12/50",
+   "durability_runs": "12/14"
+  },
+  "w3": {
+   "reward_exact": 0.4103,
+   "reward_partial": 0.6276,
+   "sql": 0.124,
+   "protocol": 0.3895,
+   "durability": 0.8571,
+   "sql_perfect": "0/60",
+   "protocol_perfect": "12/50",
+   "durability_runs": "12/14"
+  }
+ },
+ "opus-run2": {
+  "w2": {
+   "reward_exact": 0.4356,
+   "reward_partial": 0.6354,
+   "sql": 0.1031,
+   "protocol": 0.357,
+   "durability": 1.0,
+   "sql_perfect": "0/60",
+   "protocol_perfect": "10/50",
+   "durability_runs": "14/14"
+  },
+  "w3": {
+   "reward_exact": 0.4335,
+   "reward_partial": 0.6283,
+   "sql": 0.0983,
+   "protocol": 0.357,
+   "durability": 1.0,
+   "sql_perfect": "0/60",
+   "protocol_perfect": "10/50",
+   "durability_runs": "14/14"
+  }
+ },
+ "sol": {
+  "w2": {
+   "reward_exact": 0.6028,
+   "reward_partial": 0.9361,
+   "sql": 0.2679,
+   "protocol": 0.7291,
+   "durability": 1.0,
+   "sql_perfect": "0/60",
+   "protocol_perfect": "32/50",
+   "durability_runs": "14/14"
+  },
+  "w3": {
+   "reward_exact": 0.5972,
+   "reward_partial": 0.9174,
+   "sql": 0.2554,
+   "protocol": 0.7291,
+   "durability": 1.0,
+   "sql_perfect": "0/60",
+   "protocol_perfect": "32/50",
+   "durability_runs": "14/14"
+  }
+ },
+ "sonnet": {
+  "w2": {
+   "reward_exact": 0.3631,
+   "reward_partial": 0.5869,
+   "sql": 0.1198,
+   "protocol": 0.208,
+   "durability": 0.8571,
+   "sql_perfect": "0/60",
+   "protocol_perfect": "2/50",
+   "durability_runs": "12/14"
+  },
+  "w3": {
+   "reward_exact": 0.365,
+   "reward_partial": 0.5932,
+   "sql": 0.124,
+   "protocol": 0.208,
+   "durability": 0.8571,
+   "sql_perfect": "0/60",
+   "protocol_perfect": "2/50",
+   "durability_runs": "12/14"
+  }
+ },
+ "terra": {
+  "w2": {
+   "reward_exact": 0.5309,
+   "reward_partial": 0.8714,
+   "sql": 0.2351,
+   "protocol": 0.5005,
+   "durability": 1.0,
+   "sql_perfect": "0/60",
+   "protocol_perfect": "17/50",
+   "durability_runs": "14/14"
+  },
+  "w3": {
+   "reward_exact": 0.5271,
+   "reward_partial": 0.8588,
+   "sql": 0.2267,
+   "protocol": 0.5005,
+   "durability": 1.0,
+   "sql_perfect": "0/60",
+   "protocol_perfect": "17/50",
+   "durability_runs": "14/14"
+  }
+ }
+}

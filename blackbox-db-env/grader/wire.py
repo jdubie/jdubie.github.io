@@ -254,10 +254,11 @@ def workload_score(spec: dict, wl: dict, oracle: list, cand: list) -> dict:
     if gate is not None and not (gm and codec.back_kind.get(gm[-1][0]) == "ready"):
         credit = 0.0
         denom = sum(step_score(codec, oracle[i], oracle[i])[1] for i in range(first, len(oracle)))
-        return {"score": 0.0, "credit": 0.0, "denom": denom, "gated": True}
+        return {"score": 0.0, "credit": 0.0, "denom": denom, "gated": True, "exact": False}
     credit, denom = 0.0, 0
     for i in range(first, len(oracle)):
         c, d = step_score(codec, oracle[i], cand[i])
         credit += c
         denom += d
-    return {"score": credit / denom if denom else 0.0, "credit": round(credit, 3), "denom": denom}
+    return {"score": credit / denom if denom else 0.0, "credit": round(credit, 3), "denom": denom,
+            "exact": bool(denom) and abs(credit - denom) < 1e-9}

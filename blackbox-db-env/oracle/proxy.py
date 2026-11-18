@@ -13,6 +13,7 @@ import os
 import struct
 import sys
 
+from semantics3 import BLOCKED, make_sem3, null_order_rewrite
 from variant import PG_CANCEL, Codec, Dialect, Malformed, Semantics, make_spec
 
 PG_SOCK = os.environ.get("BBX_PG_SOCK", "/var/run/postgresql/.s.PGSQL.5432")
@@ -21,6 +22,8 @@ MAX_MSG = 1 << 28
 # Oracle v2: errors carry HINTs naming the startup keys and the dialect's spelling of PostgreSQL words the
 # client used, so every renamed word is discoverable by probing. v1 (BBX_HINTS=0) had no discovery channel.
 HINTS = os.environ.get("BBX_HINTS", "1") == "1"
+# Oracle v3: semantic changes computed by PostgreSQL itself (semantics3.py); hints stay spelling-only.
+VERSION = int(os.environ.get("BBX_VERSION", "2"))
 
 
 class Fatal(Exception):
@@ -46,6 +49,17 @@ class Proxy:
         self.sub_p = {v: k for k, v in self.w["sub_types"].items()}
         self.ps = self.w["param_status"]
         self.keys = {v: k for k, v in self.w["startup_keys"].items()}
+        self.sem3 = make_sem3(seed) if VERSION >= 3 and "semantics" in layers else None
+        if self.sem3:
+            self.dia.block(BLOCKED)
+
+    def rewrite(self, sql: str) -> tuple[str, list]:
+        """Client SQL -> PostgreSQL SQL, and the chain of span maps for error positions (applied last-first)."""
+        pg, spans = self.dia.to_pg(sql)
+        if not self.sem3:
+            return pg, [spans]
+        pg2, spans2 = null_order_rewrite(pg, self.sem3["null_order"])
+        return pg2, [spans, spans2]
 
     def oid_to_v(self, o: int) -> int:
         return self.oid_v.get(o, o + self.off if o > 0 else o)
@@ -67,9 +81,17 @@ class Proxy:
             elif c == "C":
                 v = self.sem.sqlstate(v)
             elif c in "MDHWstcdn":
+                if c == "W" and self.sem3:  # context lines from inlining the variant's overrides are not the variant's
+                    v = "\n".join(x for x in v.split("\n") if 'SQL function "bbx_' not in x)
+                    if not v:
+                        continue
                 v = self.sem.text(self.dia.message(v))
             elif c == "P":
-                v = str(self.dia.map_pos(spans or [], int(v))) if spans else v
+                if spans:
+                    p = int(v)
+                    for sp in reversed(spans):
+                        p = self.dia.map_pos(sp, p)
+                    v = str(p)
             out[c] = v
         return out
 
@@ -234,6 +256,8 @@ class Conn:
         kv["TimeZone"] = "UTC"
         if px.sem.on:
             kv["DateStyle"] = px.sem.s["datestyle"]
+        if px.sem3:
+            kv["search_path"] = "public, pg_catalog"  # the variant's overrides win over PostgreSQL's built-ins
         body = struct.pack(">I", 196608) + b"".join(k.encode() + b"\0" + v.encode() + b"\0" for k, v in kv.items()) + b"\0"
         self.pw.write(struct.pack(">I", len(body) + 4) + body)
         # PostgreSQL's handshake (trust): AuthenticationOk, ParameterStatus*, BackendKeyData, ReadyForQuery
@@ -273,11 +297,11 @@ class Conn:
                 raise Fatal("08P01", "invalid message format" if "string" not in str(e) else "invalid string in message")
             out = b""
             if kind == "query":
-                sql, spans = px.dia.to_pg(m["sql"])
+                sql, spans = px.rewrite(m["sql"])
                 self.pending.append({"k": "query", "spans": spans, "hints": px.dia.hints(m["sql"]) if HINTS else []})
                 out = P.encode("f:query", {"sql": sql})
             elif kind == "parse":
-                sql, spans = px.dia.to_pg(m["sql"])
+                sql, spans = px.rewrite(m["sql"])
                 self.stmt_spans[m["name"]] = spans
                 self.pending.append({"k": "parse", "spans": spans, "hints": px.dia.hints(m["sql"]) if HINTS else []})
                 out = P.encode("f:parse", {"name": m["name"], "sql": sql, "types": [px.oid_to_p(o) for o in m["types"]]})

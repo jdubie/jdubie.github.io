@@ -1,0 +1,7 @@
+# Oracle v3: the v2 proxy plus the semantic layer computed by PostgreSQL itself (semantics3.py).
+FROM postgres:16-bookworm
+RUN apt-get update && apt-get install -y --no-install-recommends python3 && rm -rf /var/lib/apt/lists/*
+COPY variant.py proxy.py semantics3.py entry.sh /oracle/
+RUN chmod 700 /oracle && chmod 600 /oracle/*.py && chmod 700 /oracle/entry.sh
+ENV PGDATA=/var/lib/postgresql/data BBX_VERSION=3
+ENTRYPOINT ["/oracle/entry.sh"]

@@ -6,8 +6,10 @@
 BBX_ORACLE_VERSION=1 selects the oracle as the Opus run saw it (no discovery hints); default 2.
 
 reward = 0.45 sql + 0.25 protocol + 0.30 durability
-  sql         mean over 60 SQL sessions of the per-message credit after login (0 for a session that never logs in)
-  protocol    mean over 50 protocol workloads (25 templates x 2) of the per-message credit
+  sql         mean over 60 SQL sessions of the session score after login (0 for a session that never logs in)
+  protocol    mean over 50 protocol workloads (25 templates x 2) of the workload score
+Workload score, by --scoring: "partial" (v1/v2) = per-message credit; "exact" (v3, default for oracle v3) =
+1 if every scored message is byte-exact, else EXACT_PARTIAL x per-message credit. Both are always recorded.
   durability  share of 14 crash runs whose recovered state matches the oracle for some set of in-flight commits
 Per message: 1 if byte-identical (BackendKeyData compared by shape only), up to 0.5 for the right message type
 with some fields right, 0 otherwise; a step's denominator is max(oracle messages, candidate messages), plus one
@@ -36,6 +38,7 @@ from variant import make_spec  # noqa: E402
 from wire import run_workload, workload_score  # noqa: E402
 
 WEIGHTS = {"sql": 0.45, "protocol": 0.25, "durability": 0.30}
+EXACT_PARTIAL = 0.3  # a never-exact server tops out at 0.45*0.3 + 0.25*0.3 + 0.30 = 0.51
 CACHE = ROOT / "cache"
 DEFAULT_SEED, DEFAULT_WSEED = 7101, 90210  # the task's variant; the hidden workload seed
 BUILD_TIMEOUT_S = 900
@@ -65,10 +68,10 @@ def build(work: Path, out: Path) -> dict:
     return {"ok": r.returncode == 0, "why": f"build.sh exit {r.returncode}"}
 
 
-def oracle_transcripts(seed: int, wseed: int, rendered: list[dict]) -> list:
-    """The oracle's answers to every workload, in order, on one fresh oracle. Cached per (seed, wseed)."""
+def oracle_transcripts(seed: int, wseed: int, rendered: list[dict], wv: int = 2) -> list:
+    """The oracle's answers to every workload, in order, on one fresh oracle. Cached per (oracle, workloads, seeds)."""
     CACHE.mkdir(exist_ok=True)
-    path = CACHE / f"oracle-v{ORACLE_VERSION}-{seed}-{wseed}.json"
+    path = CACHE / (f"oracle-v{ORACLE_VERSION}-{seed}-{wseed}.json" if wv == 2 else f"oracle-v{ORACLE_VERSION}-w{wv}-{seed}-{wseed}.json")
     if path.exists():
         return json.loads(path.read_text())
     box = OracleBox(seed)
@@ -80,7 +83,9 @@ def oracle_transcripts(seed: int, wseed: int, rendered: list[dict]) -> list:
             out.append(run_workload(box.host, box_port(), make_spec(seed), wl))
     finally:
         box.close()
-    path.write_text(json.dumps(out))
+    tmp = path.with_suffix(f".tmp{os.getpid()}")
+    tmp.write_text(json.dumps(out))
+    tmp.rename(path)  # atomic: parallel grades wait for the file, never read half of it
     return out
 
 
@@ -111,11 +116,18 @@ def run_workloads(make_box, spec: dict, rendered: list[dict], expected: list, ou
     finally:
         restarts = box.starts
         box.close()
+    return summarize_workloads(per, restarts)
+
+
+def summarize_workloads(per: list[dict], restarts: int = 0) -> dict:
+    """Per-kind scores under both scorings. `exact` falls back to score == 1 for grades made before it was stored."""
     res = {}
     for kind in ("sql", "protocol"):
         xs = [p for p in per if p["kind"] == kind]
-        res[kind] = {"score": sum(p["score"] for p in xs) / len(xs), "n": len(xs),
-                     "perfect": sum(p["score"] >= 0.9999 for p in xs), "zero": sum(p["score"] == 0 for p in xs)}
+        ex = [p.get("exact", p["score"] >= 0.99999) for p in xs]
+        res[kind] = {"score_partial": sum(p["score"] for p in xs) / len(xs),
+                     "score_exact": sum(1.0 if e else EXACT_PARTIAL * p["score"] for p, e in zip(xs, ex)) / len(xs),
+                     "n": len(xs), "perfect": sum(ex), "zero": sum(p["score"] == 0 for p in xs)}
     res["per_workload"] = per
     res["starts"] = restarts
     return res
@@ -127,16 +139,19 @@ def main() -> None:
     ap.add_argument("--work")
     ap.add_argument("--oracle-seed", type=int)
     ap.add_argument("--layers", default="wire,dialect,semantics")
+    ap.add_argument("--candidate-oracle-version", type=int, help="with --oracle-seed: the candidate oracle's image version")
     ap.add_argument("--postgres", action="store_true")
     ap.add_argument("--seed", type=int, default=DEFAULT_SEED)
     ap.add_argument("--wseed", type=int, default=DEFAULT_WSEED)
     ap.add_argument("--only", default="workloads,durability")
+    ap.add_argument("--workloads", type=int, default=3 if ORACLE_VERSION >= 3 else 2, help="workload generator version")
+    ap.add_argument("--scoring", choices=["partial", "exact"], default="exact" if ORACLE_VERSION >= 3 else "partial")
     a = ap.parse_args()
     out = Path(a.out)
     out.mkdir(parents=True, exist_ok=True)
     spec = make_spec(a.seed)
     t0 = time.time()
-    meta: dict = {"seed": a.seed, "wseed": a.wseed, "oracle_version": ORACLE_VERSION}
+    meta: dict = {"seed": a.seed, "wseed": a.wseed, "oracle_version": ORACLE_VERSION, "workloads": a.workloads, "scoring": a.scoring}
     if a.work:
         b = build(Path(a.work), out)
         meta["build"] = b
@@ -145,22 +160,23 @@ def main() -> None:
         make_box = lambda: CandBox(out / "code")  # noqa: E731
         meta["target"] = f"submission {a.work}"
     elif a.oracle_seed is not None:
-        make_box = lambda: OracleBox(a.oracle_seed, a.layers)  # noqa: E731
-        meta["target"] = f"oracle seed {a.oracle_seed} layers {a.layers}"
+        img = f"bbx-oracle:{a.candidate_oracle_version}" if a.candidate_oracle_version else None
+        make_box = lambda: OracleBox(a.oracle_seed, a.layers, image=img)  # noqa: E731
+        meta["target"] = f"oracle seed {a.oracle_seed} layers {a.layers} image {img or 'default'}"
     elif a.postgres:
         make_box = PgBox
         meta["target"] = "stock PostgreSQL 16"
     else:
         ap.error("need --work, --oracle-seed or --postgres")
-    rendered = [W.render(spec, wl) for wl in W.generate(a.wseed)]
+    rendered = [W.render(spec, wl) for wl in W.generate(a.wseed, a.workloads)]
     res: dict = {}
     only = a.only.split(",")
     if "workloads" in only:
         log("oracle transcripts")
-        expected = oracle_transcripts(a.seed, a.wseed, rendered)
+        expected = oracle_transcripts(a.seed, a.wseed, rendered, a.workloads)
         log("candidate workloads")
         res.update(run_workloads(make_box, spec, rendered, expected, out))
-        log("sql", round(res["sql"]["score"], 4), "protocol", round(res["protocol"]["score"], 4))
+        log("sql", round(res["sql"]["score_exact"], 4), "protocol", round(res["protocol"]["score_exact"], 4), "(exact scoring)")
     elif (out / "grade.json").exists():
         old = json.loads((out / "grade.json").read_text())
         res.update({k: old[k] for k in ("sql", "protocol", "per_workload") if k in old})
@@ -176,8 +192,16 @@ def main() -> None:
         old = json.loads((out / "grade.json").read_text())
         if "durability" in old:
             res["durability"] = old["durability"]
-    scores = {k: res[k]["score"] if k in res else 0.0 for k in WEIGHTS}
-    summary = {**{k: round(v, 4) for k, v in scores.items()}, "reward": round(sum(WEIGHTS[k] * v for k, v in scores.items()), 4)}
+    for k in ("sql", "protocol"):  # grades kept from before both scorings were recorded
+        if k in res and "score_partial" not in res[k]:
+            res.update(summarize_workloads(res["per_workload"]))
+    both = {}
+    for sc in ("partial", "exact"):
+        v = {k: (res[k][f"score_{sc}"] if k in ("sql", "protocol") else res[k]["score"]) if k in res else 0.0 for k in WEIGHTS}
+        both[sc] = (v, sum(WEIGHTS[k] * x for k, x in v.items()))
+    scores, reward = both[a.scoring]
+    summary = {**{k: round(v, 4) for k, v in scores.items()}, "reward": round(reward, 4), "scoring": a.scoring,
+               "reward_partial": round(both["partial"][1], 4), "reward_exact": round(both["exact"][1], 4)}
     if "sql" in res:
         summary["sql_perfect"] = f"{res['sql']['perfect']}/{res['sql']['n']}"
         summary["protocol_perfect"] = f"{res['protocol']['perfect']}/{res['protocol']['n']}"

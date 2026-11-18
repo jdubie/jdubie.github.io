@@ -55,7 +55,35 @@ COLS = {  # name -> (SQL type, value generator)
 
 # ------------------------------------------------------------------ sql sessions
 
-def sql_session(rng: random.Random) -> list[str]:
+def sem3_extras(rng: random.Random, t: str, extra: list[str]) -> list[str]:
+    """v3 only: statements whose answers depend on the semantic layer (NULL ordering, collation, division,
+    NULL handling, rounding, empty aggregates, LIKE, integer types). Drawn from their own random stream."""
+    nullable = [c for c in extra if c in ("qty", "big", "small", "score", "born", "price")] or ["qty"]
+    c = rng.choice(nullable)
+    a, b = rng.randint(5, 99), rng.randint(2, 9)
+    pool = [
+        f"SELECT id, {c} FROM {t} ORDER BY {c}, id",
+        f"SELECT id, {c} FROM {t} ORDER BY {c} DESC, id",
+        f"SELECT name FROM {t} ORDER BY name LIMIT {rng.randint(4, 9)}",
+        f"SELECT max(name), min(name) FROM {t}",
+        f"SELECT name FROM {t} WHERE name > '{rng.choice(['X', 'j', 'Qy', 'w'])}' ORDER BY id",
+        f"SELECT {a} / {b}, -{a} / {b}, {a} / -{b}, {a} % {b}",
+        f"SELECT id, qty / {b} FROM {t} ORDER BY id LIMIT 5",
+        f"SELECT name || NULL, NULL || 'x', 'a' || 'b' FROM {t} ORDER BY id LIMIT 2",
+        f"SELECT id FROM {t} WHERE qty = NULL ORDER BY id",
+        f"SELECT count(*) FROM {t} WHERE qty <> NULL",
+        f"SELECT id FROM {t} WHERE qty IN (NULL, {rng.randint(0, 99)}) ORDER BY id",
+        f"SELECT round({rng.randint(0, 9)}.5), round(-{rng.randint(0, 9)}.5), round({rng.randint(0, 99)}.{rng.randint(0, 9)}5, 2), round({rng.randint(1, 9)}.25, 1)",
+        f"SELECT sum(qty) FROM {t} WHERE id < 0",
+        f"SELECT sum(qty), count(qty) FROM {t} WHERE qty IS NULL",
+        f"SELECT id FROM {t} WHERE name LIKE '{rng.choice(['Q', 'J', 'W', 'X', 'Z', 'O', 'I'])}%' ORDER BY id",
+        f"SELECT {a} + {b}, qty + 1 FROM {t} ORDER BY id LIMIT 3",
+        f"SELECT 'b' < 'B', 'a10' < 'a9', 'Z' < 'a'",
+    ]
+    return rng.sample(pool, rng.randint(7, 10))
+
+
+def sql_session(rng: random.Random, v3_rng: random.Random | None = None) -> list[str]:
     t, u = tname(rng), tname(rng, "u")
     extra = rng.sample(list(COLS), rng.randint(3, 5))
     if "qty" not in extra:
@@ -85,6 +113,7 @@ def sql_session(rng: random.Random) -> list[str]:
             stmt += rng.choice([" RETURNING id", " RETURNING id, name", " RETURNING *"])
         out.append(stmt)
         k += n
+    n_setup = len(out)
     q = "qty"
     some = rng.sample(ids, 4)
     num = [c for c in extra if c in ("qty", "price", "score", "big", "small", "ratio")]
@@ -187,7 +216,11 @@ def sql_session(rng: random.Random) -> list[str]:
     for b in body:
         out.extend(b if isinstance(b, list) else [b])
     out += rng.sample(queries[:2], 1)
-    if rng.random() < 0.5:
+    drop = rng.random() < 0.5
+    if v3_rng is not None:
+        for stmt in sem3_extras(v3_rng, t, extra):
+            out.insert(v3_rng.randint(n_setup, len(out)), stmt)
+    if drop:
         out.append(f"DROP TABLE {t}")
     return out
 
@@ -353,12 +386,14 @@ PROTOCOL = [P_guest, P_admin, P_admin_badpw, P_unknown_user, P_unknown_db, P_no_
             P_simple_multi, P_txn_status, P_bad_type, P_bad_len, P_bad_body, P_cancel, P_terminate, P_paramstatus]
 
 
-def generate(wseed: int) -> list[dict]:
-    """Abstract workloads (PostgreSQL SQL); deterministic in `wseed`."""
+def generate(wseed: int, version: int = 2) -> list[dict]:
+    """Abstract workloads (PostgreSQL SQL); deterministic in `wseed`. Version 3 adds semantic-layer statements to
+    each SQL session from a separate random stream; version-2 workloads are unchanged byte for byte."""
     wls = []
     for i in range(N_SQL):
         rng = random.Random(f"bbx-sql-{wseed}-{i}")
-        steps = S_login(rng) + [("query", s) for s in sql_session(rng)] + [("terminate",)]
+        v3 = random.Random(f"bbx-sql3-{wseed}-{i}") if version >= 3 else None
+        steps = S_login(rng) + [("query", s) for s in sql_session(rng, v3)] + [("terminate",)]
         wls.append({"id": f"sql{i:03d}", "kind": "sql", "abstract": steps, "gate": 1, "score_from": 2})
     for j, tpl in enumerate(PROTOCOL):
         for k in range(N_PROTOCOL_PER_TEMPLATE):

@@ -152,6 +152,55 @@ vendor's API; 3 runs at a time.</p>
 <ul>{probes}</ul>"""
 
 
+V3_CALIB = [("oracle", "The oracle itself (v3)"), ("postgres", "Stock PostgreSQL 16"),
+            ("abl-wire-dialect", "Wire + dialect decoded, PostgreSQL semantics from memory"),
+            ("v2oracle", "A perfect v2 server (v2 semantics exactly right, no v3 semantics)"),
+            ("abl-wire-semantics", "Wire + semantics, dialect not decoded"), ("abl-wire", "Wire only"),
+            ("cheat", "Record-and-replay cheat"), ("cross-b-on-a", "Perfect server for seed B, graded on A"),
+            ("cross-a-on-b", "Perfect server for seed A, graded on B")]
+
+
+def v3_section(notes: dict) -> str:
+    cal = load(ROOT / "results/v3/calib.json") or {}
+    rows = ""
+    for k, lbl in V3_CALIB:
+        s = cal.get(k)
+        if not s:
+            continue
+        rows += (f"<tr><td>{E(lbl)}</td><td class=n><b>{f3(s.get('reward_exact'))}</b></td><td class=n>{f3(s.get('reward_partial'))}</td>"
+                 f"<td class=n>{f3(s.get('sql_exact'))}</td><td class=n>{f3(s.get('protocol_exact'))}</td><td class=n>{f3(s.get('durability'))}</td>"
+                 f"<td class=n>{s.get('sql_perfect')} · {s.get('protocol_perfect')} · {s.get('durability_runs')}</td></tr>")
+    resc = load(ROOT / "results/v3/rescore-v2.json") or []
+    v2v3 = load(ROOT / "results/v3/v2-on-v3.json") or {}
+    r2 = ""
+    for d in resc:
+        o = v2v3.get(d["label"], {})
+        r2 += (f"<tr><td>{E(d['name'])}</td><td class=n>{d['reward_partial']:.3f}</td><td class=n><b>{d['reward_exact']:.3f}</b></td>"
+               f"<td class=n>{d['sql_partial']:.3f} → {d['sql_exact']:.3f}</td><td class=n>{d['protocol_partial']:.3f} → {d['protocol_exact']:.3f}</td>"
+               f"<td class=n>{d['exact_sessions']} · {d['exact_protocol']}</td>"
+               f"<td class=n>{f3(o.get('w2', {}).get('reward_exact'))} <span class=sub>({f3(o.get('w2', {}).get('reward_partial'))})</span></td>"
+               f"<td class=n>{f3(o.get('w3', {}).get('reward_exact'))} <span class=sub>({f3(o.get('w3', {}).get('reward_partial'))})</span></td></tr>")
+    li = lambda k: "".join(f"<li>{x}</li>" for x in notes.get(k, []))  # noqa: E731
+    return f"""{notes.get('v3_intro', '')}
+<h3>Semantic changes adopted</h3><ul>{li('v3_adopted')}</ul>
+<h3>Ideas rejected (the proxy could not apply them exactly, or no probe could see them)</h3><ul>{li('v3_rejected')}</ul>
+<h3>Scoring that rewards exact sessions</h3>{notes.get('v3_scoring', '')}
+<h3>Calibration on fresh private v3 seeds</h3>
+<p>Reward under the v3 scoring, with the old per-message ("partial") reward beside it. Last column: SQL sessions exact (of 60) ·
+protocol workloads exact (of 50) · crash runs passed (of 14).</p>
+<div class=wrap><table><tr><th>server graded</th><th>reward (v3 scoring)</th><th>reward (partial)</th><th>sql</th><th>protocol</th><th>durability</th>
+<th>exact / exact / passed</th></tr>{rows}</table></div>
+{notes.get('v3_calib', '')}
+<h3>The v2 sweep, rescored</h3>
+<p>The v2 servers' existing grades (v2 oracle, their v2 seeds and workloads) rescored under the new formula without rerunning
+anything; then the same final servers graded against a v3 oracle on their own v2 seed, so the wire format and dialect are the
+ones they built for and only the semantic layer differs: once with the v2 workloads they were graded on, and once with the v3
+workloads, which add the statements that exercise the semantics.</p>
+<div class=wrap><table><tr><th>server (v2 sweep)</th><th>v2 reward<div class=sub>partial, as published</div></th><th>v2 reward<div class=sub>new scoring</div></th>
+<th>sql</th><th>protocol</th><th>exact sessions · protocol</th><th>vs v3 oracle, v2 workloads<div class=sub>new scoring (partial)</div></th><th>vs v3 oracle, v3 workloads<div class=sub>new scoring (partial)</div></th></tr>{r2}</table></div>
+{notes.get('v3_rescore', '')}"""
+
+
 def main() -> None:
     notes = load(SITE / "notes.json") or {}
     pts = timeline()
@@ -207,7 +256,10 @@ Columns are oracle v2 (the current benchmark); the last column is the same serve
 <th>durability<div class=sub>×0.30</div></th><th>exact / exact / passed</th><th>reward on oracle v1</th></tr>{calib_rows()}</table></div>
 {notes.get('calibration', '')}
 
-<h2>Sweep: six models on the same private variant</h2>
+<h2>v3: a heavier semantic layer and exact-session scoring (built and calibrated, no model runs)</h2>
+{v3_section(notes)}
+
+<h2>Sweep: six models on the same private variant (v2)</h2>
 {sweep_section(notes)}
 
 <h2>Opus 5.5, 20 minutes: runs 1 and 2</h2>

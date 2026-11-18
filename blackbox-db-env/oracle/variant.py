@@ -646,6 +646,11 @@ class Dialect:
         self.old = set(self.kw_p2v) | set(self.type_p2v)  # old spellings that become plain identifiers
         self.old_fn = set(self.fn_p2v)
         self.upper_kw = {k.upper(): v.upper() for k, v in self.kw_p2v.items()}
+        self.blocked: set[str] = set()  # oracle v3: catalog names that do not exist in the variant
+
+    def block(self, names: set[str]) -> None:
+        self.blocked |= set(names)
+        self.old |= set(names)
 
     # variant -> PostgreSQL, with a map of replaced spans for error positions
     def to_pg(self, sql: str) -> tuple[str, list]:
@@ -667,6 +672,8 @@ class Dialect:
                     new = _case(src, self.fn_v2p[lw])
                 elif lw in self.old or (lw in self.old_fn and nxt == "("):
                     new = src + self.MANGLE
+            elif kind == "qident" and src[1:-1] in self.blocked:
+                new = '"' + src[1:-1] + self.MANGLE + '"'
             elif kind == "param":
                 if src[0] == self.prefix:
                     new = "$" + src[1:]

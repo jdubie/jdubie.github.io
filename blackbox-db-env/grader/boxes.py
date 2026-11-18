@@ -120,13 +120,13 @@ class OracleBox(Box):
     kind = "oracle"
     start_timeout = 90.0
 
-    def __init__(self, seed: int, layers: str = "wire,dialect,semantics", tag: str | None = None):
-        self.seed, self.layers = seed, layers
+    def __init__(self, seed: int, layers: str = "wire,dialect,semantics", tag: str | None = None, image: str | None = None):
+        self.seed, self.layers, self.image = seed, layers, image or ORACLE
         super().__init__(tag)
 
     def run_args(self) -> list[str]:
         return ["-e", f"BBX_SEED={self.seed}", "-e", f"BBX_LAYERS={self.layers}", "--cpus", "4", "--memory", MEM,
-                "--shm-size", "512m", "-v", f"{self.vol}:/var/lib/postgresql/data", ORACLE]
+                "--shm-size", "512m", "-v", f"{self.vol}:/var/lib/postgresql/data", self.image]
 
 
 class PgBox(Box):
