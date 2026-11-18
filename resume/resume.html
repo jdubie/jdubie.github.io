@@ -45,6 +45,7 @@ li::marker{color:var(--muted)}
       <li>Implemented <a href="https://jdubie.github.io/posts/realtime-action-chunking/">real-time chunking</a> for π0/π0.5 in JAX (openpi): first inference-time guided inpainting, then <a href="https://arxiv.org/abs/2512.05964">training-time</a> conditioning on committed action prefixes, cutting p99 jerk 4–5x and taking a jam-prone task to 13/13 at ~99% autonomy.</li>
       <li>Trained a transformer inverse-dynamics model on MuJoCo-generated data (PyTorch) to retarget pose demos onto compliant YAM arms, reaching 4–7 mm validation error; replaced it with offline iterative learning control, which <a href="https://jdubie.github.io/posts/pi0-zero-robot-data/">fine-tuned π0.5 with zero robot-collected samples</a>.</li>
       <li><a href="https://jdubie.github.io/posts/dsrl-libero/">Reproduced DSRL</a> (RL that steers a frozen π0 by choosing its diffusion noise) in JAX/jaxrl2 on two sim tasks and a real arm: a MuJoCo cube pick went from 50% to 95% and a LIBERO task from 3/10 to 10/10 in 75 minutes; online RL on a real YAM arm, every trial labelled by hand, raised a candy-bar toss from 16% to 41% (rolling 100) over 362 trials in 90 minutes.</li>
+      <li>Built a <a href="https://jdubie.github.io/posts/led-tracking-accuracy/">Meta Quest 3S UMI rig</a> ($8k → $500 BOM, 20% lower tracking error) and remote teleop at 85 ms glass-to-glass latency.</li>
     </ul>
 
     <div class="role"><b>Independent Exploration</b> — Robotics · 2023–2024</div>
