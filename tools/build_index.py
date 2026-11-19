@@ -13,7 +13,7 @@ LABELS = [  # (slug used in ?tag=, display name), in display order
     ("agent-evals", "Agent evals"),
     ("independent-research", "Independent research"),
 ]
-INDEPENDENT = ['block-stacking-benchmark', 'yam-track-env', 'terrain-bench', 'cad-finger-benchmark', 'test-speedup-env', 'find-duplicates', 'trolley-bench', 'gemma-letters', 'gemma-puzzles', 'gemma-self-correction', 'gemma-wordle', 'remote-toy-cleanup', 'pgwire-db', 'blackbox-db']
+INDEPENDENT = ['block-stacking-benchmark', 'yam-track-env', 'terrain-bench', 'cad-finger-benchmark', 'test-speedup-env', 'find-duplicates', 'trolley-bench', 'gemma-letters', 'gemma-puzzles', 'gemma-self-correction', 'gemma-wordle', 'remote-toy-cleanup', 'pgwire-db', 'blackbox-db', 'sensor-fusion-sim']
 POST_LABELS = {
     "led-tracking-accuracy": ["robot-data-collection"],
     "pi0-zero-robot-data": ["robot-data-collection", "robot-policy-training"],
@@ -30,13 +30,14 @@ POST_LABELS = {
     "trolley-bench": ["agent-evals"],
     "pgwire-db": ["agent-evals"], "blackbox-db": ["agent-evals"],
     "remote-teleop": ["robot-data-collection"], "tracking-error": ["robot-data-collection", "robot-deployment"], "fingers-and-jigs": ["robot-deployment"],
+    "sensor-fusion-sim": [],
 }
 DATES = {"trolley-bench": "2026-11-13", "pi-api-beta": "2026-10-13", "real2sim-case-packing-cell": "2026-10-13",
          "block-stacking-benchmark": "2026-11-10", "cad-finger-benchmark": "2026-10-13", "dsrl-libero": "2025-10-10",
          "eight-robots": "2026-11-11", "find-duplicates": "2026-11-15", "led-tracking-accuracy": "2026-01-23",
          "pi0-zero-robot-data": "2025-12-12", "realtime-action-chunking": "2026-06-28", "remote-toy-cleanup": "2024-03-19",
          "terrain-bench": "2026-11-13", "test-speedup-env": "2026-10-12", "yam-track-env": "2026-11-14",
-         "gemma-letters": "2026-11-15", "gemma-puzzles": "2026-11-15", "gemma-self-correction": "2026-11-16", "gemma-wordle": "2026-11-16", "pgwire-db": "2026-11-16", "blackbox-db": "2026-11-17", "remote-teleop": "2026-11-18", "tracking-error": "2026-11-18", "fingers-and-jigs": "2026-11-18"}
+         "gemma-letters": "2026-11-15", "gemma-puzzles": "2026-11-15", "gemma-self-correction": "2026-11-16", "gemma-wordle": "2026-11-16", "pgwire-db": "2026-11-16", "blackbox-db": "2026-11-17", "remote-teleop": "2026-11-18", "tracking-error": "2026-11-18", "fingers-and-jigs": "2026-11-18", "sensor-fusion-sim": "2026-11-19"}
 FEATURED_ORDER = ["robotics", "evals", "post-training"]
 # Home page and track pages are sorted best -> worst by this list (user's ranking, 2026-11-16).
 RANKING = ["eight-robots", "gemma-wordle", "block-stacking-benchmark", "gemma-puzzles", "pgwire-db", "blackbox-db",
@@ -44,7 +45,7 @@ RANKING = ["eight-robots", "gemma-wordle", "block-stacking-benchmark", "gemma-pu
            "led-tracking-accuracy", "yam-track-env", "gemma-self-correction",
            "pi-api-beta", "cad-finger-benchmark", "realtime-action-chunking", "dsrl-libero",
            "test-speedup-env", "remote-toy-cleanup", "find-duplicates", "real2sim-case-packing-cell",
-           "trolley-bench", "remote-teleop", "tracking-error", "fingers-and-jigs"]
+           "trolley-bench", "remote-teleop", "tracking-error", "fingers-and-jigs", "sensor-fusion-sim"]
 
 def meta(slug):
     s = open(f"posts/{slug}/index.html").read()
