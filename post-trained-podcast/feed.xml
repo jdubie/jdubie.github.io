@@ -179,5 +179,17 @@
     <itunes:duration>2136</itunes:duration>
     <itunes:explicit>false</itunes:explicit>
   </item>
+  <item>
+    <title>20. RL Infrastructure at Scale</title>
+    <itunes:title>RL Infrastructure at Scale</itunes:title>
+    <itunes:episode>20</itunes:episode>
+    <itunes:episodeType>full</itunes:episodeType>
+    <description>Generation dominates RL cost: decode is autoregressive and memory-bandwidth bound; KV cache size (about 128 KB per token for a 32-layer, 8-KV-head, 128-dim bf16 model) caps the decode batch. PagedAttention, prefix caching for GRPO groups and multi-turn agents, and continuous batching are core RL infrastructure. Colocated vs disaggregated; synchronous vs asynchronous. Async trades staleness for wall-clock speed; bound staleness and correct with importance ratios. Weight sync: reshard, bucketed NCCL broadcast, re-fuse; verify every sync with a probe-sequence log-prob check.</description>
+    <enclosure url="https://jdubie.github.io/post-trained-podcast/ep20.m4a" length="9038348" type="audio/x-m4a"/>
+    <guid isPermaLink="false">post-trained-v3-ep20</guid>
+    <pubDate>Wed, 25 Nov 2026 12:20:00 +0000</pubDate>
+    <itunes:duration>2165</itunes:duration>
+    <itunes:explicit>false</itunes:explicit>
+  </item>
 </channel>
 </rss>
