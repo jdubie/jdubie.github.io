@@ -77,10 +77,10 @@
     <itunes:episode>6</itunes:episode>
     <itunes:episodeType>full</itunes:episodeType>
     <description>Actor-critic: a learned critic V estimates advantages. TD learning bootstraps with delta equal to r plus gamma V of next state minus V of state. Monte Carlo is unbiased but high variance, TD is low variance but biased, n-step and lambda-returns interpolate. GAE: advantage equals the sum of gamma lambda to the l times delta at t plus l. Lambda 0 is one-step TD, lambda 1 is Monte Carlo return minus V. Compute with one backward recursion, no bootstrapping past terminal states. Critic target equals advantage plus V. LLM RLHF PPO: per-token reward is minus beta times the log ratio to the reference, plus the reward model score at the last token, typically gamma 1. Initialize the critic from the RM, warm it up, track explained variance. Importance sampling reweights by p over q. Trajectory-level ratios explode over long sequences, so use per-token ratios and stay close to the behavior policy.</description>
-    <enclosure url="https://jdubie.github.io/post-trained-podcast/ep06.m4a" length="8666884" type="audio/x-m4a"/>
-    <guid isPermaLink="false">post-trained-v2-ep06</guid>
+    <enclosure url="https://jdubie.github.io/post-trained-podcast/ep06.m4a" length="8651173" type="audio/x-m4a"/>
+    <guid isPermaLink="false">post-trained-v3-ep06</guid>
     <pubDate>Wed, 25 Nov 2026 12:06:00 +0000</pubDate>
-    <itunes:duration>2078</itunes:duration>
+    <itunes:duration>2074</itunes:duration>
     <itunes:explicit>false</itunes:explicit>
   </item>
   <item>
@@ -89,10 +89,10 @@
     <itunes:episode>7</itunes:episode>
     <itunes:episodeType>full</itunes:episodeType>
     <description>Good behavior is easier to recognize than to specify; pairwise comparisons cancel per-labeler offsets and beat absolute ratings for fuzzy quality. Bradley Terry: probability A preferred equals sigmoid of r(A) minus r(B). Loss is negative log sigmoid of chosen minus rejected; gradient weight is one minus sigmoid of the gap, so noisy labels get the biggest gradients. Rewards are defined only up to a constant: normalize. Christiano 2017: three asynchronous loops, ensembles, a random-response noise floor, online reward model training; offline reward models get exploited, and humans themselves can be fooled. KL-regularized objective: maximize reward minus beta times KL to a reference. Optimal policy is the reference reweighted by exp of reward over beta, the seed of DPO. Adaptive KL controllers target a KL value.</description>
-    <enclosure url="https://jdubie.github.io/post-trained-podcast/ep07.m4a" length="8402737" type="audio/x-m4a"/>
-    <guid isPermaLink="false">post-trained-v2-ep07</guid>
+    <enclosure url="https://jdubie.github.io/post-trained-podcast/ep07.m4a" length="8415323" type="audio/x-m4a"/>
+    <guid isPermaLink="false">post-trained-v3-ep07</guid>
     <pubDate>Wed, 25 Nov 2026 12:07:00 +0000</pubDate>
-    <itunes:duration>2014</itunes:duration>
+    <itunes:duration>2018</itunes:duration>
     <itunes:explicit>false</itunes:explicit>
   </item>
   <item>
@@ -101,10 +101,10 @@
     <itunes:episode>8</itunes:episode>
     <itunes:episodeType>full</itunes:episodeType>
     <description>Recipe: SFT on demonstrations, reward model on ranked comparisons, PPO with per-token KL to the SFT model, iterated. About 13k SFT prompts, 33k RM prompts, 31k PPO prompts; about 40 screened contractors. Details: split by user ID; SFT overfits validation loss after about 1 epoch but more epochs improve sample quality, so select checkpoints by RM score; 6B RM; rankings of K from 4 to 9 give K choose 2 pairs, all batched as one element, one epoch; RM bias set so demonstrations average zero; value initialized from RM. Alignment tax: regressions on SQuAD, DROP, HellaSwag, WMT French to English. PPO-ptx mixes pretraining log-likelihood into the loss and works better than raising the KL coefficient. B InstructGPT preferred over 175B GPT-3; 175B InstructGPT preferred over GPT-3 about 85 percent of the time. Alignment and capability are separate axes, and RLHF compute is tiny next to pretraining.</description>
-    <enclosure url="https://jdubie.github.io/post-trained-podcast/ep08.m4a" length="9061878" type="audio/x-m4a"/>
-    <guid isPermaLink="false">post-trained-v2-ep08</guid>
+    <enclosure url="https://jdubie.github.io/post-trained-podcast/ep08.m4a" length="9088477" type="audio/x-m4a"/>
+    <guid isPermaLink="false">post-trained-v3-ep08</guid>
     <pubDate>Wed, 25 Nov 2026 12:08:00 +0000</pubDate>
-    <itunes:duration>2174</itunes:duration>
+    <itunes:duration>2179</itunes:duration>
     <itunes:explicit>false</itunes:explicit>
   </item>
   <item>
