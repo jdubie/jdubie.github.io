@@ -156,6 +156,42 @@
     <itunes:explicit>false</itunes:explicit>
   </item>
   <item>
+    <title>13. Critic-Free RL: REINFORCE Returns</title>
+    <itunes:title>Critic-Free RL: REINFORCE Returns</itunes:title>
+    <itunes:episode>13</itunes:episode>
+    <itunes:episodeType>full</itunes:episodeType>
+    <description>With one terminal reward and a strong SFT start, a learned critic often costs more than it helps. Sampling k completions per prompt gives a free, unbiased, prompt-specific baseline (RLOO); the leave-one-out advantage equals k over k minus one times reward minus group mean. GRPO: advantage equals reward minus group mean, divided by group std; PPO-style clipped token objective, per-sequence length averaging, k3 KL in the loss. With one optimizer step per rollout batch the ratio is 1 and clipping is inactive: it is REINFORCE. Dr. GRPO: per-response length normalization makes long wrong answers cheap (drives length growth of incorrect responses); std division upweights very easy and very hard questions. Fix: drop both, divide by a constant. DAPO: clip-higher (eps low 0.2, eps high 0.28), dynamic sampling (drop all-correct and all-wrong groups), token-level loss over the global batch, overlong filtering plus soft overlong penalty, no KL.</description>
+    <enclosure url="https://jdubie.github.io/post-trained-podcast/ep13.m4a" length="9079119" type="audio/x-m4a"/>
+    <guid isPermaLink="false">post-trained-v3-ep13</guid>
+    <pubDate>Wed, 25 Nov 2026 12:13:00 +0000</pubDate>
+    <itunes:duration>2175</itunes:duration>
+    <itunes:explicit>false</itunes:explicit>
+  </item>
+  <item>
+    <title>15. Spending Compute at Test Time</title>
+    <itunes:title>Spending Compute at Test Time</itunes:title>
+    <itunes:episode>15</itunes:episode>
+    <itunes:episodeType>full</itunes:episodeType>
+    <description>Test-time compute is a second scaling axis with three families: parallel sampling plus aggregation, sequential reasoning and revision, and tree search. pass at k measures coverage with an oracle checker; maj at k and best-of-N measure what you can actually select. The difference is the selection gap. Majority voting works when the correct answer is the mode, even below half the mass; invest in answer normalization. Verification becomes the bottleneck: outcome verifiers, process reward models, Monte Carlo PRMs that act as value functions, and weighted majority voting.</description>
+    <enclosure url="https://jdubie.github.io/post-trained-podcast/ep15.m4a" length="8475336" type="audio/x-m4a"/>
+    <guid isPermaLink="false">post-trained-v3-ep15</guid>
+    <pubDate>Wed, 25 Nov 2026 12:15:00 +0000</pubDate>
+    <itunes:duration>2030</itunes:duration>
+    <itunes:explicit>false</itunes:explicit>
+  </item>
+  <item>
+    <title>16. Code Models: From Codex to SWE-bench</title>
+    <itunes:title>Code Models: From Codex to SWE-bench</itunes:title>
+    <itunes:episode>16</itunes:episode>
+    <itunes:episodeType>full</itunes:episodeType>
+    <description>Codex established functional correctness: judge code by executing hidden tests in a sandbox, not by BLEU. HumanEval has 164 hand-written problems. Unbiased pass at k: draw n samples with n at least k, count c correct; pass at k equals one minus n minus c choose k divided by n choose k, averaged over problems, computed as a stable product. The plug-in estimate is biased low by Jensen. Optimal temperature rises with k; fix decoding settings, report n, and use paired comparisons with confidence intervals on small benchmarks. AlphaCode: massive diverse sampling, filter by example tests, cluster by behavior on generated inputs, submit from the largest clusters.</description>
+    <enclosure url="https://jdubie.github.io/post-trained-podcast/ep16.m4a" length="8928326" type="audio/x-m4a"/>
+    <guid isPermaLink="false">post-trained-v3-ep16</guid>
+    <pubDate>Wed, 25 Nov 2026 12:16:00 +0000</pubDate>
+    <itunes:duration>2136</itunes:duration>
+    <itunes:explicit>false</itunes:explicit>
+  </item>
+  <item>
     <title>18. Agents and Multi-Turn RL</title>
     <itunes:title>Agents and Multi-Turn RL</itunes:title>
     <itunes:episode>18</itunes:episode>
