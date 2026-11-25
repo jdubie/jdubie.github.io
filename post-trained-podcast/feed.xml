@@ -191,5 +191,17 @@
     <itunes:duration>2165</itunes:duration>
     <itunes:explicit>false</itunes:explicit>
   </item>
+  <item>
+    <title>24. Evals, Diagnostics, and Putting It All Together</title>
+    <itunes:title>Evals, Diagnostics, and Putting It All Together</itunes:title>
+    <itunes:episode>24</itunes:episode>
+    <itunes:episodeType>full</itunes:episodeType>
+    <description>An eval is a statistical estimate: SE = sqrt(p(1-p)/n); 500 items at 50% gives about +/-4.4 points 95% CI; HumanEval (164) about 3.9-point SE. MDE for a paired comparison (alpha 0.05, power 0.8) is about 2.8 x SE of the difference; multiple comparisons across many evals; checkpoint-selection bias (select on one split, report on another). Validate programmatic graders too: mutation-style known-wrong solutions, flaky-test reruns, regrading to measure environment variance. Use paired per-question differences, clustered SEs, multiple samples per item, multiple training seeds; compute minimum detectable effect first.</description>
+    <enclosure url="https://jdubie.github.io/post-trained-podcast/ep24.m4a" length="8997904" type="audio/x-m4a"/>
+    <guid isPermaLink="false">post-trained-v3-ep24</guid>
+    <pubDate>Wed, 25 Nov 2026 12:24:00 +0000</pubDate>
+    <itunes:duration>2159</itunes:duration>
+    <itunes:explicit>false</itunes:explicit>
+  </item>
 </channel>
 </rss>
