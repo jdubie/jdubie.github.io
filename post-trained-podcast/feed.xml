@@ -168,6 +168,18 @@
     <itunes:explicit>false</itunes:explicit>
   </item>
   <item>
+    <title>14. The Reasoning Revolution</title>
+    <itunes:title>The Reasoning Revolution</itunes:title>
+    <itunes:episode>14</itunes:episode>
+    <itunes:episodeType>full</itunes:episodeType>
+    <description>Chain-of-thought works because each token gets a fixed amount of computation; writing intermediate tokens turns depth-limited computation into longer serial computation. The capability was latent in pretraining. Self-consistency (majority vote over sampled chains) was the first clear test-time-compute win. Distinguish maj at k from pass at k. STaR and rejection-sampling fine-tuning are positive-only policy gradient (expert iteration); rationalization adds signal on hard problems. o1 (publicly): large-scale RL on chain of thought; accuracy scales with train-time RL compute and test-time thinking compute.</description>
+    <enclosure url="https://jdubie.github.io/post-trained-podcast/ep14.m4a" length="9145625" type="audio/x-m4a"/>
+    <guid isPermaLink="false">post-trained-v3-ep14</guid>
+    <pubDate>Wed, 25 Nov 2026 12:14:00 +0000</pubDate>
+    <itunes:duration>2191</itunes:duration>
+    <itunes:explicit>false</itunes:explicit>
+  </item>
+  <item>
     <title>15. Spending Compute at Test Time</title>
     <itunes:title>Spending Compute at Test Time</itunes:title>
     <itunes:episode>15</itunes:episode>
