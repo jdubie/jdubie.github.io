@@ -65,10 +65,10 @@
     <itunes:episode>5</itunes:episode>
     <itunes:episodeType>full</itunes:episodeType>
     <description>An MDP is states, actions, transitions, rewards, discount. An LLM is a policy in a token-level MDP with deterministic transitions and usually one terminal reward, with gamma set to 1. The whole-response view is a contextual bandit. V is the value of a state, Q the value of a state-action pair, and the advantage A equals Q minus V. Bellman equations write values recursively. Dynamic programming solves them when the model is known, which never applies to LLMs. Exploration: you only learn from what you sample. For LLMs that means policy entropy and multiple samples per prompt. Prompts that always pass or always fail give no signal once you use a baseline. Policy gradient theorem via the log-derivative trick: the gradient of expected reward equals the expected sum of grad log pi times return. Dynamics drop out, so rewards can be black boxes like unit tests and graders. Discrete tokens and non-differentiable rewards rule out reparameterization.</description>
-    <enclosure url="https://jdubie.github.io/post-trained-podcast/ep05.m4a" length="8331088" type="audio/x-m4a"/>
-    <guid isPermaLink="false">post-trained-v2-ep05</guid>
+    <enclosure url="https://jdubie.github.io/post-trained-podcast/ep05.m4a" length="8333392" type="audio/x-m4a"/>
+    <guid isPermaLink="false">post-trained-v3-ep05</guid>
     <pubDate>Wed, 25 Nov 2026 12:05:00 +0000</pubDate>
-    <itunes:duration>1999</itunes:duration>
+    <itunes:duration>2000</itunes:duration>
     <itunes:explicit>false</itunes:explicit>
   </item>
   <item>
@@ -165,6 +165,18 @@
     <guid isPermaLink="false">post-trained-v3-ep18</guid>
     <pubDate>Wed, 25 Nov 2026 12:18:00 +0000</pubDate>
     <itunes:duration>2147</itunes:duration>
+    <itunes:explicit>false</itunes:explicit>
+  </item>
+  <item>
+    <title>19. Reward Hacking and Specification Gaming</title>
+    <itunes:title>Reward Hacking and Specification Gaming</itunes:title>
+    <itunes:episode>19</itunes:episode>
+    <itunes:episodeType>full</itunes:episodeType>
+    <description>Assume every reward is hackable (Skalse et al.); more capable optimizers find more hacks (Pan et al.). Build a system that detects and closes holes. Coding-hack taxonomy: attack the tests, special-case the tests, attack the runner (early exit, skip, conftest patching), attack the comparison (always-equal objects, mocks), attack the environment (reference solutions, git history, network), attack the measurement (timers, caches). Layered grader defenses: hidden and randomized tests, protected files restored at grading, grading in a fresh container from the diff only, structured per-test results instead of exit codes, skipped counts as failed, hardened sandbox. Learned rewards and judges get hacked via length, formatting, flattery, persuasion; sycophancy is the product-facing form. Every new reward signal needs an eval for its likely failure mode.</description>
+    <enclosure url="https://jdubie.github.io/post-trained-podcast/ep19.m4a" length="8906900" type="audio/x-m4a"/>
+    <guid isPermaLink="false">post-trained-v3-ep19</guid>
+    <pubDate>Wed, 25 Nov 2026 12:19:00 +0000</pubDate>
+    <itunes:duration>2136</itunes:duration>
     <itunes:explicit>false</itunes:explicit>
   </item>
 </channel>
