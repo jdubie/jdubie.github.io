@@ -155,5 +155,17 @@
     <itunes:duration>2040</itunes:duration>
     <itunes:explicit>false</itunes:explicit>
   </item>
+  <item>
+    <title>18. Agents and Multi-Turn RL</title>
+    <itunes:title>Agents and Multi-Turn RL</itunes:title>
+    <itunes:episode>18</itunes:episode>
+    <itunes:episodeType>full</itunes:episodeType>
+    <description>An agent is an LM policy in a loop with a real, partially observable environment; the scaffold (agent-computer interface) is part of the policy, so train on what you ship. Loss and KL go only over tokens the policy sampled; mask prompts and tool observations, and unit-test the mask. Token-in, token-out: never re-tokenize history; store exact token IDs, the mask, and per-token sampler log-probs. Default credit assignment: trajectory-level outcome reward with a group baseline (GRPO/RLOO style); filter tasks to the learnable pass-rate band. Critics, turn-level methods (ArCHer), and shaping each have costs; only potential-based shaping preserves the optimal policy.</description>
+    <enclosure url="https://jdubie.github.io/post-trained-podcast/ep18.m4a" length="8961198" type="audio/x-m4a"/>
+    <guid isPermaLink="false">post-trained-v3-ep18</guid>
+    <pubDate>Wed, 25 Nov 2026 12:18:00 +0000</pubDate>
+    <itunes:duration>2147</itunes:duration>
+    <itunes:explicit>false</itunes:explicit>
+  </item>
 </channel>
 </rss>
