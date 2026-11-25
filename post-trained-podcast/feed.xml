@@ -113,8 +113,8 @@
     <itunes:episode>9</itunes:episode>
     <itunes:episodeType>full</itunes:episodeType>
     <description>The chat template is part of the model: special tokens with trainable embeddings, one render function for train/eval/serve, token-level round-trip tests. Mask prompt, system and tool-output tokens; train on every assistant turn including end-of-turn; choose token vs sequence loss averaging deliberately and normalize correctly across gradient accumulation. Pack with block-diagonal attention (varlen kernels) and reset position IDs per example. Select checkpoints on generation-based evals, not validation loss (InstructGPT, LIMA).</description>
-    <enclosure url="https://jdubie.github.io/post-trained-podcast/ep09.m4a" length="9050579" type="audio/x-m4a"/>
-    <guid isPermaLink="false">post-trained-v2-ep09</guid>
+    <enclosure url="https://jdubie.github.io/post-trained-podcast/ep09.m4a" length="9053721" type="audio/x-m4a"/>
+    <guid isPermaLink="false">post-trained-v3-ep09</guid>
     <pubDate>Wed, 25 Nov 2026 12:09:00 +0000</pubDate>
     <itunes:duration>2168</itunes:duration>
     <itunes:explicit>false</itunes:explicit>
@@ -125,10 +125,10 @@
     <itunes:episode>10</itunes:episode>
     <itunes:episodeType>full</itunes:episodeType>
     <description>RM = LM backbone + scalar head read at the true final token; init from SFT; ~1 epoch; group all K-choose-2 pairs per prompt in one batch element. BT loss: -log sigmoid(r_chosen - r_rejected); only differences matter, so center/normalize rewards. Accuracy ceiling ~ inter-annotator agreement. Margins (Llama 2), multi-attribute heads (HelpSteer), separate helpful/safety RMs; normalize, gate, and log each reward component. Overoptimization (Gao et al.): gold reward vs d = sqrt(KL) is d(alpha - beta d) for best-of-n and d(alpha - beta log d) for RL; bigger RMs delay the peak; best-of-n KL &lt;= log n - (n-1)/n (an upper bound, Beirami et al.; ~1.8 nats at n=16).</description>
-    <enclosure url="https://jdubie.github.io/post-trained-podcast/ep10.m4a" length="8789912" type="audio/x-m4a"/>
-    <guid isPermaLink="false">post-trained-v2-ep10</guid>
+    <enclosure url="https://jdubie.github.io/post-trained-podcast/ep10.m4a" length="8801405" type="audio/x-m4a"/>
+    <guid isPermaLink="false">post-trained-v3-ep10</guid>
     <pubDate>Wed, 25 Nov 2026 12:10:00 +0000</pubDate>
-    <itunes:duration>2105</itunes:duration>
+    <itunes:duration>2109</itunes:duration>
     <itunes:explicit>false</itunes:explicit>
   </item>
   <item>
@@ -137,10 +137,10 @@
     <itunes:episode>11</itunes:episode>
     <itunes:episodeType>full</itunes:episodeType>
     <description>KL-regularized RLHF has a closed-form optimum: pi* is proportional to pi_ref times exp(r over beta); invert it so reward is beta times log(pi over pi_ref) plus a prompt-only term. Plug into Bradley-Terry: the partition function cancels and DPO is a logistic loss on beta times the difference of chosen and rejected log-ratios. No reward model, no sampling; reference log-probs can be precomputed. The DPO gradient upweights pairs the implicit reward ranks wrongly; beta is still a KL strength (smaller beta lets the policy move further). Failure modes: chosen log-prob falls (likelihood displacement), length exploitation, margins blow up on deterministic preferences. Watch chosen/rejected log-probs separately, length, sampled KL, and generative evals.</description>
-    <enclosure url="https://jdubie.github.io/post-trained-podcast/ep11.m4a" length="8833594" type="audio/x-m4a"/>
-    <guid isPermaLink="false">post-trained-v2-ep11</guid>
+    <enclosure url="https://jdubie.github.io/post-trained-podcast/ep11.m4a" length="8816156" type="audio/x-m4a"/>
+    <guid isPermaLink="false">post-trained-v3-ep11</guid>
     <pubDate>Wed, 25 Nov 2026 12:11:00 +0000</pubDate>
-    <itunes:duration>2115</itunes:duration>
+    <itunes:duration>2110</itunes:duration>
     <itunes:explicit>false</itunes:explicit>
   </item>
   <item>
@@ -149,10 +149,10 @@
     <itunes:episode>12</itunes:episode>
     <itunes:episodeType>full</itunes:episodeType>
     <description>Token-level MDP: state = prompt + tokens so far, action = next token, deterministic transitions, gamma 1, RM score on the last real token, per-token KL penalty (k1) in the reward. Value head = linear layer on the final hidden state per position; separate critic usually initialized from the RM; consider critic warmup and lambda 1 for value targets on long responses (VC-PPO). One iteration: rollout -&gt; old log-probs, ref log-probs, values, RM score -&gt; per-token rewards -&gt; GAE backward -&gt; whiten advantages over valid tokens -&gt; a few PPO epochs of clipped policy loss + clipped value loss. KL estimators (samples from pi, r = pi_ref/pi): k1 = -log r (unbiased, noisy, can be negative; zero expected gradient as a loss); k2 = 0.5 (log r)^2 (biased; as a loss gives the reverse-KL gradient); k3 = (r - 1) - log r (unbiased, nonnegative, low variance; as a loss gives the forward-KL gradient).</description>
-    <enclosure url="https://jdubie.github.io/post-trained-podcast/ep12.m4a" length="8499919" type="audio/x-m4a"/>
-    <guid isPermaLink="false">post-trained-v2-ep12</guid>
+    <enclosure url="https://jdubie.github.io/post-trained-podcast/ep12.m4a" length="8508504" type="audio/x-m4a"/>
+    <guid isPermaLink="false">post-trained-v3-ep12</guid>
     <pubDate>Wed, 25 Nov 2026 12:12:00 +0000</pubDate>
-    <itunes:duration>2040</itunes:duration>
+    <itunes:duration>2039</itunes:duration>
     <itunes:explicit>false</itunes:explicit>
   </item>
   <item>
