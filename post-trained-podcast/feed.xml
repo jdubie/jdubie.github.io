@@ -17,10 +17,10 @@
     <itunes:episode>1</itunes:episode>
     <itunes:episodeType>full</itunes:episodeType>
     <description>A language model factorizes sequence probability by the chain rule; sequence log-prob is the sum of token log-probs — the same object policy gradients act on later. Maximum likelihood minimizes forward KL (mass-covering, hedging); RL with a KL penalty uses reverse KL (mode-seeking) — one reason post-trained models are sharper and less diverse. Cross-entropy = entropy + KL; perplexity = exp(mean NLL per token). Compare across tokenizers only via bits per byte; post-training can raise web-text perplexity while making the model more useful. n-grams failed from sparsity (smoothing: Good-Turing, Katz, Kneser-Ney continuation counts); neural LMs generalize via learned embeddings, but the full softmax was the compute bottleneck for a decade.</description>
-    <enclosure url="https://jdubie.github.io/post-trained-podcast/ep01.m4a" length="8563278" type="audio/x-m4a"/>
-    <guid isPermaLink="false">post-trained-v1-ep01</guid>
+    <enclosure url="https://jdubie.github.io/post-trained-podcast/ep01.m4a" length="8928553" type="audio/x-m4a"/>
+    <guid isPermaLink="false">post-trained-v3-ep01</guid>
     <pubDate>Wed, 25 Nov 2026 12:01:00 +0000</pubDate>
-    <itunes:duration>2055</itunes:duration>
+    <itunes:duration>2137</itunes:duration>
     <itunes:explicit>false</itunes:explicit>
   </item>
   <item>
@@ -29,10 +29,10 @@
     <itunes:episode>2</itunes:episode>
     <itunes:episodeType>full</itunes:episodeType>
     <description>Scaled dot-product attention: softmax(QK^T / sqrt(d_k)) V. The sqrt(d_k) keeps score variance near 1 so softmax doesn&#x27;t saturate. Multi-head = many narrow heads for about the cost of one wide head; heads specialize (induction heads). Causal masking lets one forward pass train all positions in parallel (teacher forcing, parallelized). Generation remains sequential with a KV cache — cheap scoring vs. expensive generation is the core economics of RL for LLMs. Positions: sinusoidal -&gt; learned absolute -&gt; relative (Shaw, T5, ALiBi) -&gt; RoPE. Long context via position interpolation, NTK-aware base scaling, YaRN, or large RoPE base; check rollouts stay within the model&#x27;s comfortable context. Residual stream as a shared bus; pre-norm (GPT-2 onward) trains stably vs. post-norm needing warmup; RMSNorm drops mean-centering. QK-norm, soft-capping, and z-loss all fight logit growth.</description>
-    <enclosure url="https://jdubie.github.io/post-trained-podcast/ep02.m4a" length="8646785" type="audio/x-m4a"/>
-    <guid isPermaLink="false">post-trained-v1-ep02</guid>
+    <enclosure url="https://jdubie.github.io/post-trained-podcast/ep02.m4a" length="8930968" type="audio/x-m4a"/>
+    <guid isPermaLink="false">post-trained-v3-ep02</guid>
     <pubDate>Wed, 25 Nov 2026 12:02:00 +0000</pubDate>
-    <itunes:duration>2076</itunes:duration>
+    <itunes:duration>2138</itunes:duration>
     <itunes:explicit>false</itunes:explicit>
   </item>
   <item>
@@ -41,10 +41,10 @@
     <itunes:episode>3</itunes:episode>
     <itunes:episodeType>full</itunes:episodeType>
     <description>Decoder-only generative pretraining won because a generative model can do any task as text, and a generative model is a policy that RL can optimize. Loss follows power laws in parameters, data and compute. Training FLOPs are about 6 times N times D; inference is about 2 times N per token. Always do this arithmetic and compare to MFU. Chinchilla: scale parameters and tokens roughly equally, about 20 tokens per parameter. Kaplan&#x27;s different answer traced largely to learning-rate schedules not matched to run length. Product models deliberately overtrain because inference cost dominates. Repeating data up to about 4 epochs is nearly as good as fresh data; beyond that, returns fall off.</description>
-    <enclosure url="https://jdubie.github.io/post-trained-podcast/ep03.m4a" length="8576717" type="audio/x-m4a"/>
-    <guid isPermaLink="false">post-trained-v1-ep03</guid>
+    <enclosure url="https://jdubie.github.io/post-trained-podcast/ep03.m4a" length="9119295" type="audio/x-m4a"/>
+    <guid isPermaLink="false">post-trained-v3-ep03</guid>
     <pubDate>Wed, 25 Nov 2026 12:03:00 +0000</pubDate>
-    <itunes:duration>2062</itunes:duration>
+    <itunes:duration>2187</itunes:duration>
     <itunes:explicit>false</itunes:explicit>
   </item>
   <item>
@@ -53,10 +53,10 @@
     <itunes:episode>4</itunes:episode>
     <itunes:episodeType>full</itunes:episodeType>
     <description>Models see token IDs. Byte-level BPE learns merges greedily from 256 byte symbols, so nothing is out of vocabulary. Tokenization is many-to-one: in RL, keep the sampler&#x27;s exact token IDs and never decode and re-tokenize. Build agent transcripts incrementally with a policy-token mask. Tokenizer quirks: leading-space tokens, inconsistent number chunking, glitch tokens, prompt-boundary effects, special tokens that must not be injectable from user text. Log-softmax equals logit minus log-sum-exp, computed with max subtraction and in fp32. Logits at position t score the token at t plus one. The logits tensor is huge, so compute log-probs in chunks or with fused kernels. Sampling: greedy and beam search degenerate for open-ended text; temperature divides logits; top-k, top-p, min-p truncate. In RL the sampler must equal the policy: sample at temperature 1 without truncation or penalties, or account for them consistently.</description>
-    <enclosure url="https://jdubie.github.io/post-trained-podcast/ep04.m4a" length="8541853" type="audio/x-m4a"/>
-    <guid isPermaLink="false">post-trained-v1-ep04</guid>
+    <enclosure url="https://jdubie.github.io/post-trained-podcast/ep04.m4a" length="8807417" type="audio/x-m4a"/>
+    <guid isPermaLink="false">post-trained-v3-ep04</guid>
     <pubDate>Wed, 25 Nov 2026 12:04:00 +0000</pubDate>
-    <itunes:duration>2049</itunes:duration>
+    <itunes:duration>2110</itunes:duration>
     <itunes:explicit>false</itunes:explicit>
   </item>
   <item>
