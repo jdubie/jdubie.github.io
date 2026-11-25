@@ -192,6 +192,30 @@
     <itunes:explicit>false</itunes:explicit>
   </item>
   <item>
+    <title>21. Verifiers: What Good Code Means</title>
+    <itunes:title>Verifiers: What Good Code Means</itunes:title>
+    <itunes:episode>21</itunes:episode>
+    <itunes:episodeType>full</itunes:episodeType>
+    <description>A verifier is a classifier with precision and recall against a true &quot;is this good code&quot; label. For RL, precision dominates: false positives are amplified into learned behavior, and the policy actively searches for them. Expected reward = recall x P(good) + FPR x P(bad). &quot;Good code&quot; = correct, complete (no deleted functionality), safe, maintainable/idiomatic/minimal, honest. Tests cover only part of the first two. Tests fail as reward by being weak (FP), flaky (correlated noise, big GRPO advantages from lucky passes), visible (special-casing), or over-specific (FN, &quot;mind-reading&quot; tests). Validate generated tests: pass on the reference, stable across reruns in shuffled order, fail on mutants; fail-to-pass and pass-to-pass for repo tasks. Mutation score = killed / non-equivalent mutants grades a suite; real failing policy samples make the best mutants.</description>
+    <enclosure url="https://jdubie.github.io/post-trained-podcast/ep21.m4a" length="8924452" type="audio/x-m4a"/>
+    <guid isPermaLink="false">post-trained-v3-ep21</guid>
+    <pubDate>Wed, 25 Nov 2026 12:21:00 +0000</pubDate>
+    <itunes:duration>2140</itunes:duration>
+    <itunes:explicit>false</itunes:explicit>
+  </item>
+  <item>
+    <title>23. Fast Code: RL for Performance and Kernels</title>
+    <itunes:title>Fast Code: RL for Performance and Kernels</itunes:title>
+    <itunes:episode>23</itunes:episode>
+    <itunes:episodeType>full</itunes:episodeType>
+    <description>Performance is a dense, objective, cheap reward; the measurement is a noisy program the policy can influence. GPU model: threads, warps of 32 (SIMT, divergence), blocks on SMs; registers, shared memory, L2, HBM; coalescing; occupancy as a means; tensor cores. Roofline: intensity = flops / bytes; H100 SXM BF16 ridge about 300 flops/byte (about 1,000 TFLOPS dense BF16, spec-sheet 2,000 is sparse; 3.35 TB/s); FP32 ridge about 20. Elementwise FP32 add = 1/12 flop/byte; square matmul = n/3 in BF16, n/6 in FP32. Speed-of-light check as hack detector. Fusion (softmax, matmul epilogue) and tiling + online softmax (FlashAttention) win by moving fewer bytes.</description>
+    <enclosure url="https://jdubie.github.io/post-trained-podcast/ep23.m4a" length="8634482" type="audio/x-m4a"/>
+    <guid isPermaLink="false">post-trained-v3-ep23</guid>
+    <pubDate>Wed, 25 Nov 2026 12:23:00 +0000</pubDate>
+    <itunes:duration>2068</itunes:duration>
+    <itunes:explicit>false</itunes:explicit>
+  </item>
+  <item>
     <title>24. Evals, Diagnostics, and Putting It All Together</title>
     <itunes:title>Evals, Diagnostics, and Putting It All Together</itunes:title>
     <itunes:episode>24</itunes:episode>
