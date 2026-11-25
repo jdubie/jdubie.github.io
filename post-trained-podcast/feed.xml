@@ -252,6 +252,18 @@
     <itunes:explicit>false</itunes:explicit>
   </item>
   <item>
+    <title>22. Sandboxes and Environment Engineering</title>
+    <itunes:title>Sandboxes and Environment Engineering</itunes:title>
+    <itunes:episode>22</itunes:episode>
+    <itunes:episodeType>full</itunes:episodeType>
+    <description>Environment = task spec, starting state, tools, harness, grader, budget; the budget changes the optimal policy. Task manufacturing: mine-and-revert (SWE-Gym, R2E-Gym with back-translation) vs synthesized bugs in a per-repo environment (SWE-smith). Isolation tiers: containers (shared kernel), gVisor (user-space syscall interception, overhead and compat gaps), Firecracker (KVM microVM, own kernel, fast boot); network off, limits, timeouts, snapshots (reseed after restore). Behavior-correlated flakiness (timeouts under load) teaches the wrong lesson.</description>
+    <enclosure url="https://jdubie.github.io/post-trained-podcast/ep22.m4a" length="8787898" type="audio/x-m4a"/>
+    <guid isPermaLink="false">post-trained-v3-ep22</guid>
+    <pubDate>Wed, 25 Nov 2026 12:22:00 +0000</pubDate>
+    <itunes:duration>2109</itunes:duration>
+    <itunes:explicit>false</itunes:explicit>
+  </item>
+  <item>
     <title>23. Fast Code: RL for Performance and Kernels</title>
     <itunes:title>Fast Code: RL for Performance and Kernels</itunes:title>
     <itunes:episode>23</itunes:episode>
