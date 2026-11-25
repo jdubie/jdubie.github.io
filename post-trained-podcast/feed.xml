@@ -204,6 +204,18 @@
     <itunes:explicit>false</itunes:explicit>
   </item>
   <item>
+    <title>17. A History of Modern Coding Agents</title>
+    <itunes:title>A History of Modern Coding Agents</itunes:title>
+    <itunes:episode>17</itunes:episode>
+    <itunes:episodeType>full</itunes:episodeType>
+    <description>Pre-LLM assistance was small-domain program synthesis and ranked autocomplete; Kite shut down in 2022 saying it was too early. Completion era lessons: latency constrains model size, acceptance rate is a proxy reward with Goodhart risk, fill in the middle comes nearly free via data reordering. Chat era made the human the agent&#x27;s tool executor; Code Interpreter closed the loop in a sandbox. AutoGPT-style loops failed: compounding errors, untrained policies, no grounding, small context.</description>
+    <enclosure url="https://jdubie.github.io/post-trained-podcast/ep17.m4a" length="8859290" type="audio/x-m4a"/>
+    <guid isPermaLink="false">post-trained-v3-ep17</guid>
+    <pubDate>Wed, 25 Nov 2026 12:17:00 +0000</pubDate>
+    <itunes:duration>2121</itunes:duration>
+    <itunes:explicit>false</itunes:explicit>
+  </item>
+  <item>
     <title>18. Agents and Multi-Turn RL</title>
     <itunes:title>Agents and Multi-Turn RL</itunes:title>
     <itunes:episode>18</itunes:episode>
