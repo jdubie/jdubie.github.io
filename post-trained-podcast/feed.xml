@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+<channel>
+  <title>Post-Trained</title>
+  <link>https://jdubie.github.io/post-trained-podcast/</link>
+  <language>en-us</language>
+  <description>A 20-episode audio course on language models, reinforcement learning and post-training: from n-grams and the Transformer to PPO, DPO, GRPO, reasoning models, coding agents, reward hacking and RL infrastructure. Two hosts, Maya and Sam.</description>
+  <itunes:author>Post-Trained</itunes:author>
+  <itunes:image href="https://jdubie.github.io/post-trained-podcast/cover.jpg"/>
+  <itunes:category text="Technology"/>
+  <itunes:explicit>false</itunes:explicit>
+  <itunes:type>serial</itunes:type>
+  <itunes:block>Yes</itunes:block>
+  <item>
+    <title>1. Before the Transformer</title>
+    <itunes:title>Before the Transformer</itunes:title>
+    <itunes:episode>1</itunes:episode>
+    <itunes:episodeType>full</itunes:episodeType>
+    <description>A language model factorizes sequence probability by the chain rule; sequence log-prob is the sum of token log-probs — the same object policy gradients act on later. Maximum likelihood minimizes forward KL (mass-covering, hedging); RL with a KL penalty uses reverse KL (mode-seeking) — one reason post-trained models are sharper and less diverse. Cross-entropy = entropy + KL; perplexity = exp(mean NLL per token). Compare across tokenizers only via bits per byte; post-training can raise web-text perplexity while making the model more useful. n-grams failed from sparsity (smoothing: Good-Turing, Katz, Kneser-Ney continuation counts); neural LMs generalize via learned embeddings, but the full softmax was the compute bottleneck for a decade.</description>
+    <enclosure url="https://jdubie.github.io/post-trained-podcast/ep01.m4a" length="8563278" type="audio/x-m4a"/>
+    <guid isPermaLink="false">post-trained-v1-ep01</guid>
+    <pubDate>Wed, 25 Nov 2026 12:01:00 +0000</pubDate>
+    <itunes:duration>2055</itunes:duration>
+    <itunes:explicit>false</itunes:explicit>
+  </item>
+  <item>
+    <title>2. Attention Is All You Need</title>
+    <itunes:title>Attention Is All You Need</itunes:title>
+    <itunes:episode>2</itunes:episode>
+    <itunes:episodeType>full</itunes:episodeType>
+    <description>Scaled dot-product attention: softmax(QK^T / sqrt(d_k)) V. The sqrt(d_k) keeps score variance near 1 so softmax doesn&#x27;t saturate. Multi-head = many narrow heads for about the cost of one wide head; heads specialize (induction heads). Causal masking lets one forward pass train all positions in parallel (teacher forcing, parallelized). Generation remains sequential with a KV cache — cheap scoring vs. expensive generation is the core economics of RL for LLMs. Positions: sinusoidal -&gt; learned absolute -&gt; relative (Shaw, T5, ALiBi) -&gt; RoPE. Long context via position interpolation, NTK-aware base scaling, YaRN, or large RoPE base; check rollouts stay within the model&#x27;s comfortable context. Residual stream as a shared bus; pre-norm (GPT-2 onward) trains stably vs. post-norm needing warmup; RMSNorm drops mean-centering. QK-norm, soft-capping, and z-loss all fight logit growth.</description>
+    <enclosure url="https://jdubie.github.io/post-trained-podcast/ep02.m4a" length="8646785" type="audio/x-m4a"/>
+    <guid isPermaLink="false">post-trained-v1-ep02</guid>
+    <pubDate>Wed, 25 Nov 2026 12:02:00 +0000</pubDate>
+    <itunes:duration>2076</itunes:duration>
+    <itunes:explicit>false</itunes:explicit>
+  </item>
+  <item>
+    <title>3. Scale</title>
+    <itunes:title>Scale</itunes:title>
+    <itunes:episode>3</itunes:episode>
+    <itunes:episodeType>full</itunes:episodeType>
+    <description>Decoder-only generative pretraining won because a generative model can do any task as text, and a generative model is a policy that RL can optimize. Loss follows power laws in parameters, data and compute. Training FLOPs are about 6 times N times D; inference is about 2 times N per token. Always do this arithmetic and compare to MFU. Chinchilla: scale parameters and tokens roughly equally, about 20 tokens per parameter. Kaplan&#x27;s different answer traced largely to learning-rate schedules not matched to run length. Product models deliberately overtrain because inference cost dominates. Repeating data up to about 4 epochs is nearly as good as fresh data; beyond that, returns fall off.</description>
+    <enclosure url="https://jdubie.github.io/post-trained-podcast/ep03.m4a" length="8576717" type="audio/x-m4a"/>
+    <guid isPermaLink="false">post-trained-v1-ep03</guid>
+    <pubDate>Wed, 25 Nov 2026 12:03:00 +0000</pubDate>
+    <itunes:duration>2062</itunes:duration>
+    <itunes:explicit>false</itunes:explicit>
+  </item>
+  <item>
+    <title>4. The Language Model as a Policy</title>
+    <itunes:title>The Language Model as a Policy</itunes:title>
+    <itunes:episode>4</itunes:episode>
+    <itunes:episodeType>full</itunes:episodeType>
+    <description>Models see token IDs. Byte-level BPE learns merges greedily from 256 byte symbols, so nothing is out of vocabulary. Tokenization is many-to-one: in RL, keep the sampler&#x27;s exact token IDs and never decode and re-tokenize. Build agent transcripts incrementally with a policy-token mask. Tokenizer quirks: leading-space tokens, inconsistent number chunking, glitch tokens, prompt-boundary effects, special tokens that must not be injectable from user text. Log-softmax equals logit minus log-sum-exp, computed with max subtraction and in fp32. Logits at position t score the token at t plus one. The logits tensor is huge, so compute log-probs in chunks or with fused kernels. Sampling: greedy and beam search degenerate for open-ended text; temperature divides logits; top-k, top-p, min-p truncate. In RL the sampler must equal the policy: sample at temperature 1 without truncation or penalties, or account for them consistently.</description>
+    <enclosure url="https://jdubie.github.io/post-trained-podcast/ep04.m4a" length="8541853" type="audio/x-m4a"/>
+    <guid isPermaLink="false">post-trained-v1-ep04</guid>
+    <pubDate>Wed, 25 Nov 2026 12:04:00 +0000</pubDate>
+    <itunes:duration>2049</itunes:duration>
+    <itunes:explicit>false</itunes:explicit>
+  </item>
+  <item>
+    <title>5. RL Fundamentals I</title>
+    <itunes:title>RL Fundamentals I</itunes:title>
+    <itunes:episode>5</itunes:episode>
+    <itunes:episodeType>full</itunes:episodeType>
+    <description>An MDP is states, actions, transitions, rewards, discount. An LLM is a policy in a token-level MDP with deterministic transitions and usually one terminal reward, with gamma set to 1. The whole-response view is a contextual bandit. V is the value of a state, Q the value of a state-action pair, and the advantage A equals Q minus V. Bellman equations write values recursively. Dynamic programming solves them when the model is known, which never applies to LLMs. Exploration: you only learn from what you sample. For LLMs that means policy entropy and multiple samples per prompt. Prompts that always pass or always fail give no signal once you use a baseline. Policy gradient theorem via the log-derivative trick: the gradient of expected reward equals the expected sum of grad log pi times return. Dynamics drop out, so rewards can be black boxes like unit tests and graders. Discrete tokens and non-differentiable rewards rule out reparameterization.</description>
+    <enclosure url="https://jdubie.github.io/post-trained-podcast/ep05.m4a" length="8331088" type="audio/x-m4a"/>
+    <guid isPermaLink="false">post-trained-v2-ep05</guid>
+    <pubDate>Wed, 25 Nov 2026 12:05:00 +0000</pubDate>
+    <itunes:duration>1999</itunes:duration>
+    <itunes:explicit>false</itunes:explicit>
+  </item>
+  <item>
+    <title>6. RL Fundamentals II</title>
+    <itunes:title>RL Fundamentals II</itunes:title>
+    <itunes:episode>6</itunes:episode>
+    <itunes:episodeType>full</itunes:episodeType>
+    <description>Actor-critic: a learned critic V estimates advantages. TD learning bootstraps with delta equal to r plus gamma V of next state minus V of state. Monte Carlo is unbiased but high variance, TD is low variance but biased, n-step and lambda-returns interpolate. GAE: advantage equals the sum of gamma lambda to the l times delta at t plus l. Lambda 0 is one-step TD, lambda 1 is Monte Carlo return minus V. Compute with one backward recursion, no bootstrapping past terminal states. Critic target equals advantage plus V. LLM RLHF PPO: per-token reward is minus beta times the log ratio to the reference, plus the reward model score at the last token, typically gamma 1. Initialize the critic from the RM, warm it up, track explained variance. Importance sampling reweights by p over q. Trajectory-level ratios explode over long sequences, so use per-token ratios and stay close to the behavior policy.</description>
+    <enclosure url="https://jdubie.github.io/post-trained-podcast/ep06.m4a" length="8666884" type="audio/x-m4a"/>
+    <guid isPermaLink="false">post-trained-v2-ep06</guid>
+    <pubDate>Wed, 25 Nov 2026 12:06:00 +0000</pubDate>
+    <itunes:duration>2078</itunes:duration>
+    <itunes:explicit>false</itunes:explicit>
+  </item>
+  <item>
+    <title>7. Learning from Human Preferences</title>
+    <itunes:title>Learning from Human Preferences</itunes:title>
+    <itunes:episode>7</itunes:episode>
+    <itunes:episodeType>full</itunes:episodeType>
+    <description>Good behavior is easier to recognize than to specify; pairwise comparisons cancel per-labeler offsets and beat absolute ratings for fuzzy quality. Bradley Terry: probability A preferred equals sigmoid of r(A) minus r(B). Loss is negative log sigmoid of chosen minus rejected; gradient weight is one minus sigmoid of the gap, so noisy labels get the biggest gradients. Rewards are defined only up to a constant: normalize. Christiano 2017: three asynchronous loops, ensembles, a random-response noise floor, online reward model training; offline reward models get exploited, and humans themselves can be fooled. KL-regularized objective: maximize reward minus beta times KL to a reference. Optimal policy is the reference reweighted by exp of reward over beta, the seed of DPO. Adaptive KL controllers target a KL value.</description>
+    <enclosure url="https://jdubie.github.io/post-trained-podcast/ep07.m4a" length="8402737" type="audio/x-m4a"/>
+    <guid isPermaLink="false">post-trained-v2-ep07</guid>
+    <pubDate>Wed, 25 Nov 2026 12:07:00 +0000</pubDate>
+    <itunes:duration>2014</itunes:duration>
+    <itunes:explicit>false</itunes:explicit>
+  </item>
+  <item>
+    <title>8. InstructGPT and the ChatGPT Moment</title>
+    <itunes:title>InstructGPT and the ChatGPT Moment</itunes:title>
+    <itunes:episode>8</itunes:episode>
+    <itunes:episodeType>full</itunes:episodeType>
+    <description>Recipe: SFT on demonstrations, reward model on ranked comparisons, PPO with per-token KL to the SFT model, iterated. About 13k SFT prompts, 33k RM prompts, 31k PPO prompts; about 40 screened contractors. Details: split by user ID; SFT overfits validation loss after about 1 epoch but more epochs improve sample quality, so select checkpoints by RM score; 6B RM; rankings of K from 4 to 9 give K choose 2 pairs, all batched as one element, one epoch; RM bias set so demonstrations average zero; value initialized from RM. Alignment tax: regressions on SQuAD, DROP, HellaSwag, WMT French to English. PPO-ptx mixes pretraining log-likelihood into the loss and works better than raising the KL coefficient. B InstructGPT preferred over 175B GPT-3; 175B InstructGPT preferred over GPT-3 about 85 percent of the time. Alignment and capability are separate axes, and RLHF compute is tiny next to pretraining.</description>
+    <enclosure url="https://jdubie.github.io/post-trained-podcast/ep08.m4a" length="9061878" type="audio/x-m4a"/>
+    <guid isPermaLink="false">post-trained-v2-ep08</guid>
+    <pubDate>Wed, 25 Nov 2026 12:08:00 +0000</pubDate>
+    <itunes:duration>2174</itunes:duration>
+    <itunes:explicit>false</itunes:explicit>
+  </item>
+</channel>
+</rss>
