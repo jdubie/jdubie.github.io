@@ -311,5 +311,17 @@
     <itunes:duration>7324</itunes:duration>
     <itunes:explicit>false</itunes:explicit>
   </item>
+  <item>
+    <title>26. Bonus: 100 Classic Machine Learning Questions</title>
+    <itunes:title>Bonus: 100 Classic Machine Learning Questions</itunes:title>
+    <itunes:episode>26</itunes:episode>
+    <itunes:episodeType>bonus</itunes:episodeType>
+    <description>Sections: fundamentals and classical ML; neural networks and optimization; large language models; ML systems and design. Each answer: a crisp core answer, then the math in words, an example, misconceptions, and follow-ups. Chen and Guestrin 2016 (XGBoost); Arthur and Vassilvitskii 2007 (k-means++); Ng and Jordan 2001; Guo et al. 2017 (calibration). Callbacks: ep 2 (cross-entropy as MLE), ep 7 (Bradley-Terry as logistic regression), ep 9 (LoRA low rank), ep 16 (contamination as leakage), ep 24 (eval error bars, LM calibration); KL penalty as regularizer.</description>
+    <enclosure url="https://jdubie.github.io/post-trained-podcast/ep26.m4a" length="36313878" type="audio/x-m4a"/>
+    <guid isPermaLink="false">post-trained-v3-ep26</guid>
+    <pubDate>Wed, 25 Nov 2026 12:26:00 +0000</pubDate>
+    <itunes:duration>8718</itunes:duration>
+    <itunes:explicit>false</itunes:explicit>
+  </item>
 </channel>
 </rss>
