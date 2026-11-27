@@ -299,5 +299,17 @@
     <itunes:duration>2159</itunes:duration>
     <itunes:explicit>false</itunes:explicit>
   </item>
+  <item>
+    <title>25. Bonus: 100 Classic Coding Problems</title>
+    <itunes:title>Bonus: 100 Classic Coding Problems</itunes:title>
+    <itunes:episode>25</itunes:episode>
+    <itunes:episodeType>bonus</itunes:episodeType>
+    <description>Patterns: hashing, two pointers, sliding window, monotonic stack, binary search on the answer, fast and slow pointers, heaps, intervals, tree recursion, tries, backtracking, BFS and DFS, topological sort, union-find, shortest paths, dynamic programming, greedy, bit tricks. Each problem: brute force, key insight, optimal approach and data structure, time and space complexity, edge cases. Invert Binary Tree: swap children at every node (recursive or BFS/stack); O(n) time, O(h) space. In-order variant is wrong. Maximum Depth: 1 + max(left, right) post-order, or BFS level count; O(n) time, O(h) DFS / O(w) BFS.</description>
+    <enclosure url="https://jdubie.github.io/post-trained-podcast/ep25.m4a" length="30452979" type="audio/x-m4a"/>
+    <guid isPermaLink="false">post-trained-v3-ep25</guid>
+    <pubDate>Wed, 25 Nov 2026 12:25:00 +0000</pubDate>
+    <itunes:duration>7324</itunes:duration>
+    <itunes:explicit>false</itunes:explicit>
+  </item>
 </channel>
 </rss>
